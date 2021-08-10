@@ -1,0 +1,357 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "LibOrderTest",
+  "sourceName": "contracts/tests/LibOrderTest.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "maker",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "bytes4",
+                      "name": "assetClass",
+                      "type": "bytes4"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct LibAsset.AssetType",
+                  "name": "assetType",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct LibAsset.Asset",
+              "name": "makeAsset",
+              "type": "tuple"
+            },
+            {
+              "internalType": "address",
+              "name": "taker",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "bytes4",
+                      "name": "assetClass",
+                      "type": "bytes4"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct LibAsset.AssetType",
+                  "name": "assetType",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct LibAsset.Asset",
+              "name": "takeAsset",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "salt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "start",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "end",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes4",
+              "name": "dataType",
+              "type": "bytes4"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct LibOrder.Order",
+          "name": "order",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fill",
+          "type": "uint256"
+        }
+      ],
+      "name": "calculateRemaining",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "makeAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "takeAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "maker",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "bytes4",
+                      "name": "assetClass",
+                      "type": "bytes4"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct LibAsset.AssetType",
+                  "name": "assetType",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct LibAsset.Asset",
+              "name": "makeAsset",
+              "type": "tuple"
+            },
+            {
+              "internalType": "address",
+              "name": "taker",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "bytes4",
+                      "name": "assetClass",
+                      "type": "bytes4"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct LibAsset.AssetType",
+                  "name": "assetType",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct LibAsset.Asset",
+              "name": "takeAsset",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "salt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "start",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "end",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes4",
+              "name": "dataType",
+              "type": "bytes4"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct LibOrder.Order",
+          "name": "order",
+          "type": "tuple"
+        }
+      ],
+      "name": "hashKey",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "maker",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "bytes4",
+                      "name": "assetClass",
+                      "type": "bytes4"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct LibAsset.AssetType",
+                  "name": "assetType",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct LibAsset.Asset",
+              "name": "makeAsset",
+              "type": "tuple"
+            },
+            {
+              "internalType": "address",
+              "name": "taker",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "components": [
+                    {
+                      "internalType": "bytes4",
+                      "name": "assetClass",
+                      "type": "bytes4"
+                    },
+                    {
+                      "internalType": "bytes",
+                      "name": "data",
+                      "type": "bytes"
+                    }
+                  ],
+                  "internalType": "struct LibAsset.AssetType",
+                  "name": "assetType",
+                  "type": "tuple"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "value",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct LibAsset.Asset",
+              "name": "takeAsset",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "salt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "start",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "end",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes4",
+              "name": "dataType",
+              "type": "bytes4"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct LibOrder.Order",
+          "name": "order",
+          "type": "tuple"
+        }
+      ],
+      "name": "validate",
+      "outputs": [],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b506107f9806100206000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c8063058dbeef1461004657806387774dd91461006c5780638b22d1ff14610081575b600080fd5b610059610054366004610599565b6100a9565b6040519081526020015b60405180910390f35b61007f61007a366004610599565b6100c2565b005b61009461008f3660046105cc565b6100d6565b60408051928352602083019190915201610063565b60006100bc6100b7836106b2565b6100f6565b92915050565b6100d36100ce826106b2565b610173565b50565b6000806100eb6100e5856106b2565b84610238565b915091509250929050565b80516020820151516000919061010b9061027c565b60608401515161011a9061027c565b6080808601516040805173ffffffffffffffffffffffffffffffffffffffff9096166020870152850193909352606084019190915282015260a0015b604051602081830303815290604052805190602001209050919050565b60a081015115806101875750428160a00151105b6101d85760405162461bcd60e51b815260206004820152601d60248201527f4f726465722073746172742076616c69646174696f6e206661696c656400000060448201526064015b60405180910390fd5b60c081015115806101ec5750428160c00151115b6100d35760405162461bcd60e51b815260206004820152601b60248201527f4f7264657220656e642076616c69646174696f6e206661696c6564000000000060448201526064016101cf565b600080610256838560600151602001516102d990919063ffffffff16565b9050610273846020015160200151856060015160200151836102ec565b91509250929050565b8051602080830151805190820120604051600093610156937f452a0dc408cb0d27ffc3b3caff933a5208040a53a9dbecd8d89cad2c0d40e00c939192019283526001600160e01b0319919091166020830152604082015260600190565b60006102e5828461069b565b9392505050565b60006102f9848484610362565b156103465760405162461bcd60e51b815260206004820152600e60248201527f726f756e64696e67206572726f7200000000000000000000000000000000000060448201526064016101cf565b61035a83610354868561040d565b90610419565b949350505050565b6000826103b15760405162461bcd60e51b815260206004820152601060248201527f6469766973696f6e206279207a65726f0000000000000000000000000000000060448201526064016101cf565b8115806103bc575083155b156103c9575060006102e5565b600083806103e757634e487b7160e01b600052601260045260246000fd5b85840990506103f6858461040d565b610402826103e861040d565b101595945050505050565b60006102e5828461067c565b60006102e5828461065c565b803573ffffffffffffffffffffffffffffffffffffffff8116811461044957600080fd5b919050565b80356001600160e01b03198116811461044957600080fd5b600082601f830112610476578081fd5b813567ffffffffffffffff80821115610491576104916107ad565b604051601f8301601f19908116603f011681019082821181831017156104b9576104b96107ad565b816040528381528660208588010111156104d1578485fd5b8360208701602083013792830160200193909352509392505050565b6000604082840312156104fe578081fd5b61050661060f565b9050813567ffffffffffffffff8082111561052057600080fd5b908301906040828603121561053457600080fd5b61053c61060f565b6105458361044e565b815260208301358281111561055957600080fd5b61056587828601610466565b6020830152508084525050506020820135602082015292915050565b60006101208284031215610593578081fd5b50919050565b6000602082840312156105aa578081fd5b813567ffffffffffffffff8111156105c0578182fd5b61035a84828501610581565b600080604083850312156105de578081fd5b823567ffffffffffffffff8111156105f4578182fd5b61060085828601610581565b95602094909401359450505050565b6040805190810167ffffffffffffffff81118282101715610632576106326107ad565b60405290565b604051610120810167ffffffffffffffff81118282101715610632576106326107ad565b60008261067757634e487b7160e01b81526012600452602481fd5b500490565b600081600019048311821515161561069657610696610797565b500290565b6000828210156106ad576106ad610797565b500390565b600061012082360312156106c4578081fd5b6106cc610638565b6106d583610425565b8152602083013567ffffffffffffffff808211156106f1578384fd5b6106fd368387016104ed565b602084015261070e60408601610425565b60408401526060850135915080821115610726578384fd5b610732368387016104ed565b60608401526080850135608084015260a085013560a084015260c085013560c084015261076160e0860161044e565b60e08401526101009150818501358181111561077b578485fd5b61078736828801610466565b8385015250505080915050919050565b634e487b7160e01b600052601160045260246000fd5b634e487b7160e01b600052604160045260246000fdfea2646970667358221220f13c7dbac20dda3ec48c129cee63df1ce1fc92cd9cbdd8f6d8d59d20d189672a64736f6c63430008040033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c8063058dbeef1461004657806387774dd91461006c5780638b22d1ff14610081575b600080fd5b610059610054366004610599565b6100a9565b6040519081526020015b60405180910390f35b61007f61007a366004610599565b6100c2565b005b61009461008f3660046105cc565b6100d6565b60408051928352602083019190915201610063565b60006100bc6100b7836106b2565b6100f6565b92915050565b6100d36100ce826106b2565b610173565b50565b6000806100eb6100e5856106b2565b84610238565b915091509250929050565b80516020820151516000919061010b9061027c565b60608401515161011a9061027c565b6080808601516040805173ffffffffffffffffffffffffffffffffffffffff9096166020870152850193909352606084019190915282015260a0015b604051602081830303815290604052805190602001209050919050565b60a081015115806101875750428160a00151105b6101d85760405162461bcd60e51b815260206004820152601d60248201527f4f726465722073746172742076616c69646174696f6e206661696c656400000060448201526064015b60405180910390fd5b60c081015115806101ec5750428160c00151115b6100d35760405162461bcd60e51b815260206004820152601b60248201527f4f7264657220656e642076616c69646174696f6e206661696c6564000000000060448201526064016101cf565b600080610256838560600151602001516102d990919063ffffffff16565b9050610273846020015160200151856060015160200151836102ec565b91509250929050565b8051602080830151805190820120604051600093610156937f452a0dc408cb0d27ffc3b3caff933a5208040a53a9dbecd8d89cad2c0d40e00c939192019283526001600160e01b0319919091166020830152604082015260600190565b60006102e5828461069b565b9392505050565b60006102f9848484610362565b156103465760405162461bcd60e51b815260206004820152600e60248201527f726f756e64696e67206572726f7200000000000000000000000000000000000060448201526064016101cf565b61035a83610354868561040d565b90610419565b949350505050565b6000826103b15760405162461bcd60e51b815260206004820152601060248201527f6469766973696f6e206279207a65726f0000000000000000000000000000000060448201526064016101cf565b8115806103bc575083155b156103c9575060006102e5565b600083806103e757634e487b7160e01b600052601260045260246000fd5b85840990506103f6858461040d565b610402826103e861040d565b101595945050505050565b60006102e5828461067c565b60006102e5828461065c565b803573ffffffffffffffffffffffffffffffffffffffff8116811461044957600080fd5b919050565b80356001600160e01b03198116811461044957600080fd5b600082601f830112610476578081fd5b813567ffffffffffffffff80821115610491576104916107ad565b604051601f8301601f19908116603f011681019082821181831017156104b9576104b96107ad565b816040528381528660208588010111156104d1578485fd5b8360208701602083013792830160200193909352509392505050565b6000604082840312156104fe578081fd5b61050661060f565b9050813567ffffffffffffffff8082111561052057600080fd5b908301906040828603121561053457600080fd5b61053c61060f565b6105458361044e565b815260208301358281111561055957600080fd5b61056587828601610466565b6020830152508084525050506020820135602082015292915050565b60006101208284031215610593578081fd5b50919050565b6000602082840312156105aa578081fd5b813567ffffffffffffffff8111156105c0578182fd5b61035a84828501610581565b600080604083850312156105de578081fd5b823567ffffffffffffffff8111156105f4578182fd5b61060085828601610581565b95602094909401359450505050565b6040805190810167ffffffffffffffff81118282101715610632576106326107ad565b60405290565b604051610120810167ffffffffffffffff81118282101715610632576106326107ad565b60008261067757634e487b7160e01b81526012600452602481fd5b500490565b600081600019048311821515161561069657610696610797565b500290565b6000828210156106ad576106ad610797565b500390565b600061012082360312156106c4578081fd5b6106cc610638565b6106d583610425565b8152602083013567ffffffffffffffff808211156106f1578384fd5b6106fd368387016104ed565b602084015261070e60408601610425565b60408401526060850135915080821115610726578384fd5b610732368387016104ed565b60608401526080850135608084015260a085013560a084015260c085013560c084015261076160e0860161044e565b60e08401526101009150818501358181111561077b578485fd5b61078736828801610466565b8385015250505080915050919050565b634e487b7160e01b600052601160045260246000fd5b634e487b7160e01b600052604160045260246000fdfea2646970667358221220f13c7dbac20dda3ec48c129cee63df1ce1fc92cd9cbdd8f6d8d59d20d189672a64736f6c63430008040033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

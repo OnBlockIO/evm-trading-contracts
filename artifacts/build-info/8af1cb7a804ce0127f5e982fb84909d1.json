@@ -1,0 +1,295 @@
+{
+  "id": "8af1cb7a804ce0127f5e982fb84909d1",
+  "_format": "hh-sol-build-info-1",
+  "solcVersion": "0.8.4",
+  "solcLongVersion": "0.8.4+commit.c7e474f2",
+  "input": {
+    "language": "Solidity",
+    "sources": {
+      "contracts/lib/ERC1271.sol": {
+        "content": "// SPDX-License-Identifier: MIT\n\npragma solidity ^0.8.4;\n\nabstract contract ERC1271 {\n\n    // bytes4(keccak256(\"isValidSignature(bytes,bytes)\")\n    bytes4 constant internal MAGICVALUE = 0x1626ba7e;\n\n    /**\n     * @dev Should return whether the signature provided is valid for the provided data\n     * @param _hash Hash of the data signed on the behalf of address(this)\n     * @param _signature Signature byte array associated with _data\n     *\n     * MUST return the bytes4 magic value 0x1626ba7e when function passes.\n     * MUST NOT modify state (using STATICCALL for solc < 0.5, view modifier for solc > 0.5)\n     * MUST allow external calls\n     */\n    function isValidSignature(bytes32 _hash, bytes calldata _signature) virtual external view returns (bytes4 magicValue);\n}"
+      }
+    },
+    "settings": {
+      "optimizer": {
+        "enabled": true,
+        "runs": 500
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers"
+          ],
+          "": [
+            "ast"
+          ]
+        }
+      }
+    }
+  },
+  "output": {
+    "contracts": {
+      "contracts/lib/ERC1271.sol": {
+        "ERC1271": {
+          "abi": [
+            {
+              "inputs": [
+                {
+                  "internalType": "bytes32",
+                  "name": "_hash",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "_signature",
+                  "type": "bytes"
+                }
+              ],
+              "name": "isValidSignature",
+              "outputs": [
+                {
+                  "internalType": "bytes4",
+                  "name": "magicValue",
+                  "type": "bytes4"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ],
+          "evm": {
+            "bytecode": {
+              "generatedSources": [],
+              "linkReferences": {},
+              "object": "",
+              "opcodes": "",
+              "sourceMap": ""
+            },
+            "deployedBytecode": {
+              "generatedSources": [],
+              "immutableReferences": {},
+              "linkReferences": {},
+              "object": "",
+              "opcodes": "",
+              "sourceMap": ""
+            },
+            "methodIdentifiers": {
+              "isValidSignature(bytes32,bytes)": "1626ba7e"
+            }
+          }
+        }
+      }
+    },
+    "sources": {
+      "contracts/lib/ERC1271.sol": {
+        "ast": {
+          "absolutePath": "contracts/lib/ERC1271.sol",
+          "exportedSymbols": {
+            "ERC1271": [
+              15
+            ]
+          },
+          "id": 16,
+          "license": "MIT",
+          "nodeType": "SourceUnit",
+          "nodes": [
+            {
+              "id": 1,
+              "literals": [
+                "solidity",
+                "^",
+                "0.8",
+                ".4"
+              ],
+              "nodeType": "PragmaDirective",
+              "src": "33:23:0"
+            },
+            {
+              "abstract": true,
+              "baseContracts": [],
+              "contractDependencies": [],
+              "contractKind": "contract",
+              "fullyImplemented": false,
+              "id": 15,
+              "linearizedBaseContracts": [
+                15
+              ],
+              "name": "ERC1271",
+              "nameLocation": "76:7:0",
+              "nodeType": "ContractDefinition",
+              "nodes": [
+                {
+                  "constant": true,
+                  "id": 4,
+                  "mutability": "constant",
+                  "name": "MAGICVALUE",
+                  "nameLocation": "173:10:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 15,
+                  "src": "148:48:0",
+                  "stateVariable": true,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes4",
+                    "typeString": "bytes4"
+                  },
+                  "typeName": {
+                    "id": 2,
+                    "name": "bytes4",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "148:6:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes4",
+                      "typeString": "bytes4"
+                    }
+                  },
+                  "value": {
+                    "hexValue": "30783136323662613765",
+                    "id": 3,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "number",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "186:10:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_rational_371636862_by_1",
+                      "typeString": "int_const 371636862"
+                    },
+                    "value": "0x1626ba7e"
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "documentation": {
+                    "id": 5,
+                    "nodeType": "StructuredDocumentation",
+                    "src": "203:450:0",
+                    "text": " @dev Should return whether the signature provided is valid for the provided data\n @param _hash Hash of the data signed on the behalf of address(this)\n @param _signature Signature byte array associated with _data\n MUST return the bytes4 magic value 0x1626ba7e when function passes.\n MUST NOT modify state (using STATICCALL for solc < 0.5, view modifier for solc > 0.5)\n MUST allow external calls"
+                  },
+                  "functionSelector": "1626ba7e",
+                  "id": 14,
+                  "implemented": false,
+                  "kind": "function",
+                  "modifiers": [],
+                  "name": "isValidSignature",
+                  "nameLocation": "667:16:0",
+                  "nodeType": "FunctionDefinition",
+                  "parameters": {
+                    "id": 10,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                      {
+                        "constant": false,
+                        "id": 7,
+                        "mutability": "mutable",
+                        "name": "_hash",
+                        "nameLocation": "692:5:0",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 14,
+                        "src": "684:13:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        "typeName": {
+                          "id": 6,
+                          "name": "bytes32",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "684:7:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        "visibility": "internal"
+                      },
+                      {
+                        "constant": false,
+                        "id": 9,
+                        "mutability": "mutable",
+                        "name": "_signature",
+                        "nameLocation": "714:10:0",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 14,
+                        "src": "699:25:0",
+                        "stateVariable": false,
+                        "storageLocation": "calldata",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_calldata_ptr",
+                          "typeString": "bytes"
+                        },
+                        "typeName": {
+                          "id": 8,
+                          "name": "bytes",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "699:5:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes_storage_ptr",
+                            "typeString": "bytes"
+                          }
+                        },
+                        "visibility": "internal"
+                      }
+                    ],
+                    "src": "683:42:0"
+                  },
+                  "returnParameters": {
+                    "id": 13,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                      {
+                        "constant": false,
+                        "id": 12,
+                        "mutability": "mutable",
+                        "name": "magicValue",
+                        "nameLocation": "764:10:0",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 14,
+                        "src": "757:17:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes4",
+                          "typeString": "bytes4"
+                        },
+                        "typeName": {
+                          "id": 11,
+                          "name": "bytes4",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "757:6:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes4",
+                            "typeString": "bytes4"
+                          }
+                        },
+                        "visibility": "internal"
+                      }
+                    ],
+                    "src": "756:19:0"
+                  },
+                  "scope": 15,
+                  "src": "658:118:0",
+                  "stateMutability": "view",
+                  "virtual": true,
+                  "visibility": "external"
+                }
+              ],
+              "scope": 16,
+              "src": "58:720:0",
+              "usedErrors": []
+            }
+          ],
+          "src": "33:745:0"
+        },
+        "id": 0
+      }
+    }
+  }
+}
