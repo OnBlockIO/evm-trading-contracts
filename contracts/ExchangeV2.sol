@@ -57,7 +57,7 @@ contract ExchangeV2 is ExchangeV2Core, GhostMarketTransferManager, GhostAuction 
         auctionComplete(auctionId) {
         address payable winner = auctions[auctionId].bidder;
         require(
-            winner == msg.sender,
+            winner == msg.sender || auctions[auctionId].creator == msg.sender,
             "Auction can only be claimed by the address who won it"
         );
         uint256 amount = auctions[auctionId].amount;
