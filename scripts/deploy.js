@@ -26,11 +26,10 @@ async function main() {
 
   const exchangeFeeWallet = accounts[0].address
   const adminRecoveryAddress = accounts[3].address
-  const feesBP = 200
 
   const instance = await upgrades.deployProxy(
     ExchangeV2,
-    [transferProxy, erc20TransferProxy, feesBP, exchangeFeeWallet, adminRecoveryAddress],
+    [transferProxy, erc20TransferProxy, 100, exchangeFeeWallet, adminRecoveryAddress],
     { initializer: '__ExchangeV2_init' }
   );
   //add ExchangeV2 address to the the allowed operators of transferProxy & erc20TransferProxy
@@ -42,7 +41,7 @@ async function main() {
   console.log('erc20TransferProxy: ', erc20TransferProxy)
   console.log('exchangeFeeWallet: ', exchangeFeeWallet)
   console.log('adminRecoveryAddress: ', adminRecoveryAddress)
-  console.log('fees value: ', feesBP / 100 + '%')
+  console.log('fee: ', 100)
 }
 
 main()

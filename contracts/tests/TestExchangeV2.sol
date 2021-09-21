@@ -9,18 +9,18 @@ import "../GhostMarketTransferManager.sol";
 import "../GhostAuction.sol";
 
 contract TestExchangeV2 is ExchangeV2 {
-
-    /**
-     * @dev modified matchAndTransfer method contracts/ExchangeV2Core.sol were the
-     * base currency funds are transfered to orderRight.maker or the orderRight.taker
-     */
-    function matchAndTransferAuctionExternal(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight, uint amountFromAuction) public {
-        matchAndTransferAuction(orderLeft, orderRight, amountFromAuction);
+    function matchAndTransferExternal(
+        LibOrder.Order memory orderLeft,
+        LibOrder.Order memory orderRight,
+        uint256 amount,
+        address user
+    ) public payable {
+        matchAndTransfer(orderLeft, orderRight, amount, user);
     }
 
-    function matchAndTransferExternal(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight) public payable{
-        matchAndTransfer(orderLeft, orderRight);
+    function deleteAuctionExternal(uint256 auctionId) public {
+        deleteAuction(auctionId);
     }
-    
+
     uint256[50] private __gap;
 }

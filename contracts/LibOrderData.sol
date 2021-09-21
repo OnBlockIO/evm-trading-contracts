@@ -15,7 +15,7 @@ library LibOrderData {
             if (dataOrder.payouts.length == 0) {
                 dataOrder = payoutSet(order.maker, dataOrder);
             }
-        } else if (order.dataType == 0xffffffff) {
+        } else if (order.dataType == 0xffffffff || order.dataType == LibOrderDataV1.NFT_TRANSFER_FROM_CONTRACT) {
             dataOrder = payoutSet(order.maker, dataOrder);
         } else {
             revert("Unknown Order data type");

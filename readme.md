@@ -3,19 +3,19 @@
 ## Deployed Contracts:
 
 #### ERC20TransferProxy
-https://etherscan.com/address/0x
+https://bscscan.com/address/0x2617Ad006cC4D4ed52D3Ed688316feF5b4658845
 
 #### TransferProxy
-https://etherscan.com/address/0x
+https://bscscan.com/address/0x7f61f22C7962F733853C8902Ccf55BC78F379431
 
 #### ExchangeV2
-https://etherscan.com/address/0x
+https://bscscan.com/address/0xc881b96b13da75ccbd35dad5443238ae982e479b
 
 #### ProxyAdmin
-https://etherscan.com/address/0x
+https://bscscan.com/address/0xba2e051289654d7d5846d8537bcd69cf8230a0e8
 
 #### TransparentUpgradeableProxy
-https://etherscan.com/address/0x
+https://bscscan.com/address/0xaf42413b4094bee8e7b188b210ca2731815b0cf6
 
 ## Architecture
 
@@ -25,7 +25,7 @@ Tests are provided in the test folder.
 
 Functionality is divided into parts (each responsible for the part of algorithm).
 
-GhostMarket Exchange is a smart contract decentralized exchange on the ETH blockchain.
+GhostMarket Exchange is a smart contract decentralized exchange on the BSC blockchain.
 
 ## Tests
 
@@ -37,10 +37,9 @@ if the chain id does not match `block.chainid` the `contracts/OrderValidator.sol
 ganache-cli sets the chain id to 1337 as default, that somehow does not match the `block.chainid` 
 from `@openzeppelin/contracts-upgradeable/utils/cryptography/draft-EIP712Upgradeable.sol`
 
-Test can be run with bash scripts and need a network as parameter; example:
-`./test-exchangev2-simple.sh development`
+Test can be run with 
 
-`./test-exchangev2-simple.sh rinkeby`
+
 
 ## Algorithms
 
@@ -64,7 +63,7 @@ Logically, whole process can be divided into stages:
 - `uint` salt - random number to distinguish different maker's Orders
 - `uint` start - Order can't be matched before this date (optional)
 - `uint` end - Order can't be matched after this date (optional)
-- `bytes4` dataType - type of data, usually hash of some string, e.g.: "v1", "v2" (see more [here](./contracts/LibOrderData.md))
+- `bytes4` dataType - type of data, usually hash of some string, e.g.: "0xffffffff", "NFT_TRANSFER_FROM_CONTRACT" (see more [here](./contracts/LibOrderData.md))
 - `bytes` data - generic data, can be anything, extendable part of the order (see more [here](./contracts/LibOrderData.md))
 
 #### Order validation
@@ -81,26 +80,17 @@ Only off-chain orders are supported
 Purpose of this is to validate that **make asset** of the **left** order matches **take asset** from the **right** order and vice versa.
 New types of assets can be added without smart contract upgrade. This is done using custom IAssetMatcher.
 
-There are possible improvements to protocol using these custom matchers:
-
-- support for parametric assets. For example, user can put order to exchange 10ETH to any NFT from popular collection.
-- support for NFT bundles
-
 #### Order execution
 
-Order execution is done by TransferManager:
-
-- SimpleTransferManager (it simply transfers assets from maker to taker and vice versa)
-
-
+Order execution is done by TransferManager
 #### Royalties
 
-TODO
+Royalties percentage and receiver is extracted from GhostmarketERC1155.sol and GhostmarketERC721.sol contracts
+calculated from the auctions closing price and sent to the receiver.
 
 #### Fees
 
-TODO
-
+`protocolFee` set currently to 2%
 ##### Fees calculation, fee side
 
 To take a fee we need to calculate, what side of the deal can be used as money.
@@ -120,4 +110,6 @@ Then total amount of the asset (money side) should be calculated
 
 If buyer is using ERC-20 token for payment, then he must approve at least this calculated amount of tokens.
 
-If buyer is using ETH, then he must send this calculated amount of ETH
+If buyer is using ETH, then he must send this calculated amount of ETH with the tx.
+
+More on fee calculation can be found here contracts/GhostMarketTransferManager.sol

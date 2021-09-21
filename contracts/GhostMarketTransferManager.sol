@@ -3,12 +3,8 @@
 pragma solidity ^0.8.4;
 pragma abicoder v2;
 
-//import "@openzeppelin/contracts-upgradeable/math/SafeMathUpgradeable.sol";
-
 import "./LibFeeSide.sol";
-
 import "./ITransferManager.sol";
-
 import "./LibOrderData.sol";
 import "./lib/BpLibrary.sol";
 import "./GhostMarketRoyalties.sol";
@@ -20,7 +16,6 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
     uint public protocolFee;
 
     address public defaultFeeReceiver;
-    mapping(address => address) public feeReceivers;
 
     function __GhostMarketTransferManager_init_unchained(
         uint newProtocolFee,
@@ -37,29 +32,6 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
     function setDefaultFeeReceiver(address payable newDefaultFeeReceiver) external onlyOwner {
         defaultFeeReceiver = newDefaultFeeReceiver;
     }
-    /**
-     * set fee for different tokens types
-     *
-     * @param token token contract address
-     * @param wallet fee receiver address
-     */
-    function setFeeReceiver(address token, address wallet) external onlyOwner {
-        feeReceivers[token] = wallet;
-    }
-
-    /**
-     * fee and their receiver can be set for different tokens types
-     * if the wallet address is empty the defaultFeeReceiver address gets the fees
-     *
-     * @param token token contract address
-     */
-    function getFeeReceiver(address token) internal view returns (address) {
-        address wallet = feeReceivers[token];
-        if (wallet != address(0)) {
-            return wallet;
-        }
-        return defaultFeeReceiver;
-    }
 
     /**
      * LibFill [1, 100] makeValue: 1 takeValue: 100
@@ -72,16 +44,24 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         LibOrder.Order memory rightOrder
     ) override internal returns (uint totalMakeValue, uint totalTakeValue) {
         LibFeeSide.FeeSide feeSide = LibFeeSide.getFeeSide(makeMatch.assetClass, takeMatch.assetClass);
-        totalMakeValue = fill.makeValue;
-        totalTakeValue = fill.takeValue;
         LibOrderDataV1.DataV1 memory leftOrderData = LibOrderData.parse(leftOrder);
         LibOrderDataV1.DataV1 memory rightOrderData = LibOrderData.parse(rightOrder);
-        if (feeSide == LibFeeSide.FeeSide.MAKE) {
-            totalMakeValue = doTransfersWithFees(fill.makeValue, leftOrder.maker, leftOrderData, rightOrderData, makeMatch, takeMatch,  TO_TAKER);
-            transferPayouts(takeMatch, fill.takeValue, rightOrder.maker, leftOrderData.payouts, TO_MAKER);
-        } else if (feeSide == LibFeeSide.FeeSide.TAKE) {
-            totalTakeValue = doTransfersWithFees(fill.takeValue, rightOrder.maker, rightOrderData, leftOrderData, takeMatch, makeMatch, TO_MAKER);
-            transferPayouts(makeMatch, fill.makeValue, leftOrder.maker, rightOrderData.payouts, TO_TAKER);
+        if(leftOrder.dataType == LibOrderDataV1.NFT_TRANSFER_FROM_CONTRACT || rightOrder.dataType == LibOrderDataV1.NFT_TRANSFER_FROM_CONTRACT){
+            if (feeSide == LibFeeSide.FeeSide.MAKE) {
+                totalMakeValue = doTransfersWithFees(fill.makeValue, leftOrder.maker, leftOrderData, rightOrderData, makeMatch, takeMatch, LibOrderDataV1.NFT_TRANSFER_FROM_CONTRACT);
+                transferPayouts(takeMatch, fill.takeValue, rightOrder.maker, leftOrderData.payouts, LibOrderDataV1.NFT_TRANSFER_FROM_CONTRACT);
+            } else if (feeSide == LibFeeSide.FeeSide.TAKE) {
+                totalTakeValue = doTransfersWithFees(fill.takeValue, rightOrder.maker, rightOrderData, leftOrderData, takeMatch, makeMatch, LibOrderDataV1.NFT_TRANSFER_FROM_CONTRACT);
+                transferPayouts(makeMatch, fill.makeValue, leftOrder.maker, rightOrderData.payouts, LibOrderDataV1.NFT_TRANSFER_FROM_CONTRACT);
+            }
+        } else {
+            if (feeSide == LibFeeSide.FeeSide.MAKE) {
+                totalMakeValue = doTransfersWithFees(fill.makeValue, leftOrder.maker, leftOrderData, rightOrderData, makeMatch, takeMatch,  TO_TAKER);
+                transferPayouts(takeMatch, fill.takeValue, rightOrder.maker, leftOrderData.payouts, TO_MAKER);
+            } else if (feeSide == LibFeeSide.FeeSide.TAKE) {
+                totalTakeValue = doTransfersWithFees(fill.takeValue, rightOrder.maker, rightOrderData, leftOrderData, takeMatch, makeMatch, TO_MAKER);
+                transferPayouts(makeMatch, fill.makeValue, leftOrder.maker, rightOrderData.payouts, TO_TAKER);
+            }
         }
     }
     
@@ -100,8 +80,6 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         uint rest = transferProtocolFee(totalAmount, amount, from, matchCalculate, transferDirection);
         //transfer the royalty fee and get the rest amount
         rest = transferRoyalties(matchCalculate, matchNft, rest, amount, from, transferDirection);
-        rest = transferOrigins(matchCalculate, rest, amount, dataCalculate.originFees, from, transferDirection);
-        rest = transferOrigins(matchCalculate, rest, amount, dataNft.originFees, from, transferDirection);
         //transfer the payment for the asset to the beneficiaries (maker)
         transferPayouts(matchCalculate, rest, from, dataNft.payouts, transferDirection);
     }
@@ -116,7 +94,7 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         LibAsset.AssetType memory matchCalculate,
         bytes4 transferDirection
     ) internal returns (uint) {
-        /// only taker payes protocol fee
+        /// only taker pays protocol fee
         (uint rest, uint fee) = subFeeInBp(totalAmount, amount, protocolFee);
         if (fee > 0) {
             address tokenAddress = address(0);
@@ -126,7 +104,7 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
                 uint tokenId;
                 (tokenAddress, tokenId) = abi.decode(matchCalculate.data, (address, uint));
             }
-            transfer(LibAsset.Asset(matchCalculate, fee), from, getFeeReceiver(tokenAddress), transferDirection, PROTOCOL);
+            transfer(LibAsset.Asset(matchCalculate, fee), from, defaultFeeReceiver, transferDirection, PROTOCOL);
         }
         return rest;
     }
@@ -163,24 +141,6 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
 			GhostMarketRoyalties royalities = GhostMarketRoyalties(token);
             return royalities.getRoyalties(tokenId);
 	    }
-    }
-
-    function transferOrigins(
-        LibAsset.AssetType memory matchCalculate,
-        uint rest,
-        uint amount,
-        LibPart.Part[] memory originFees,
-        address from,
-        bytes4 transferDirection
-    ) internal returns (uint restValue) {
-        restValue = rest;
-        for (uint256 i = 0; i < originFees.length; i++) {
-            (uint newRestValue, uint feeValue) = subFeeInBp(restValue, amount,  originFees[i].value);
-            restValue = newRestValue;
-            if (feeValue > 0) {
-                transfer(LibAsset.Asset(matchCalculate, feeValue), from,  originFees[i].account, transferDirection, ORIGIN);
-            }
-        }
     }
 
     function transferPayouts(

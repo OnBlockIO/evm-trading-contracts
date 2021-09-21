@@ -10,6 +10,7 @@ import "./TransferExecutor.sol";
 abstract contract ITransferManager is ITransferExecutor {
     bytes4 constant TO_MAKER = bytes4(keccak256("TO_MAKER"));
     bytes4 constant TO_TAKER = bytes4(keccak256("TO_TAKER"));
+
     bytes4 constant PROTOCOL = bytes4(keccak256("PROTOCOL"));
     bytes4 constant ROYALTY = bytes4(keccak256("ROYALTY"));
     bytes4 constant ORIGIN = bytes4(keccak256("ORIGIN"));

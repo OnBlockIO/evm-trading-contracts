@@ -4,14 +4,13 @@ require("@nomiclabs/hardhat-ganache");
 require("@nomiclabs/hardhat-web3");
 require('hardhat-abi-exporter');
 require("@nomiclabs/hardhat-etherscan");
+require('hardhat-contract-sizer');
+
 
 const {
   ALCHEMY_PROJECT_ID,
-  INFURA_PROJECT_ID_CYX,
-  MAINNET_PRIVATE_KEYS,
-  RINKEBY_PRIVATE_KEYS,
-  ROPSTEN_PRIVATE_KEYS,
-  ETHERSCAN_API_KEY
+  BSC_TESTNET_PRIVATE_KEY,
+  BSCSCAN_API_KEY,
 } = require('./.secrets.json');
 
 task("accounts", "Prints accounts", async (_, { web3 }) => {
@@ -29,7 +28,7 @@ module.exports = {
     settings: {          // See the solidity docs for advice about optimization and evmVersion
       optimizer: {
         enabled: true,
-        runs: 500
+        runs: 250,
       }
     }
   },
@@ -39,30 +38,36 @@ module.exports = {
     cache: "./cache",
     artifacts: "./artifacts"
   },
+
   networks: {
     hardhat: {
+      //gasPrice: 0,
+      //gas: 1
     },
     mainnet: {
-      url: 'https://eth-mainnet.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
-      //url: "https://mainnet.infura.io/v3/" + INFURA_PROJECT_ID_CYX,
-      accounts: MAINNET_PRIVATE_KEYS
+      url: 'https://bsc-dataseed1.binance.org:443',
+      accounts: BSC_TESTNET_PRIVATE_KEY
     },
-    ropsten: {
-      url: 'https://eth-ropsten.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
-      //url: "https://ropsten.infura.io/v3/" + INFURA_PROJECT_ID_CYX,
-      accounts: ROPSTEN_PRIVATE_KEYS
-      
+    bsctestnet: {
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+      accounts: BSC_TESTNET_PRIVATE_KEY
     },
     rinkeby: {
       url: 'https://eth-rinkeby.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
-      //url: "https://rinkeby.infura.io/v3/" + INFURA_PROJECT_ID_CYX,
-      accounts: RINKEBY_PRIVATE_KEYS  
+      //url: "https://rinkeby.infura.io/v3/" + INFURA_PROJECT_ID,
+      accounts: BSC_TESTNET_PRIVATE_KEY
+      
     },
   },
   etherscan: {
-    apiKey: ETHERSCAN_API_KEY
+    apiKey: BSCSCAN_API_KEY
   },
   mocha: {
     timeout: 200000
+  },
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: false,
+    disambiguatePaths: false,
   }
 };

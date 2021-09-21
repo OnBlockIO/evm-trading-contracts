@@ -1,6 +1,6 @@
-const {
-  BN,           // Big Number support
-} = require('@openzeppelin/test-helpers');
+const { BigNumber } = require('ethers')
+const { BN, ether } = require('@openzeppelin/test-helpers');
+const { expect } = require('chai')
 
 const TOKEN_NAME = "GhostMarket"
 const TOKEN_SYMBOL = "GHOST"
@@ -121,12 +121,16 @@ const advanceTimeAndBlock = async (time) => {
   return Promise.resolve(web3.eth.getBlock('latest'))
 }
 
-async function getCurrentBlockTime() {
+async function getCurrentBlockTime(asDate = true) {
   blockNum = await web3.eth.getBlockNumber()
   block = await web3.eth.getBlock(blockNum)
-  const date = new Date(block['timestamp'] * 1000);
-  //console.log("currentBlockTime: ", date.toLocaleString());
-  return date
+  if (asDate) {
+    const date = new Date(block['timestamp'] * 1000);
+    //console.log("currentBlockTime: ", date.toLocaleString());
+    return date
+  } else {
+    return block['timestamp']
+  }
 }
 
 async function getGasAmountFromTx(receipt) {
@@ -146,6 +150,45 @@ async function getGasAmountFromTx(receipt) {
   return gasUsed * gasPrice;
 }
 
+async function verifyBalanceChange(account, change, todo) {
+  const BN = web3.utils.BN;
+  let before = new BN(await web3.eth.getBalance(account));
+  await todo();
+  let after = new BN(await web3.eth.getBalance(account));
+  let actual = before.sub(after);
+  expect(actual).to.be.bignumber.equal(change.toString());
+}
+
+async function getEvents(contract, tx) {
+  let receipt = await ethers.provider.getTransactionReceipt(tx.hash)
+  return receipt.logs.reduce((parsedEvents, log) => {
+    try {
+      parsedEvents.push(contract.interface.parseLog(log))
+    } catch (e) { }
+    return parsedEvents
+  }, [])
+}
+
+async function eventTesting(transactionResult, contract, eventName, eventsKeyValueObject) {
+  let events = await getEvents(contract, transactionResult)
+  if (events.length === 0) {
+    throw "no events"
+  }
+  let event = events[0]
+  expect(event.name).eq(eventName)
+  for (const [key, value] of Object.entries(eventsKeyValueObject)) {
+    expect((event.args[key]).toString()).eq(value.toString())
+  }
+}
+
+function etherAmountAsBigNumberWD(etherAmount) {
+  return BigNumber.from((ether(etherAmount.toString())).toString())
+}
+
+function expectEqualStringValues(value1, value2) {
+  expect(value1.toString()).to.equal(value2.toString())
+}
+
 module.exports = {
   TOKEN_NAME,
   TOKEN_SYMBOL,
@@ -160,4 +203,9 @@ module.exports = {
   takeSnapshot,
   revertToSnapShot,
   getCurrentBlockTime,
+  verifyBalanceChange,
+  getEvents,
+  eventTesting,
+  etherAmountAsBigNumberWD,
+  expectEqualStringValues
 }

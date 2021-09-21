@@ -3,11 +3,12 @@
 pragma solidity ^0.8.4;
 pragma abicoder v2;
 
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
 import "../../contracts/GhostMarketTransferManager.sol";
 
 import "../../contracts/OrderValidator.sol";
 
-contract GhostMarketTransferManagerTest is GhostMarketTransferManager, TransferExecutor, OrderValidator {
+contract GhostMarketTransferManagerTest is GhostMarketTransferManager, TransferExecutor, OrderValidator, ERC1155HolderUpgradeable {
 
     function encode(LibOrderDataV1.DataV1 memory data) pure external returns (bytes memory) {
         return abi.encode(data);

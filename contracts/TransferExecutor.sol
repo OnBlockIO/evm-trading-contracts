@@ -18,6 +18,8 @@ abstract contract TransferExecutor is Initializable, OwnableUpgradeable, ITransf
 
     event ProxyChange(bytes4 indexed assetType, address proxy);
 
+    bytes4 constant NFT_TRANSFER_FROM_CONTRACT = bytes4(keccak256("NFT_TRANSFER_FROM_CONTRACT"));
+
     function __TransferExecutor_init_unchained(INftTransferProxy transferProxy, IERC20TransferProxy erc20TransferProxy) internal {
         proxies[LibAsset.ERC20_ASSET_CLASS] = address(erc20TransferProxy);
         proxies[LibAsset.ERC721_ASSET_CLASS] = address(transferProxy);
@@ -44,10 +46,18 @@ abstract contract TransferExecutor is Initializable, OwnableUpgradeable, ITransf
         } else if (asset.assetType.assetClass == LibAsset.ERC721_ASSET_CLASS) {
             (address token, uint tokenId) = abi.decode(asset.assetType.data, (address, uint256));
             require(asset.value == 1, "erc721 value error");
-            INftTransferProxy(proxies[LibAsset.ERC721_ASSET_CLASS]).erc721safeTransferFrom(IERC721Upgradeable(token), from, to, tokenId);
+            if(transferDirection == NFT_TRANSFER_FROM_CONTRACT){
+                IERC721Upgradeable(token).transferFrom(address(this), to, tokenId);
+            } else {
+                INftTransferProxy(proxies[LibAsset.ERC721_ASSET_CLASS]).erc721safeTransferFrom(IERC721Upgradeable(token), from, to, tokenId);
+            }
         } else if (asset.assetType.assetClass == LibAsset.ERC1155_ASSET_CLASS) {
             (address token, uint tokenId) = abi.decode(asset.assetType.data, (address, uint256));
-            INftTransferProxy(proxies[LibAsset.ERC1155_ASSET_CLASS]).erc1155safeTransferFrom(IERC1155Upgradeable(token), from, to, tokenId, asset.value, "");
+            if(transferDirection == NFT_TRANSFER_FROM_CONTRACT){
+                IERC1155Upgradeable(token).safeTransferFrom(address(this), to, tokenId, asset.value, "");
+            } else{
+                INftTransferProxy(proxies[LibAsset.ERC1155_ASSET_CLASS]).erc1155safeTransferFrom(IERC1155Upgradeable(token), from, to, tokenId, asset.value, "");
+            }
         } else {
             ITransferProxy(proxies[asset.assetType.assetClass]).transfer(asset, from, to);
         }

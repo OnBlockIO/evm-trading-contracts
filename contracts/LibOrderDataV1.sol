@@ -7,6 +7,7 @@ import "./lib/LibPart.sol";
 
 library LibOrderDataV1 {
     bytes4 constant public V1 = bytes4(keccak256("V1"));
+    bytes4 constant public NFT_TRANSFER_FROM_CONTRACT = bytes4(keccak256("NFT_TRANSFER_FROM_CONTRACT"));
 
     struct DataV1 {
         LibPart.Part[] payouts;

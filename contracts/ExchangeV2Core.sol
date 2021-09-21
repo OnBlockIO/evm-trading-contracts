@@ -9,7 +9,7 @@ import "./OrderValidator.sol";
 import "./AssetMatcher.sol";
 
 import "./ITransferManager.sol";
-import "./lib/LibTransfer.sol";
+
 
 abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatcher, TransferExecutor, OrderValidator, ITransferManager {
     using SafeMathUpgradeable for uint;
@@ -38,36 +38,34 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
             require(orderRight.taker == orderLeft.maker, "rightOrder.taker verification failed");
         }
 
-        matchAndTransfer(orderLeft, orderRight);
+        matchAndTransfer(orderLeft, orderRight, msg.value, _msgSender());
     }
 
-    function matchAndTransfer(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight) internal {
+    function matchAndTransfer(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight, uint256 amount, address user) internal {
         (LibAsset.AssetType memory makeMatch, LibAsset.AssetType memory takeMatch) = matchAssets(orderLeft, orderRight);
         bytes32 leftOrderKeyHash = LibOrder.hashKey(orderLeft);
         bytes32 rightOrderKeyHash = LibOrder.hashKey(orderRight);
-        uint leftOrderFill = fills[leftOrderKeyHash];
-        uint rightOrderFill = fills[rightOrderKeyHash];
-        LibFill.FillResult memory fill = LibFill.fillOrder(orderLeft, orderRight, leftOrderFill, rightOrderFill);
+        LibFill.FillResult memory fill = LibFill.fillOrder(orderLeft, orderRight, fills[leftOrderKeyHash], fills[rightOrderKeyHash]);
         require(fill.takeValue > 0, "nothing to fill");
         (uint totalMakeValue, uint totalTakeValue) = doTransfers(makeMatch, takeMatch, fill, orderLeft, orderRight);
         if (makeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
-            require(msg.value >= totalMakeValue, "not enough ETH");
-            if (msg.value > totalMakeValue) {
-                address(msg.sender).transferEth(msg.value - totalMakeValue);
+            require(amount >= totalMakeValue, "not enough ETH");
+            if (amount > totalMakeValue) {
+                address(msg.sender).transferEth(amount - totalMakeValue);
             }
         } else if (takeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
-            require(msg.value >= totalTakeValue, "not enough ETH");
-            if (msg.value > totalTakeValue) {
-                address(msg.sender).transferEth(msg.value - totalTakeValue);
+            require(amount >= totalTakeValue, "not enough ETH");
+            if (amount > totalTakeValue) {
+                address(msg.sender).transferEth(amount - totalTakeValue);
             }
         }
 
-        address msgSender = _msgSender();
-        if (msgSender != orderLeft.maker) {
-            fills[leftOrderKeyHash] = leftOrderFill + fill.takeValue;
+        //address msgSender = _msgSender();
+        if (user != orderLeft.maker) {
+            fills[leftOrderKeyHash] = fills[leftOrderKeyHash] + fill.takeValue;
         }
-        if (msgSender != orderRight.maker) {
-            fills[rightOrderKeyHash] = rightOrderFill + fill.makeValue;
+        if (user != orderRight.maker) {
+            fills[rightOrderKeyHash] = fills[rightOrderKeyHash] + fill.makeValue;
         }
         emit OrderFilled(leftOrderKeyHash, rightOrderKeyHash, orderLeft.maker, orderRight.maker, fill.takeValue, fill.makeValue);
 

@@ -8,8 +8,8 @@ LibOrderData defines function parse which parses data field (according to dataTy
 
 see contracts/LibOrderData.sol
 Order data can be set either empty = 0xffffffff
-or ORDER_DATA_V1
-if its set to ORDER_DATA_V1
-it can handle payouts and origin fees
-see also contracts/LibOrderDataV1.sol
+or NFT_TRANSFER_FROM_CONTRACT
+
+if its set to NFT_TRANSFER_FROM_CONTRACT
+it can handle NFT token transfers from contracts/GhostAuction.sol to the buyer
 
