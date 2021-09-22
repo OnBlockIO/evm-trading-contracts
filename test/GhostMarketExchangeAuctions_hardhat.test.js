@@ -80,7 +80,8 @@ describe('Auction', async function () {
 		DACOHOB: "Dutch Auction can only have one bid",
 		MBRPOM: "Must bid reservePrice or more",
 		ANS: "Auction not started",
-		AAS: "Auction already started"
+		AAS: "Auction already started",
+		ACOBCBAWWCI: "Auction can only be claimed by the address who won or created it"
 	};
 
 	const bidCasesToTest = [
@@ -501,7 +502,7 @@ describe('Auction', async function () {
 		});
 	});
 	describe("when ending an auction that doesn't exist", () => {
-		it('should revert', async () => {			
+		it('should revert', async () => {
 			await expectRevert(
 				testing.deleteAuctionExternal(100),
 				"AHC"
@@ -700,6 +701,89 @@ describe('Auction', async function () {
 			expect((await erc721V1.balanceOf(buyer)).toString()).eq("1");
 		});
 
+		it('should send ERC721 asset to buyer with royalties, lazy mint', async () => {
+			let seller = accounts1
+			let sellerWallet = wallet1
+			let buyer = accounts2
+			let buyerWallet = wallet2
+
+			let {
+				tokenId,
+				duration,
+				reservePrice,
+				fundsRecipientWallet
+			} = await setupAuctionDataERC721()
+
+			const nftContractAddress = erc721V1.address
+
+
+			let result = await setupAuctionERC721(
+				tokenId,
+				duration,
+				reservePrice = BigNumber.from('1'),
+				fundsRecipientWallet,
+				nftContractAddress,
+				false,
+				RESERVE_AUCTION,
+				ether('0.1').toString(),
+				ether('0.01').toString(),
+				0,
+				0,
+				ZERO_ADDRESS,
+				false,
+				false,
+				auctionSpecAddr = [seller, nftContractAddress, ZERO_ADDRESS]
+			)
+
+			const auctionId = result.auctionId
+
+			let bidAmount1 = 200
+			let orderAmount = bidAmount1 + (bidAmount1 * 0.1 + bidAmount1 * 0.05)
+			console.log("orderAmount: ", orderAmount)
+
+			let buyerSigner = await testing.connect(buyerWallet);
+			let tx = await buyerSigner.createBid(auctionId, orderAmount, false, { value: orderAmount, from: buyer });
+			await mineTx(tx.hash)
+			console.log("getCurrentBlockTime: ", await getCurrentBlockTime())
+
+			await advanceTimeAndBlock(duration);
+			console.log("getCurrentBlockTime: ", await getCurrentBlockTime())
+
+			let erc721TokenId1 = tokenId
+			console.log("erc721TokenId1: ", erc721TokenId1)
+			console.log("erc721TokenId1 owner address: ", await erc721V1.ownerOf(erc721TokenId1))
+
+			let sellerErcSigner = await erc721V1.connect(sellerWallet);
+			await sellerErcSigner.setApprovalForAll(transferProxy.address, true, { from: seller });
+
+			// maker, makeAsset, taker, takeAsset, salt, start, end, dataType, data
+			const left = Order(buyer, Asset(ETH, "0x", bidAmount1), ZERO_ADDRESS, Asset(ERC721, enc(erc721V1.address, erc721TokenId1), 1), 1, 0, 0, "0xffffffff", "0x");
+			const right = Order(seller, Asset(ERC721, enc(erc721V1.address, erc721TokenId1), 1), ZERO_ADDRESS, Asset(ETH, "0x", bidAmount1), 1, 0, 0, "0xffffffff", "0x");
+
+			let sellerSigner = await testing.connect(sellerWallet);
+
+			await verifyBalanceChange(buyer, -24, async () =>			//payed already while bidding
+				verifyBalanceChange(seller, -170, async () =>				//200 - (10+20royalties) or matchAndTransferAuction(200 -6)
+					verifyBalanceChange(accounts3, -10, async () =>
+						verifyBalanceChange(accounts4, -20, async () =>
+							verifyBalanceChange(protocol, -6, () =>
+								verifyBalanceChange(testing.address, 230, () =>
+								buyerSigner.endAuctionDoTransfer(left, right, auctionId, false, { from: buyer, gasPrice: 0 })
+								)
+							)
+						)
+					)
+				)
+			)
+
+			console.log("testing balance: ", await web3.eth.getBalance(testing.address))
+			console.log("testing erc721 balance: ", await erc721V1.balanceOf(testing.address))
+			console.log("seller balance: ", await web3.eth.getBalance(seller))
+			console.log("buyer balance: ", await web3.eth.getBalance(buyer))
+			expect((await erc721V1.balanceOf(seller)).toString()).eq("0");
+			expect((await erc721V1.balanceOf(buyer)).toString()).eq("1");
+		});
+
 		it('auction creater should be able to end auction', async () => {
 			let seller = accounts0
 			let sellerWallet = wallet0
@@ -750,17 +834,17 @@ describe('Auction', async function () {
 			const right = Order(seller, Asset(ERC721, enc(erc721V1.address, erc721TokenId1), 1), ZERO_ADDRESS, Asset(ETH, "0x", bidAmount1), 1, 0, 0, NFT_TRANSFER_FROM_CONTRACT, "0x");
 
 			await verifyBalanceChange(seller, -194, async () =>				//200 - (10+20royalties) or matchAndTransferAuction(200 -6)
-					verifyBalanceChange(accounts3, -10, async () =>
-						verifyBalanceChange(accounts4, -20, async () =>
-							verifyBalanceChange(protocol, -6, () =>
-								verifyBalanceChange(testing.address, 230, () =>
+				verifyBalanceChange(accounts3, -10, async () =>
+					verifyBalanceChange(accounts4, -20, async () =>
+						verifyBalanceChange(protocol, -6, () =>
+							verifyBalanceChange(testing.address, 230, () =>
 								sellerErcSigner.endAuctionDoTransfer(left, right, auctionId, { from: seller, gasPrice: 0 })
-								)
 							)
 						)
 					)
 				)
-			
+			)
+
 
 			console.log("testing balance: ", await web3.eth.getBalance(testing.address))
 			console.log("testing erc721 balance: ", await erc721V1.balanceOf(testing.address))
@@ -968,7 +1052,7 @@ describe('Auction', async function () {
 			console.log("getCurrentBlockTime: ", await getCurrentBlockTime())
 
 			let sellerErcSigner = await erc721V1.connect(sellerWallet);
-			
+
 
 			await expectRevert(
 				sellerErcSigner.burn(tokenId, { from: accounts1 }),
@@ -976,7 +1060,7 @@ describe('Auction', async function () {
 			);
 		});
 
-		it('should revert, NFT owner can not moves the NFT to another account, nft should be locked in the auction contract', async () => {
+		it('should revert, NFT owner can not move the NFT to another account, nft should be locked in the auction contract', async () => {
 			let seller = accounts1
 			let sellerWallet = wallet1
 			let buyer = accounts2
@@ -1017,6 +1101,56 @@ describe('Auction', async function () {
 				sellerErcSigner.transferFrom(seller, anotherAccount, tokenId, { from: seller }),
 				"ERC721: transfer caller is not owner nor approved"
 			);
+		});
+
+		it('NFT owner can move the NFT to another account, nft should not be locked in the auction contract', async () => {
+			let seller = accounts1
+			let sellerWallet = wallet1
+			let buyer = accounts2
+			let buyerWallet = wallet2
+			let anotherAccount = accounts4
+
+			let {
+				tokenId,
+				duration,
+				reservePrice,
+			} = await setupAuctionDataERC721()
+
+			const fundsRecipientWallet = accounts3
+			const nftContractAddress = erc721V1.address
+
+			let result = await setupAuctionERC721(
+				tokenId,
+				duration,
+				reservePrice = BigNumber.from('1'),
+				fundsRecipientWallet,
+				nftContractAddress,
+				false,
+				RESERVE_AUCTION,
+				ether('0.1').toString(),
+				ether('0.01').toString(),
+				0,
+				0,
+				ZERO_ADDRESS,
+				false,
+				notLazyMint = false
+			)
+
+			const auctionId = result.auctionId
+
+			let bidAmount1 = 200
+			let orderAmount = bidAmount1 + (bidAmount1 * 0.1 + bidAmount1 * 0.05)
+			console.log("orderAmount: ", orderAmount)
+
+			let buyerSigner = await testing.connect(buyerWallet);
+			let tx = await buyerSigner.createBid(auctionId, orderAmount, false, { value: orderAmount, from: buyer });
+			await mineTx(tx.hash)
+			console.log("getCurrentBlockTime1: ", await getCurrentBlockTime())
+
+			let sellerErcSigner = await erc721V1.connect(sellerWallet);
+
+			sellerErcSigner.transferFrom(seller, anotherAccount, tokenId, { from: seller })
+
 		});
 	});
 
@@ -1185,7 +1319,10 @@ describe('Auction', async function () {
 		auctionStartDate = 0,
 		extensionPeriod = 0,
 		currencyTokenContract = ZERO_ADDRESS,
-		startAuctionNow = false
+		startAuctionNow = false,
+		notLazyMint = true,
+		auctionSpecAddr = [accounts0, nftContractAddress, currencyTokenContract]
+
 	) {
 		console.log("tokenId: ", tokenId)
 		console.log("duration: ", duration)
@@ -1214,17 +1351,22 @@ describe('Auction', async function () {
 		//set approval for the testing contract to transfer the nft to its address
 		await erc721Signer.setApprovalForAll(testing.address, true, { from: accounts1 });
 
-		let tx = await auctionCreatorSigner.createAuction(
-			tokenId,
-			duration,
-			reservePrice,
-			auctionType,
-			startingPrice,
-			endingPrice,
-			auctionStartDate,
-			extensionPeriod,
-			[accounts0, nftContractAddress, currencyTokenContract],
-			0,
+		let tx = await auctionCreatorSigner.createAuction({
+			amount: 0,
+			duration: duration,
+			firstBidTime: 0,
+			reservePrice: reservePrice,
+			bidder: ZERO_ADDRESS,
+			tokenId: tokenId,
+			auctionType: auctionType,
+			startingAt: auctionStartDate,
+			startingPrice: startingPrice,
+			endingPrice: endingPrice,
+			extensionPeriod: extensionPeriod,
+			auctionSpecAddr: auctionSpecAddr,
+			erc1155TokenAmount: 0
+		},
+			notLazyMint,
 			{ from: accounts1 }
 		);
 
@@ -1268,7 +1410,8 @@ describe('Auction', async function () {
 		extensionPeriod = 0,
 		currencyTokenContract = ZERO_ADDRESS,
 		erc1155tokenAmount = 10,
-		startAuctionNow = false
+		startAuctionNow = false,
+		notLazyMint = true
 	) {
 		console.log("tokenId: ", tokenId)
 		console.log("duration: ", duration)
@@ -1298,17 +1441,22 @@ describe('Auction', async function () {
 		await erc1155Signer.setApprovalForAll(testing.address, true, { from: accounts1 });
 
 
-		await auctionCreatorSigner.createAuction(
-			tokenId,
-			duration,
-			reservePrice,
-			auctionType,
-			startingPrice,
-			endingPrice,
-			auctionStartDate,
-			extensionPeriod,
-			[accounts0, nftContractAddress, currencyTokenContract],
-			erc1155tokenAmount,
+		await auctionCreatorSigner.createAuction({
+			amount: 0,
+			duration: duration,
+			firstBidTime: 0,
+			reservePrice: reservePrice,
+			bidder: ZERO_ADDRESS,
+			tokenId: tokenId,
+			auctionType: auctionType,
+			startingAt: auctionStartDate,
+			startingPrice: startingPrice,
+			endingPrice: endingPrice,
+			extensionPeriod: extensionPeriod,
+			auctionSpecAddr: [accounts0, nftContractAddress, currencyTokenContract],
+			erc1155TokenAmount: erc1155tokenAmount
+		},
+			notLazyMint,
 			{ from: accounts1 }
 		);
 

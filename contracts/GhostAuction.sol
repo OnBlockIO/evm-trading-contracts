@@ -176,7 +176,9 @@ contract GhostAuction is Initializable, ReentrancyGuardUpgradeable, OwnableUpgra
     /// ============ Create Auction ============
 
     function createAuction(
-        uint256 tokenId,
+        LibExchangeAuction.Auction memory auction,
+        bool notLazyMint
+/*         uint256 tokenId,
         uint256 duration,
         uint256 reservePrice,
         LibExchangeAuction.AuctionTypes auctionType,
@@ -186,56 +188,59 @@ contract GhostAuction is Initializable, ReentrancyGuardUpgradeable, OwnableUpgra
         uint256 extensionPeriod,
         address[3] memory auctionSpecAddr,
         uint8 erc1155TokenAmount
+         */
     ) external nonReentrant whenNotPaused {
         _auctionId.increment();
         /// Check basic input requirements are reasonable.
         require(
-            duration >= minAuctionDuration && duration <= maxAuctionDuration,
+            auction.duration >= minAuctionDuration && auction.duration <= maxAuctionDuration,
             "DIETLOTH"
         );
         require(
             // maximum of 60 minutes for extension period
-            extensionPeriod >= 0 && extensionPeriod <= 3600,
+            auction.extensionPeriod >= 0 && auction.extensionPeriod <= 3600,
             "EPHTBLOH"
         );
-        if (auctionType == LibExchangeAuction.AuctionTypes.Dutch) {
-            require(startingPrice > 0, "ASPGZ");
-            require(endingPrice > 0, "AEPGZ");
-            require(startingPrice > endingPrice, "ASPGEP");
+        if (auction.auctionType == LibExchangeAuction.AuctionTypes.Dutch) {
+            require(auction.startingPrice > 0, "ASPGZ");
+            require(auction.endingPrice > 0, "AEPGZ");
+            require(auction.startingPrice > auction.endingPrice, "ASPGEP");
         }
         /// Initialize the auction details, including null values.
         auctions[this.getCurrentAuctionId()] = LibExchangeAuction.Auction({
-            duration: duration,
-            reservePrice: reservePrice,
-            tokenId: tokenId,
+            duration: auction.duration,
+            reservePrice: auction.reservePrice,
+            tokenId: auction.tokenId,
             amount: 0,
             firstBidTime: 0,
             bidder: payable(address(0)),
-            auctionType: auctionType,
+            auctionType: auction.auctionType,
             /// start date can not be in the past
-            startingAt: startDate > block.timestamp ? startDate : block.timestamp,
-            startingPrice: startingPrice,
-            endingPrice: endingPrice,
-            extensionPeriod: extensionPeriod,
+            startingAt: auction.startingAt > block.timestamp ? auction.startingAt : block.timestamp,
+            startingPrice: auction.startingPrice,
+            endingPrice: auction.endingPrice,
+            extensionPeriod: auction.extensionPeriod,
             /// 0: creator, 1: nftContract, 2: currencyTokenContract
-            auctionSpecAddr: auctionSpecAddr,
-            erc1155TokenAmount: erc1155TokenAmount
+            auctionSpecAddr: auction.auctionSpecAddr,
+            erc1155TokenAmount: auction.erc1155TokenAmount
         });
-        if(IERC165Upgradeable(auctionSpecAddr[1]).supportsInterface(ERC721_INTERFACE_ID)){
-            IERC721Upgradeable(auctionSpecAddr[1]).transferFrom(
-                msg.sender,
-                address(this),
-                tokenId
-            );
-        } else if(IERC165Upgradeable(auctionSpecAddr[1]).supportsInterface(ERC1155_INTERFACE_ID)){
-            IERC1155Upgradeable(auctionSpecAddr[1]).safeTransferFrom(
-                msg.sender, 
-                address(this), 
-                tokenId, 
-                erc1155TokenAmount,
-                '0x');
-        } else {
-            revert("CANADNSNI");
+        if(notLazyMint){
+            if(IERC165Upgradeable(auction.auctionSpecAddr[1]).supportsInterface(ERC721_INTERFACE_ID)){
+                IERC721Upgradeable(auction.auctionSpecAddr[1]).transferFrom(
+                    msg.sender,
+                    address(this),
+                    auction.tokenId
+                );
+            } else if(IERC165Upgradeable(auction.auctionSpecAddr[1]).supportsInterface(ERC1155_INTERFACE_ID)){
+                IERC1155Upgradeable(auction.auctionSpecAddr[1]).safeTransferFrom(
+                    msg.sender, 
+                    address(this), 
+                    auction.tokenId, 
+                    auction.erc1155TokenAmount,
+                    '0x');
+            } else {
+                revert("CANADNSNI");
+            }
         }
 
         // Transfer the NFT into this auction contract, from whoever owns it.
@@ -243,16 +248,16 @@ contract GhostAuction is Initializable, ReentrancyGuardUpgradeable, OwnableUpgra
         /// Emit an event describing the new auction.
         emit OrderCreated(
             this.getCurrentAuctionId(),
-            tokenId,
-            auctionSpecAddr[1],
-            duration,
-            reservePrice,
-            endingPrice,
-            auctionType,
-            startDate,
-            extensionPeriod,
-            auctionSpecAddr,
-            erc1155TokenAmount
+            auction.tokenId,
+            auction.auctionSpecAddr[1],
+            auction.duration,
+            auction.reservePrice,
+            auction.endingPrice,
+            auction.auctionType,
+            auction.startingAt,
+            auction.extensionPeriod,
+            auction.auctionSpecAddr,
+            auction.erc1155TokenAmount
         );
     }
 

@@ -73,9 +73,9 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
 
     function matchAssets(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight) internal view returns (LibAsset.AssetType memory makeMatch, LibAsset.AssetType memory takeMatch) {
         makeMatch = matchAssets(orderLeft.makeAsset.assetType, orderRight.takeAsset.assetType);
-        require(makeMatch.assetClass != 0, "assets don't match");
+        //require(makeMatch.assetClass != 0, "assets don't match");
         takeMatch = matchAssets(orderLeft.takeAsset.assetType, orderRight.makeAsset.assetType);
-        require(takeMatch.assetClass != 0, "assets don't match");
+        require(makeMatch.assetClass != 0 || takeMatch.assetClass != 0, "ADM");
     }
 
     function validateFull(LibOrder.Order memory order, bytes memory signature) internal view {
