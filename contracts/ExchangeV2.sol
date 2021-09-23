@@ -6,7 +6,6 @@ pragma abicoder v2;
 import "./ExchangeV2Core.sol";
 import "./GhostMarketTransferManager.sol";
 import "./GhostAuction.sol";
-import "hardhat/console.sol";
 
 contract ExchangeV2 is
     ExchangeV2Core,
