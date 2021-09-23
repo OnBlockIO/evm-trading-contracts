@@ -3,19 +3,14 @@
 ## Deployed Contracts:
 
 #### ERC20TransferProxy
-https://bscscan.com/address/0x2617Ad006cC4D4ed52D3Ed688316feF5b4658845
 
 #### TransferProxy
-https://bscscan.com/address/0x7f61f22C7962F733853C8902Ccf55BC78F379431
 
 #### ExchangeV2
-https://bscscan.com/address/0xc881b96b13da75ccbd35dad5443238ae982e479b
 
 #### ProxyAdmin
-https://bscscan.com/address/0xba2e051289654d7d5846d8537bcd69cf8230a0e8
 
 #### TransparentUpgradeableProxy
-https://bscscan.com/address/0xaf42413b4094bee8e7b188b210ca2731815b0cf6
 
 ## Architecture
 
@@ -25,7 +20,7 @@ Tests are provided in the test folder.
 
 Functionality is divided into parts (each responsible for the part of algorithm).
 
-GhostMarket Exchange is a smart contract decentralized exchange on the BSC blockchain.
+GhostMarket Exchange is a smart contract decentralized exchange.
 
 ## Tests
 
@@ -51,6 +46,9 @@ Logically, whole process can be divided into stages:
 - asset mathing (check if assets from left and right order match, extract matching assets)
 - calculating fill (finding out what exact values should be filled. orders can be matched partly if one of the sides doesn't want to fill other order fully)
 - order execution (execute transfers, save fill of the orders if needed)
+- auction creation and bidding, NFT_TRANSFER_FROM_CONTRACT hex is used in contracts/TransferExecutor.sol
+so the TransferExecutor knows from where it should transfer the NFT; either from a wallet or the contract
+
 
 ### Domain model
 

@@ -81,7 +81,8 @@ describe('Auction', async function () {
 		MBRPOM: "Must bid reservePrice or more",
 		ANS: "Auction not started",
 		AAS: "Auction already started",
-		ACOBCBAWWCI: "Auction can only be claimed by the address who won or created it"
+		ACOBCBAWWCI: "Auction can only be claimed by the address who won or created it",
+		ADM: "Assets do not match"
 	};
 
 	const bidCasesToTest = [

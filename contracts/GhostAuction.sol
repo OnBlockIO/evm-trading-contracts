@@ -173,22 +173,15 @@ contract GhostAuction is Initializable, ReentrancyGuardUpgradeable, OwnableUpgra
         maxAuctionDuration = maxDurationExtVar;
     }
 
-    /// ============ Create Auction ============
+    /**
+     * @dev create auction
+     * @param auction LibExchangeAuction.Auction struct has the needed params for creating an auction
+     * @param notLazyMint if true NFT is not locked in the contract, false its locked
+     */
 
     function createAuction(
         LibExchangeAuction.Auction memory auction,
         bool notLazyMint
-/*         uint256 tokenId,
-        uint256 duration,
-        uint256 reservePrice,
-        LibExchangeAuction.AuctionTypes auctionType,
-        uint256 startingPrice,
-        uint256 endingPrice,
-        uint256 startDate,
-        uint256 extensionPeriod,
-        address[3] memory auctionSpecAddr,
-        uint8 erc1155TokenAmount
-         */
     ) external nonReentrant whenNotPaused {
         _auctionId.increment();
         /// Check basic input requirements are reasonable.
