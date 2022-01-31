@@ -1,3 +1,4 @@
+/* eslint-disable */
 const { BigNumber } = require('ethers')
 const { BN, ether } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai')
@@ -13,8 +14,8 @@ const METADATA_JSON = '{"name":"My NFT Name","description":"My NFT Name","image"
 /**
  * returns the last minted token
  * interacts with the blockchain and needs to be async
- * 
- * @param {proxy contract} token 
+ *
+ * @param {proxy contract} token
  * @returns {BN} last minted token ID as Big Number
  */
 async function getLastTokenID(token) {
@@ -185,6 +186,17 @@ function etherAmountAsBigNumberWD(etherAmount) {
   return BigNumber.from((ether(etherAmount.toString())).toString())
 }
 
+function encDataV1JS(data) {
+  let result = web3.eth.abi.encodeParameter(
+    'tuple(address,uint256)[][]',
+    data
+  );
+  //compared to solidity abi.encode function, web3.eth.abi.encodeParameter adds an additional
+  // 0000000000000000000000000000000000000000000000000000000000000002
+  // its removed before the result is returned
+  return result.replace('0000000000000000000000000000000000000000000000000000000000000002', '')
+}
+
 function expectEqualStringValues(value1, value2) {
   expect(value1.toString()).to.equal(value2.toString())
 }
@@ -207,5 +219,6 @@ module.exports = {
   getEvents,
   eventTesting,
   etherAmountAsBigNumberWD,
+  encDataV1JS,
   expectEqualStringValues
 }

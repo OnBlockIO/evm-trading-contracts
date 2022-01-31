@@ -30,12 +30,6 @@ const ERC1155 = id("ERC1155");
  */ 
 const ORDER_DATA_V1 = id("V1");
 
-/**  
- * NFT_TRANSFER_FROM_CONTRACT = 0xdd1b06d8
- * enables the transfer from auction contract
- */
-const NFT_TRANSFER_FROM_CONTRACT = id("NFT_TRANSFER_FROM_CONTRACT");
-
 //for transferDirection and transferType see contracts/SimpleTransferManager.sol
 // used as a variable for emitting event, transferDirection
 const TO_MAKER = id("TO_MAKER");
@@ -51,4 +45,4 @@ const ORIGIN = id("ORIGIN");
 const PAYOUT = id("PAYOUT");
 
 
-module.exports = { id, ETH, ERC20, ERC721, ERC1155, ORDER_DATA_V1, TO_MAKER, TO_TAKER, PROTOCOL, ROYALTY, ORIGIN, PAYOUT, NFT_TRANSFER_FROM_CONTRACT, enc }
+module.exports = { id, ETH, ERC20, ERC721, ERC1155, ORDER_DATA_V1, TO_MAKER, TO_TAKER, PROTOCOL, ROYALTY, ORIGIN, PAYOUT, enc }

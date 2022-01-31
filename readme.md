@@ -22,18 +22,80 @@ Functionality is divided into parts (each responsible for the part of algorithm)
 
 GhostMarket Exchange is a smart contract decentralized exchange.
 
+### Compiling contracts
+```
+hardhat compile
+```
+### Deploying
+
+Using hardhat-deploy plugin to deploy proxy contracts
+
+Contracts can be deployed with the following commands
+
+#### locally
+
+```
+hardhat deploy
+
+```
+
+#### to network
+```
+hardhat --network <network_name> deploy
+```
+
+deploy individually to testnet:
+
+```
+hardhat --network testnet deploy --tags GhostMarketERC1155
+```
+
+For local deployment ganache-cli can be optionally used with the keys from:
+
+```
+.secrets.json
+```
+
+### Troubleshooting deploy errors
+
+if contracts can not be deployed because of errors, try to remove the cache && artifacts && .openzeppelin && deployments folders
+
+`rm -rf cache/* && rm -rf artifacts/* && rm -rf .openzeppelin/* && rm -rf deployments/*`
+
+## Verifying contracts
+
+https://github.com/wighawag/hardhat-deploy#4-hardhat-etherscan-verify
+
+
 ## Tests
+
+tests can be run with:
+
+```
+hardhat test
+```
+
+### running individual tests
+
+choose a test file
+```
+hardhat test test/<testname>.js
+```
+
+with the .only flag individual test can be run
+```
+it.only("should run this test") async function () {
+  ...
+}
+```
 
 Chain ID needs to be set for ganache-cli:
 ganache-cli --chainId 1
 
-if the chain id does not match `block.chainid` the `contracts/OrderValidator.sol validate()` function will revert.
+if the chain id does not match `block.chainid` the `src/OrderValidator.sol validate()` function will revert.
 
-ganache-cli sets the chain id to 1337 as default, that somehow does not match the `block.chainid` 
+ganache-cli sets the chain id to 1337 as default, that somehow does not match the `block.chainid`
 from `@openzeppelin/contracts-upgradeable/utils/cryptography/draft-EIP712Upgradeable.sol`
-
-Test can be run with 
-
 
 
 ## Algorithms
@@ -46,23 +108,21 @@ Logically, whole process can be divided into stages:
 - asset mathing (check if assets from left and right order match, extract matching assets)
 - calculating fill (finding out what exact values should be filled. orders can be matched partly if one of the sides doesn't want to fill other order fully)
 - order execution (execute transfers, save fill of the orders if needed)
-- auction creation and bidding, NFT_TRANSFER_FROM_CONTRACT hex is used in contracts/TransferExecutor.sol
-so the TransferExecutor knows from where it should transfer the NFT; either from a wallet or the contract
-
 
 ### Domain model
 
 #### Order:
 
 - `address` maker
-- `Asset` leftAsset (see [LibAsset](contracts/lib/LibAsset.md))
+- `Asset` leftAsset (see [LibAsset](src/lib/LibAsset.md))
 - `address` taker (can be zero address)
-- `Asset` rightAsset (see [LibAsset](contracts/lib/LibAsset.md))
+- `Asset` rightAsset (see [LibAsset](src/lib/LibAsset.md))
 - `uint` salt - random number to distinguish different maker's Orders
 - `uint` start - Order can't be matched before this date (optional)
 - `uint` end - Order can't be matched after this date (optional)
-- `bytes4` dataType - type of data, usually hash of some string, e.g.: "0xffffffff", "NFT_TRANSFER_FROM_CONTRACT" (see more [here](./contracts/LibOrderData.md))
-- `bytes` data - generic data, can be anything, extendable part of the order (see more [here](./contracts/LibOrderData.md))
+- `bytes4` dataType - type of data, usually hash of some string, e.g.: "0xffffffff"
+(see more [here](./src/LibOrderData.md))
+- `bytes` data - generic data, can be anything, extendable part of the order (see more [here](./src/LibOrderData.md))
 
 #### Order validation
 
@@ -81,33 +141,36 @@ New types of assets can be added without smart contract upgrade. This is done us
 #### Order execution
 
 Order execution is done by TransferManager
+
 #### Royalties
 
 Royalties percentage and receiver is extracted from GhostmarketERC1155.sol and GhostmarketERC721.sol contracts
-calculated from the auctions closing price and sent to the receiver.
-
 #### Fees
 
 `protocolFee` set currently to 2%
+
 ##### Fees calculation, fee side
 
 To take a fee we need to calculate, what side of the deal can be used as money.
 There is a simple algorithm to do it:
-- if ETH is from any side of the deal, it's used
+
+- if Base Currency is from any side of the deal, it's used
 - if not, then if ERC-20 is in the deal, it's used
 - if not, then if ERC-1155 is in the deal, it's used
 - otherwise, fee is not taken (for example, two ERC-721 are involved in the deal)
 
 When we established, what part of the deal can be treated as money, then we can establish, that
+
 - buyer is side of the deal who owns money
 - seller is other side of the deal
 
 Then total amount of the asset (money side) should be calculated
+
 - protocol fee is added on top of the filled amount
 - origin fee of the buyer's order is added on top too
 
 If buyer is using ERC-20 token for payment, then he must approve at least this calculated amount of tokens.
 
-If buyer is using ETH, then he must send this calculated amount of ETH with the tx.
+If buyer is using Base Currency, then he must send this calculated amount of Base Currency with the tx.
 
-More on fee calculation can be found here contracts/GhostMarketTransferManager.sol
+More on fee calculation can be found here src/GhostMarketTransferManager.sol

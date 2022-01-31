@@ -63,7 +63,7 @@ module.exports = {
         if (!send) send = web3.currentProvider.send;
         send.bind(web3.currentProvider)({
           jsonrpc: "2.0",
-          method: "eth_signTypedData",
+          method: (hre.network.name == "hardhat")? "eth_signTypedData_v4" : "eth_signTypedData",
           params: [from, data],
           id: new Date().getTime()
         }, cb);
