@@ -3,7 +3,11 @@ const { BigNumber } = require('ethers');
 
 const { Order, Asset, sign } = require("./order");
 const { ETH, ERC20, ERC721, ERC1155, ORDER_DATA_V1, TO_MAKER, TO_TAKER, PROTOCOL, ROYALTY, ORIGIN, PAYOUT, enc, id } = require("./assets");
-const { chai, expect } = require('chai')
+const chai = require("chai");
+const { solidity } = require("ethereum-waffle");
+chai.use(solidity);
+const { expect } = chai;
+
 const ZERO = "0x0000000000000000000000000000000000000000";
 const {
   expectRevert,
@@ -37,6 +41,7 @@ describe('Exchange', async function () {
   let erc20TransferProxy;
   let transferManagerTest;
   let t1;
+  let t2;
   let erc721V1;
   let ghostERC1155
   let erc721WithRoyalties;
@@ -99,6 +104,7 @@ describe('Exchange', async function () {
       testing = await upgrades.deployProxy(ExchangeV2, [transferProxy.address, erc20TransferProxy.address, 300, protocol], { initializer: "__ExchangeV2_init" });
       transferManagerTest = await GhostMarketTransferManagerTest.deploy();
       t1 = await TestERC20.deploy();
+      t2 = await TestERC20.deploy();
       erc721V1 = await TestERC721V1.deploy();
       await erc721V1.initialize(TOKEN_NAME, TOKEN_SYMBOL, BASE_URI);
 
@@ -132,7 +138,68 @@ describe('Exchange', async function () {
 
   });
 
-  it("eth orders work, rest is returned to taker (other side) ", async () => {
+  it("cancel erc20 order", async () => {
+    const { left, right } = await prepare2Orders()
+    let testingAsSigner = await testing.connect(wallet2);
+
+    const tx = testingAsSigner.cancel(left, { from: accounts2 })
+
+    await expect(tx).to.be.revertedWith('revert not a maker');
+
+    let testingAsSigner2 = await testing.connect(wallet1);
+    await testingAsSigner2.cancel(left, { from: accounts1 })
+
+    const tx2 = testing.matchOrders(left, await getSignature(left, accounts1), right, await getSignature(right, accounts2))
+    await expect(tx2).to.be.revertedWith('revert');
+  })
+
+  it("order with salt 0 can't be canceled", async () => {
+    const { left, right } = await prepare2Orders()
+    left.salt = "0";
+
+    let testingAsSigner = await testing.connect(wallet1);
+
+    const tx = testingAsSigner.cancel(left, { from: accounts1 })
+
+    await expect(tx).to.be.revertedWith("revert 0 salt can't be used");
+
+  })
+
+  it("cancel erc1155 order", async () => {
+    const { left, right } = await prepare_ERC_1155V1_Orders(5)
+    let testingAsSigner = await testing.connect(wallet1);
+
+    const tx = testingAsSigner.cancel(left, { from: accounts1 })
+
+    await expect(tx).to.be.revertedWith('revert not a maker');
+
+    let testingAsSigner2 = await testing.connect(wallet2);
+    await testingAsSigner2.cancel(left, { from: accounts2 })
+
+    const tx2 = testingAsSigner2.matchOrders(left, await getSignature(left, accounts1), right, await getSignature(right, accounts2), { from: accounts2, value: 300 })
+    await expect(tx2).to.be.revertedWith('revert');
+
+  })
+
+
+  async function prepare2Orders(t1Amount = 100, t2Amount = 200) {
+    await t1.mint(accounts1, t1Amount);
+    await t2.mint(accounts2, t2Amount);
+    let t1AsSigner = await t1.connect(wallet1);
+    let t2AsSigner = await t1.connect(wallet2);
+    await t1AsSigner.approve(erc20TransferProxy.address, 10000000, { from: accounts1 });
+    await t2AsSigner.approve(erc20TransferProxy.address, 10000000, { from: accounts2 });
+
+    const left = Order(accounts1, Asset(ERC20, enc(t1.address), 100), ZERO, Asset(ERC20, enc(t2.address), 200), 1, 0, 0, "0xffffffff", "0x");
+    const right = Order(accounts2, Asset(ERC20, enc(t2.address), 200), ZERO, Asset(ERC20, enc(t1.address), 100), 1, 0, 0, "0xffffffff", "0x");
+    return { left, right }
+  }
+
+  async function getSignature(order, signer) {
+    return sign(order, signer, testing.address);
+  }
+
+  it("eth orders work, rest is returned to taker (other side)", async () => {
     await t1.mint(accounts1, 100);
     let t1AsSigner = await t1.connect(wallet1);
 
@@ -420,7 +487,6 @@ describe('Exchange', async function () {
     const erc721TokenId1 = await erc721V1.getLastTokenID()
     let erc721V1AsSigner = await erc721V1.connect(wallet1);
 
-    console.log("test3")
     if (hre.network.name == 'testnet' || hre.network.name == 'testnet_nodeploy' || hre.network.name == 'hardhat') {
       await erc721V1AsSigner.setApprovalForAll(transferProxy.address, true, { from: accounts1 })
       console.log('erc721V1 isApprovedForAll: ', await erc721V1.isApprovedForAll(accounts1, transferProxy.address));
