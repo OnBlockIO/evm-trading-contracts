@@ -144,7 +144,7 @@ describe('Exchange', async function () {
 
     const tx = testingAsSigner.cancel(left, { from: accounts2 })
 
-    await expect(tx).to.be.revertedWith('revert not a maker');
+    await expect(tx).to.be.revertedWith('not a maker');
 
     let testingAsSigner2 = await testing.connect(wallet1);
     await testingAsSigner2.cancel(left, { from: accounts1 })
@@ -161,7 +161,7 @@ describe('Exchange', async function () {
 
     const tx = testingAsSigner.cancel(left, { from: accounts1 })
 
-    await expect(tx).to.be.revertedWith("revert 0 salt can't be used");
+    await expect(tx).to.be.revertedWith("0 salt can't be used");
 
   })
 
@@ -171,7 +171,7 @@ describe('Exchange', async function () {
 
     const tx = testingAsSigner.cancel(left, { from: accounts1 })
 
-    await expect(tx).to.be.revertedWith('revert not a maker');
+    await expect(tx).to.be.revertedWith('not a maker');
 
     let testingAsSigner2 = await testing.connect(wallet2);
     await testingAsSigner2.cancel(left, { from: accounts2 })
