@@ -17,6 +17,8 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
 
     uint256 private constant UINT256_MAX = 2 ** 256 - 1;
 
+    address public matchAndTransferAdmin;
+
     //state of the orders
     mapping(bytes32 => uint) public fills;
 
@@ -47,6 +49,18 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
             require(orderRight.taker == orderLeft.maker, "rightOrder.taker verification failed");
         }
 
+        matchAndTransfer(orderLeft, orderRight);
+    }
+
+    function setMatchTransferAdminAccount(address mata) external onlyOwner{
+        matchAndTransferAdmin = mata;
+    }
+
+    /**
+     * match orders
+     */
+    function matchAndTransferWithoutSignature(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight) external payable {
+        require(msg.sender == matchAndTransferAdmin, "not allowed to matchAndTransfer without a signature");
         matchAndTransfer(orderLeft, orderRight);
     }
 

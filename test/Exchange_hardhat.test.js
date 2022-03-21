@@ -683,6 +683,51 @@ describe('Exchange', async function () {
     console.log(accounts2, " accounts2 erc1155 balance after: ", (await ghostERC1155.balanceOf(accounts2, erc1155TokenId1)).toString())
   })
 
+  it("should match And Transfer Orders Without Signature", async () => {
+    let matchSigner = await testing.connect(wallet2);
+    testing.setMatchTransferAdminAccount(accounts2);
+
+    const { left, right, erc1155TokenId1 } = await prepare_ERC_1155V1_Orders()
+
+    if (hre.network.name == 'testnet' || hre.network.name == 'testnet_nodeploy' || hre.network.name == 'hardhat') {
+      let result = await matchSigner.matchAndTransferWithoutSignature(left, right, { from: accounts2, value: 300 })
+      console.log("matchOrders transaction", result)
+    } else {
+      await verifyBalanceChange(accounts2, 206, async () =>			//200 + 6 buyerFee (72back)
+        verifyBalanceChange(accounts1, -170, async () =>				//200 seller - 14
+          verifyBalanceChange(accounts3, -20, async () =>
+            verifyBalanceChange(accounts4, -10, async () =>
+              verifyBalanceChange(protocol, -6, () =>
+                matchSigner.matchOrders(left, right, { from: accounts2, value: 300, gasPrice: 0 })
+              )
+            )
+          )
+        )
+      )
+      expectEqualStringValues(await ghostERC1155.balanceOf(accounts1, erc1155TokenId1), 6)
+      expectEqualStringValues(await ghostERC1155.balanceOf(accounts2, erc1155TokenId1), 4)
+    }
+
+
+  })
+
+  it("throws: if matchAndTransferAdmin account is not set or does not match", async () => {
+    let matchSigner = await testing.connect(wallet2);
+
+    const { left, right, erc1155TokenId1 } = await prepare_ERC_1155V1_Orders()
+    let accountNotSet = matchSigner.matchAndTransferWithoutSignature(left, right, { from: accounts2, value: 300 })
+
+    testing.setMatchTransferAdminAccount(accounts1);
+    let wrongAccount = matchSigner.matchAndTransferWithoutSignature(left, right, { from: accounts2, value: 300 })
+
+    if (hre.network.name == 'testnet' || hre.network.name == 'testnet_nodeploy') {
+      console.log("matchOrders transaction", result)
+    } else {
+      await expect(accountNotSet).to.be.revertedWith('not allowed to matchAndTransfer without a signature');
+      await expect(wrongAccount).to.be.revertedWith('not allowed to matchAndTransfer without a signature');
+    }
+  })
+
   async function getSignature(order, signer) {
     return sign(order, signer, testing.address);
   }
