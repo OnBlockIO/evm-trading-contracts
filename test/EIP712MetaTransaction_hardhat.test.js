@@ -313,6 +313,15 @@ describe('Exchange', async function () {
     console.log("buyerAccountNotPayingGas token balance: ", (await t1.balanceOf(buyerAccountNotPayingGas)).toString())
     console.log("owner token balance: ", (await t1.balanceOf(owner)).toString())
 
+    const testingContractBalance = (await web3.eth.getBalance(testing.address)).toString()
+
+    //withdraw funds
+    console.log("testing contract balance: ", testingContractBalance)
+    console.log("accounts5 balance: ", (await web3.eth.getBalance(accounts5)).toString())
+    let contractOwner = await testing.connect(wallet0);
+    await contractOwner.withdrawFunds(accounts5, testingContractBalance)
+    console.log("accounts5 balance: ", (await web3.eth.getBalance(accounts5)).toString())
+
 
     var newNonce = await testing.getNonce(buyerAccountNotPayingGas);
     expect(newNonce.toNumber()).eq(nonce.toNumber() + 1, "Nonce not incremented");
