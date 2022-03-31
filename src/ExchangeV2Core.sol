@@ -74,12 +74,12 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
         require(fill.takeValue > 0, "nothing to fill");
         (uint totalMakeValue, uint totalTakeValue) = doTransfers(makeMatch, takeMatch, fill, orderLeft, orderRight);
         if (makeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
-            require(msg.value >= totalMakeValue, "not enough BaseCurrency");
+            require(msg.value >= totalMakeValue, "make: not enough BaseCurrency");
             if (msg.value > totalMakeValue) {
                 address(msg.sender).transferEth(msg.value - totalMakeValue);
             }
         } else if (takeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
-            require(msg.value >= totalTakeValue, "not enough BaseCurrency");
+            require(msg.value >= totalTakeValue, "take: not enough BaseCurrency");
             if (msg.value > totalTakeValue) {
                 address(msg.sender).transferEth(msg.value - totalTakeValue);
             }
