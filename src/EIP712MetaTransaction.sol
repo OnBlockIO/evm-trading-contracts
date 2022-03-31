@@ -4,8 +4,6 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-import "hardhat/console.sol";
-
 
 abstract contract EIP712MetaTransaction is ContextUpgradeable {
     using SafeMathUpgradeable for uint256;
@@ -81,12 +79,13 @@ abstract contract EIP712MetaTransaction is ContextUpgradeable {
         require(verify(userAddress, metaTx, sigR, sigS, sigV), "Signer and signature do not match");
         nonces[userAddress] = nonces[userAddress].add(1);
         // Append userAddress at the end to extract it from calling context
-        (bool success, bytes memory returnData) = address(this).call(abi.encodePacked(functionSignature, userAddress));
-        console.logBytes(returnData);
+        (bool success, bytes memory returnData) = address(this).call{ value: msg.value }(abi.encodePacked(functionSignature, userAddress));
         require(success, "Function call not successful");
         emit MetaTransactionExecuted(userAddress, payable(msg.sender), functionSignature);
         return returnData;
     }
+
+    receive() external payable {}
 
     function hashMetaTransaction(MetaTransaction memory metaTx) internal pure returns (bytes32) {
         return

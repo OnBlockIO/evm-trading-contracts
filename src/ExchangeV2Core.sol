@@ -10,7 +10,6 @@ import "./AssetMatcher.sol";
 
 import "./ITransferManager.sol";
 import "./lib/LibTransfer.sol";
-import "hardhat/console.sol";
 
 abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatcher, TransferExecutor, OrderValidator, ITransferManager {
     using SafeMathUpgradeable for uint;
@@ -26,7 +25,6 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
     event Cancel(bytes32 hash, address maker, LibAsset.AssetType makeAssetType, LibAsset.AssetType takeAssetType);
 
     function cancel(LibOrder.Order memory order) external {
-        console.log(msg.sender);
         require(_msgSender() == order.maker, "not a maker");
         require(order.salt != 0, "0 salt can't be used");
         bytes32 orderKeyHash = LibOrder.hashKey(order);
@@ -40,8 +38,6 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
         LibOrder.Order memory orderRight,
         bytes memory signatureRight
     ) external payable {
-        console.log(msg.sender);
-        console.log(msg.value);
         validateFull(orderLeft, signatureLeft);
         validateFull(orderRight, signatureRight);
         if (orderLeft.taker != address(0)) {
@@ -64,12 +60,12 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
         require(fill.takeValue > 0, "nothing to fill");
         (uint totalMakeValue, uint totalTakeValue) = doTransfers(makeMatch, takeMatch, fill, orderLeft, orderRight);
         if (makeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
-            require(msg.value >= totalMakeValue, "not enough BaseCurrency");
+            require(msg.value >= totalMakeValue, "make: not enough BaseCurrency");
             if (msg.value > totalMakeValue) {
                 address(msg.sender).transferEth(msg.value - totalMakeValue);
             }
         } else if (takeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
-            require(msg.value >= totalTakeValue, "not enough BaseCurrency");
+            require(msg.value >= totalTakeValue, "take: not enough BaseCurrency");
             if (msg.value > totalTakeValue) {
                 address(msg.sender).transferEth(msg.value - totalTakeValue);
             }
