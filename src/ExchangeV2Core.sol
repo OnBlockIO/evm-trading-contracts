@@ -52,12 +52,15 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
         matchAndTransfer(orderLeft, orderRight);
     }
 
+    /**
+    * @dev set admin address that can use the matchAndTransferWithoutSignature function
+    */
     function setMatchTransferAdminAccount(address mata) external onlyOwner{
         matchAndTransferAdmin = mata;
     }
 
     /**
-     * match orders
+     * @dev match orders without a signature, only admin
      */
     function matchAndTransferWithoutSignature(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight) external payable {
         require(msg.sender == matchAndTransferAdmin, "not allowed to matchAndTransfer without a signature");
