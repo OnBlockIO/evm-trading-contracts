@@ -20,7 +20,7 @@ if (process.env.HARDHAT_FORK) {
 import {
   MAINNET_PRIVATE_KEYS,
   TESTNET_PRIVATE_KEYS,
-  ALCHEMY_PROJECT_ID
+  INFURA_API_KEY
 } from './.secrets.json'
 
 const config: HardhatUserConfig = {
@@ -62,19 +62,19 @@ const config: HardhatUserConfig = {
       //gasPrice: 0,
     },
     testnet: {
-      url: 'https://eth-rinkeby.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
+      url: 'https://ropsten.infura.io/v3/' + INFURA_API_KEY,
       accounts: TESTNET_PRIVATE_KEYS,
       saveDeployments: true,
       tags: ["testnet"]
     },
     testnet_nodeploy: {
-      url: 'https://eth-rinkeby.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
+      url: 'https://ropsten.infura.io/v3/' + INFURA_API_KEY,
       accounts: TESTNET_PRIVATE_KEYS,
       saveDeployments: true,
       tags: ["testnet_nodeploy"]
     },
     mainnet: {
-      url: 'https://eth-mainnet.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
+      url: 'https://mainnet.infura.io/v3/' + INFURA_API_KEY,
       accounts: MAINNET_PRIVATE_KEYS,
       saveDeployments: true,
       tags: ["mainnet"],
