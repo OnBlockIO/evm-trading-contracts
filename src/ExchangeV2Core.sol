@@ -39,7 +39,7 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
      */
     function bulkCancelOrders(
         LibOrder.Order[] memory orders
-        ) public payable {
+        ) external {
         for (uint256 i = 0; i < orders.length; i++) {
             // we can't call this.cancel function as the _msgSender() is changed to the contract address
             // and the _msgSender() == order.maker check fails
