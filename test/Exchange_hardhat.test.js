@@ -181,6 +181,31 @@ describe('Exchange', async function () {
 
   })
 
+  it("bulk cancel erc20 orders", async () => {
+    //all orders are created with the same maker and taker account,
+    //left (order) = account1 tries to bulk cancel his orders
+    const orderArray = await prepareMultiple2Orders(3)
+
+    let leftOrderArray = []
+    orderArray.forEach((ordersLR) => {
+      leftOrderArray.push(ordersLR[0])
+    })
+    let testingAsSigner2 = await testing.connect(wallet1);
+    await testingAsSigner2.bulkCancelOrders(leftOrderArray, { from: accounts1 })
+  })
+
+  async function prepareMultiple2Orders(orderAmount) {
+    const ordersArray = []
+    let i = 0;
+    while (i < orderAmount) {
+      i++;
+      const { left, right } = await prepare2Orders()
+      let orderLeftRight = [left, right]
+      ordersArray.push(orderLeftRight)
+    }
+    return ordersArray
+  }
+
 
   async function prepare2Orders(t1Amount = 100, t2Amount = 200) {
     await t1.mint(accounts1, t1Amount);
