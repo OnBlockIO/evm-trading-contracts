@@ -22,7 +22,7 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
 
     //events
     event OrderFilled(bytes32 leftHash, bytes32 rightHash, address leftMaker, address rightMaker, uint newLeftFill, uint newRightFill);
-    event Cancel(bytes32 hash, address maker, LibAsset.AssetType makeAssetType, LibAsset.AssetType takeAssetType);
+    event OrderCancelled(bytes32 hash, address maker, LibAsset.AssetType makeAssetType, LibAsset.AssetType takeAssetType);
 
     /**
      * @dev cancel the the given order by adding the biggest possible number to fills mapping
@@ -32,7 +32,7 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
         require(order.salt != 0, "0 salt can't be used");
         bytes32 orderKeyHash = LibOrder.hashKey(order);
         fills[orderKeyHash] = UINT256_MAX;
-        emit Cancel(orderKeyHash, order.maker, order.makeAsset.assetType, order.takeAsset.assetType);
+        emit OrderCancelled(orderKeyHash, order.maker, order.makeAsset.assetType, order.takeAsset.assetType);
     }
     /**
      * @dev call the cancel fucntion in a loop canceling multiple orders
@@ -47,7 +47,7 @@ abstract contract ExchangeV2Core is Initializable, OwnableUpgradeable, AssetMatc
             require(orders[i].salt != 0, "0 salt can't be used");
             bytes32 orderKeyHash = LibOrder.hashKey(orders[i]);
             fills[orderKeyHash] = UINT256_MAX;
-            emit Cancel(orderKeyHash, orders[i].maker, orders[i].makeAsset.assetType, orders[i].takeAsset.assetType);
+            emit OrderCancelled(orderKeyHash, orders[i].maker, orders[i].makeAsset.assetType, orders[i].takeAsset.assetType);
         }
     }
 
