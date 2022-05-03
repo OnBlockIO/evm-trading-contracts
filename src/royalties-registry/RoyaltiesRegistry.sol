@@ -10,10 +10,14 @@ import "../royalties/LibRoyalties2981.sol";
 import "../royalties/RoyaltiesV1.sol";
 import "../royalties/RoyaltiesV2.sol";
 import "../royalties/IERC2981.sol";
+import "../lib/LibAsset.sol";
+import "./GhostMarketRoyalties.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable {
+import "hardhat/console.sol";
+
+contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarketRoyalties {
     /// @dev deprecated
     event RoyaltiesSetForToken(address indexed token, uint256 indexed tokenId, LibPart.Part[] royalties);
     /// @dev emitted when royalties set for token in
@@ -120,7 +124,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable {
 
     /// @dev calculates royalties type for token contract
     function calculateRoyaltiesType(address token, address royaltiesProvider) internal view returns (uint256) {
-        try IERC165Upgradeable(token).supportsInterface(LibRoyaltiesV2._INTERFACE_ID_ROYALTIES) returns (bool result) {
+        try IERC165Upgradeable(token).supportsInterface(LibAsset._GHOSTMARKET_NFT_ROYALTIES) returns (bool result) {
             if (result) {
                 return 2;
             }
@@ -157,7 +161,6 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable {
 
         address royaltiesProvider = address(royaltiesProviderData);
         uint256 royaltiesType = _getRoyaltiesType(royaltiesProviderData);
-
         // case when royaltiesType is not set
         if (royaltiesType == 0) {
             // calculating royalties type for token
@@ -166,7 +169,6 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable {
             //saving royalties type
             setRoyaltiesType(token, royaltiesType, royaltiesProvider);
         }
-
         //case royaltiesType = 1, royalties are set in royaltiesByToken
         if (royaltiesType == 1) {
             return royaltiesByToken[token].royalties;
@@ -174,7 +176,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable {
 
         //case royaltiesType = 2, royalties rarible v2
         if (royaltiesType == 2) {
-            return getRoyaltiesRaribleV2(token, tokenId);
+            return getRoyaltieGhostmarket(token, tokenId);
         }
 
         //case royaltiesType = 3, royalties rarible v1
@@ -231,6 +233,18 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable {
         for (uint256 i = 0; i < values.length; i++) {
             result[i].value = uint96(values[i]);
             result[i].account = recipients[i];
+        }
+        return result;
+    }
+
+    /// @dev tries to get royalties rarible-v1 for token and tokenId
+    function getRoyaltieGhostmarket(address token, uint256 tokenId) internal view returns (LibPart.Part[] memory) {
+        GhostMarketRoyalties royalities = GhostMarketRoyalties(token);
+        Royalty[] memory values = royalities.getRoyalties(tokenId);
+        LibPart.Part[] memory result = new LibPart.Part[](values.length);
+        for (uint256 i = 0; i < values.length; i++) {
+            result[i].value = uint96(values[i].value);
+            result[i].account = values[i].recipient;
         }
         return result;
     }

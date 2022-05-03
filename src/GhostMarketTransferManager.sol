@@ -10,6 +10,8 @@ import "./LibOrderData.sol";
 import "./royalties/IRoyaltiesProvider.sol";
 import "./lib/BpLibrary.sol";
 
+import "hardhat/console.sol";
+
 abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferManager {
     using BpLibrary for uint256;
     using SafeMathUpgradeable for uint256;
