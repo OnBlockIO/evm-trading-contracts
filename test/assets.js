@@ -2,7 +2,7 @@ const ethUtil = require('ethereumjs-util');
 
 function id(str) {
 	const hex = `0x${ethUtil.keccak256(str).toString("hex").substring(0, 8)}`
-	console.log("id: "+ str + ": ",hex)
+	// console.log("id: "+ str + ": ",hex)
 	return hex;
 
 }
@@ -49,4 +49,4 @@ const CRYPTO_PUNKS = id("CRYPTO_PUNKS");
 
 
 
-module.exports = { id, ETH, ERC20, ERC721, ERC1155, ORDER_DATA_V1, TO_MAKER, TO_TAKER, PROTOCOL, ROYALTY, ORIGIN, PAYOUT, COLLECTION, enc }
+module.exports = { id, ETH, ERC20, ERC721, ERC1155, ORDER_DATA_V1, TO_MAKER, TO_TAKER, PROTOCOL, ROYALTY, ORIGIN, PAYOUT, COLLECTION, CRYPTO_PUNKS, enc }
