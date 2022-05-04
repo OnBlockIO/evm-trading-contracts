@@ -28,14 +28,6 @@ abstract contract ExchangeV2Core is
     mapping(bytes32 => uint256) public fills;
 
     //events
-    event OrderFilled(
-        bytes32 leftHash,
-        bytes32 rightHash,
-        address leftMaker,
-        address rightMaker,
-        uint256 newLeftFill,
-        uint256 newRightFill
-    );
     event OrderCancelled(bytes32 hash, address maker, LibAsset.AssetType makeAssetType, LibAsset.AssetType takeAssetType);
     event OrderFilled(bytes32 leftHash, bytes32 rightHash, address leftMaker, address rightMaker, uint newLeftFill, uint newRightFill, LibAsset.AssetType leftAsset, LibAsset.AssetType rightAsset);
 
