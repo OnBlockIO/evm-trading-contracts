@@ -50,11 +50,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const punkTransferProxyContract = await ethers.getContract('AssetMatcherCollection');
   await exchangeV2Contract.setTransferProxy(CRYPTO_PUNKS, punkTransferProxyContract.address)
 
+  console.log('deployer is: ', deployer);
   console.log('transferProxyContract deployed at: ', transferProxyContract.address);
   console.log('erc20TransferProxyContract deployed at: ', erc20TransferProxyContract.address);
   console.log('royaltiesRegistryContract deployed at: ', royaltiesRegistryContract.address);
   console.log('assetMatcherCollectionContract deployed at: ', assetMatcherCollectionContract.address);
   console.log('PunkTransferProxy deployed at: ', punkTransferProxyContract.address);
+  console.log('exchangeV2Contract deployed at: ', exchangeV2Contract.address);
   console.log('exchangeFeeWallet is: ', deployer);
   console.log('fees value is: ', feesBP / 100 + '%');
 };
