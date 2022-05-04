@@ -14,9 +14,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     'ERC20TransferProxy'
   );
   const royaltiesRegistryContract = await ethers.getContract('RoyaltiesRegistry');
-  const feesBP = 200;
-
   const assetMatcherCollectionContract = await ethers.getContract('AssetMatcherCollection');
+  const feesBP = 200;
 
   const ExchangeV2_Proxy = await deploy('ExchangeV2', {
     from: deployer,
@@ -42,11 +41,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   //add ExchangeV2 proxy address to the the allowed operators of transferProxy & erc20TransferProxy
   await transferProxyContract.addOperator(ExchangeV2_Proxy.address);
   await erc20TransferProxyContract.addOperator(ExchangeV2_Proxy.address);
-  const exchangeV2Contract = await ethers.getContract('ExchangeV2');
 
+  //set initial asset matcher collection
+  const exchangeV2Contract = await ethers.getContract('ExchangeV2');
   await exchangeV2Contract.setAssetMatcher(COLLECTION, assetMatcherCollectionContract.address);
-  console.log('exchangeFeeWallet: ', deployer);
-  console.log('fees value: ', feesBP / 100 + '%');
+
+  console.log('transferProxyContract deployed at: ', transferProxyContract.address);
+  console.log('erc20TransferProxyContract deployed at: ', erc20TransferProxyContract.address);
+  console.log('royaltiesRegistryContract deployed at: ', royaltiesRegistryContract.address);
+  console.log('exchangeFeeWallet is: ', deployer);
+  console.log('fees value is: ', feesBP / 100 + '%');
 };
 export default func;
 func.tags = ['ExchangeV2'];
