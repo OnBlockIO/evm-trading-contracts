@@ -22,6 +22,7 @@ import {
   MAINNET_PRIVATE_KEYS,
   TESTNET_PRIVATE_KEYS,
   ALCHEMY_PROJECT_ID,
+  INFURA_API_KEYS
 } from './.secrets.json';
 
 const config: HardhatUserConfig = {
@@ -96,6 +97,9 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       tags: ['mainnet'],
     },
+  },
+  etherscan: {
+    apiKey: INFURA_API_KEYS
   },
   paths: {
     sources: 'src',

@@ -2,7 +2,7 @@ const ethUtil = require('ethereumjs-util');
 
 function id(str) {
 	const hex = `0x${ethUtil.keccak256(str).toString("hex").substring(0, 8)}`
-	console.log("id: "+ str + ": ",hex)
+	// console.log("id: "+ str + ": ",hex)
 	return hex;
 
 }
