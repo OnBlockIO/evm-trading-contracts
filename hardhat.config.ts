@@ -48,6 +48,16 @@ const config: HardhatUserConfig = {
           },
         },
       },
+      {
+        version: "0.4.11",
+        settings: {
+          // See the solidity docs for advice about optimization and evmVersion
+          optimizer: {
+            enabled: true,
+            runs: 100,
+          },
+        },
+      },
     ],
 
   },
