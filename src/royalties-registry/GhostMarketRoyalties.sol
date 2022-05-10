@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity >=0.6.2 <0.8.0;
+pragma abicoder v2;
 
 abstract contract GhostMarketRoyalties {
 
@@ -18,7 +19,7 @@ abstract contract GhostMarketRoyalties {
      * https://eips.ethereum.org/EIPS/eip-2981: bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
      */
     bytes4 constant _INTERFACE_ID_ROYALTIES = 0x2a55205a;
-    /// to calculate the percentage amount from token with royalty
+    // to calculate the percentage amount from token with royalty
     uint96 constant _WEIGHT_VALUE = 1000000;
 
 

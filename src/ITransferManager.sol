@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity >=0.6.2 <0.8.0;
 pragma abicoder v2;
-
 
 import "./LibFill.sol";
 import "./TransferExecutor.sol";
@@ -20,6 +19,8 @@ abstract contract ITransferManager is ITransferExecutor {
         LibAsset.AssetType memory takeMatch,
         LibFill.FillResult memory fill,
         LibOrder.Order memory leftOrder,
-        LibOrder.Order memory rightOrder
+        LibOrder.Order memory rightOrder,
+        LibOrderDataV2.DataV2 memory leftOrderData,
+        LibOrderDataV2.DataV2 memory rightOrderData
     ) internal virtual returns (uint totalMakeValue, uint totalTakeValue);
 }
