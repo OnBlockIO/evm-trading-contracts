@@ -21,8 +21,9 @@ if (process.env.HARDHAT_FORK) {
 import {
   MAINNET_PRIVATE_KEYS,
   TESTNET_PRIVATE_KEYS,
-  INFURA_API_KEY,
-  ETHERSCAN_API_KEYS
+  INFURA_API_KEYS,
+  ETHERSCAN_API_KEYS,
+  ALCHEMY_PROJECT_ID
 } from './.secrets.json';
 
 const config: HardhatUserConfig = {
@@ -90,22 +91,26 @@ const config: HardhatUserConfig = {
       //gasPrice: 0,
     },
     testnet: {
-      url: 'https://ropsten.infura.io/v3/' + INFURA_API_KEY,
+      url: 'https://eth-rinkeby.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
+      // url: 'https://ropsten.infura.io/v3/' + INFURA_API_KEYS,
       accounts: TESTNET_PRIVATE_KEYS,
       saveDeployments: true,
       tags: ['testnet'],
     },
     testnet_nodeploy: {
-      url: 'https://ropsten.infura.io/v3/' + INFURA_API_KEY,
+      url: 'https://eth-rinkeby.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
+      // url: 'https://ropsten.infura.io/v3/' + INFURA_API_KEYS,
       accounts: TESTNET_PRIVATE_KEYS,
       saveDeployments: true,
       tags: ['testnet_nodeploy'],
     },
     mainnet: {
-      url: 'https://mainnet.infura.io/v3/' + INFURA_API_KEY,
+      url: 'https://eth-mainnet.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
+      //url: 'https://mainnet.infura.io/v3/' + INFURA_API_KEYS,
       accounts: MAINNET_PRIVATE_KEYS,
       saveDeployments: true,
       tags: ['mainnet'],
+      // gasPrice: 150000000000, // 150 gwei
     },
   },
   etherscan: {
