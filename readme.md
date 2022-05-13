@@ -4,15 +4,43 @@
 
 #### ERC20TransferProxy
 
+https://etherscan.io/address/0x153909fB5232c72B5E613aae4898291b014785a1/contracts
+
 #### TransferProxy
 
-#### RoyaltiesRegistry
+https://etherscan.io/address/0x1bb6C21e6adB8757F46e77A7F4c5Ad9118f4A04d/contracts
 
-#### ExchangeV2
+#### RoyaltiesRegistry Proxy
+
+https://etherscan.io/address/0x3dA0bD10dfD98E96E04fbAa8e0512b2c413b096A/contracts
+
+#### RoyaltiesRegistry Implementation
+
+https://etherscan.io/address/0x88F166Ac7462D1745A690f51cBe04AB5f73D406D/contracts
+
+#### AssetMatcherCollection
+
+https://etherscan.io/address/0x49CaC1f0564Ed70a30C2454F653a3A1058D6A9bA/contracts
+
+#### PunkTransferProxy
+
+https://etherscan.io/address/0x99AEECF3717ec6B369d847e3D62d14e14251e4d4/contracts
+
+#### ExchangeV2 Proxy
+
+https://etherscan.io/address/0xfB2F452639cBB0850B46b20D24DE7b0a9cCb665f/contracts
+
+#### ExchangeV2 Implementation
+
+https://etherscan.io/address/0xdE279ADc5D154Cb997C79C7a6e8b970Bca2d0ba5/contracts
 
 #### ProxyAdmin
 
+https://etherscan.io/address/0x596a6fFC1525193E49C71476BAa8a9D071A8a2a3/contracts
+
 #### TransparentUpgradeableProxy
+
+https://etherscan.io/address/0x1bb6C21e6adB8757F46e77A7F4c5Ad9118f4A04d/contracts
 
 ## Architecture
 
@@ -50,27 +78,6 @@ deploy individually to testnet:
 
 ```
 hardhat --network testnet deploy
-```
-
-For local deployment ganache-cli can be optionally used with the keys from:
-
-```
-.secrets.json
-```
-or
-
-hardhat default keys; like this:
-
-```
-yarn ganache-cli --chainId 1   --gasPrice 2000 --account="0x40c97c291f591bbf9e9555d2407aeafbabac30741a95a875c1370dab3eb5e0dd, 100000000000000000000" \
---account="0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d, 100000000000000000000" \
---account="0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a, 100000000000000000000" \
---account="0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6, 100000000000000000000" \
---account="0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a, 100000000000000000000" \
---account="0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba, 100000000000000000000" \
---account="0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e, 100000000000000000000" \
---account="0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356, 100000000000000000000" \
---account="0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97, 100000000000000000000"
 ```
 
 ### Troubleshooting deploy errors
