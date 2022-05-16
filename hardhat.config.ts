@@ -11,6 +11,7 @@ import { node_url, accounts } from './utils/network';
 import '@openzeppelin/hardhat-upgrades';
 import '@nomiclabs/hardhat-web3';
 import '@nomiclabs/hardhat-ganache';
+import '@nomiclabs/hardhat-etherscan'
 
 
 // While waiting for hardhat PR: https://github.com/nomiclabs/hardhat/pull/1542
@@ -90,13 +91,6 @@ const config: HardhatUserConfig = {
       tags: ['local'],
       //gasPrice: 0,
     },
-    testnet: {
-      url: 'https://eth-rinkeby.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
-      // url: 'https://ropsten.infura.io/v3/' + INFURA_API_KEYS,
-      accounts: TESTNET_PRIVATE_KEYS,
-      saveDeployments: true,
-      tags: ['testnet'],
-    },
     testnet_nodeploy: {
       url: 'https://eth-rinkeby.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
       // url: 'https://ropsten.infura.io/v3/' + INFURA_API_KEYS,
@@ -104,7 +98,50 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       tags: ['testnet_nodeploy'],
     },
-    mainnet: {
+    bsc_testnet: {
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+      accounts: TESTNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
+    avalanche_testnet: {
+      url: 'https://api.avax-test.network/ext/bc/C/rpc',
+      accounts: TESTNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
+    mumbai: {
+      url: 'https://polygon-mumbai.g.alchemy.com/v2/' + ALCHEMY_PROJECT_ID,
+      accounts: TESTNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
+    ethereum_testnet: {
+      url: 'https://eth-rinkeby.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
+      // url: 'https://ropsten.infura.io/v3/' + INFURA_API_KEYS,
+      accounts: TESTNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
+    bsc_mainnet: {
+      url: 'https://bsc-dataseed.binance.org/',
+      accounts: MAINNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['mainnet'],
+    },
+    avalanche_mainnet: {
+      url: 'https://api.avax.network/ext/bc/C/rpc',
+      accounts: MAINNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['mainnet'],
+    },
+    polygon_mainnet: {
+      url: 'https://polygon-mainnet.g.alchemy.com/v2/' + ALCHEMY_PROJECT_ID,
+      accounts: MAINNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['mainnet'],
+    },
+    ethereum_mainnet: {
       url: 'https://eth-mainnet.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
       //url: 'https://mainnet.infura.io/v3/' + INFURA_API_KEYS,
       accounts: MAINNET_PRIVATE_KEYS,
