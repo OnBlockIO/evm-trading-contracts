@@ -20,7 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     },
     log: true,
   });
-
 };
+
 export default func;
 func.tags = ['RoyaltiesRegistry'];

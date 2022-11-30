@@ -114,5 +114,4 @@ describe('TransferExecutor', async function () {
     expectEqualStringValues(await ghostERC1155Token.balanceOf(accounts2, 1), 40)
 
   })
-
 })

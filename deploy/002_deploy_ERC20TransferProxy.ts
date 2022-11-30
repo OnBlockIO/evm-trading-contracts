@@ -17,5 +17,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     '__ERC20TransferProxy_init'
   );
 };
+
 export default func;
 func.tags = ['ERC20TransferProxy'];

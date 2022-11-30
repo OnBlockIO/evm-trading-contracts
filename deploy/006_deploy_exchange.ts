@@ -37,15 +37,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  //add ExchangeV2 proxy address to the the allowed operators of transferProxy & erc20TransferProxy
+  // add ExchangeV2 proxy address to the the allowed operators of transferProxy & erc20TransferProxy
   await transferProxyContract.addOperator(ExchangeV2_Proxy.address);
   await erc20TransferProxyContract.addOperator(ExchangeV2_Proxy.address);
 
-  //set collection asset matcher
+  // set collection asset matcher
   const exchangeV2Contract = await ethers.getContract('ExchangeV2');
   await exchangeV2Contract.setAssetMatcher(COLLECTION, assetMatcherCollectionContract.address);
 
-  //set punk transfer proxy
+  // set punk transfer proxy
   const punkTransferProxyContract = await ethers.getContract('PunkTransferProxy');
   await exchangeV2Contract.setTransferProxy(CRYPTO_PUNKS, punkTransferProxyContract.address)
 
@@ -59,6 +59,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log('exchangeFeeWallet is: ', deployer);
   console.log('fees value is: ', feesBP / 100 + '%');
 };
+
 export default func;
 func.tags = ['ExchangeV2'];
 module.exports.dependencies = ['TransferProxy', 'ERC20TransferProxy', 'RoyaltiesRegistry', 'AssetMatcherCollection', 'PunkTransferProxy'];

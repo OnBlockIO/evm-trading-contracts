@@ -17,5 +17,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     '__OperatorRole_init'
   );
 };
+
 export default func;
 func.tags = ['PunkTransferProxy'];

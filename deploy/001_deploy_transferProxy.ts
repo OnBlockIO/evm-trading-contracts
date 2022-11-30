@@ -17,5 +17,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     '__TransferProxy_init'
   );
 };
+
 export default func;
 func.tags = ['TransferProxy'];
