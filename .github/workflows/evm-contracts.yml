@@ -2,7 +2,11 @@ name: EVM Contracts
 
 on:
   push:
+  - 'src/**'
+  - 'test/**'
   pull_request:
+  - 'src/**'
+  - 'test/**'
 
 jobs:
   build:
@@ -21,9 +25,9 @@ jobs:
     - name: Install dependencies
       run: |
         cp ./secrets.build.json ./.secrets.json
-        yarn
+        yarn hardhat compile
         
 
     - name: Test
       run: |
-        yarn test
+        yarn hardhat test
