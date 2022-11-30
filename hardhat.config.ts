@@ -22,7 +22,6 @@ if (process.env.HARDHAT_FORK) {
 import {
   MAINNET_PRIVATE_KEYS,
   TESTNET_PRIVATE_KEYS,
-  INFURA_API_KEYS,
   ETHERSCAN_API_KEYS,
   ALCHEMY_PROJECT_ID
 } from './.secrets.json';
@@ -93,25 +92,57 @@ const config: HardhatUserConfig = {
     },
     testnet_nodeploy: {
       url: 'https://eth-goerli.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
-      // url: 'https://goerli.infura.io/v3/' + INFURA_API_KEYS,
       accounts: TESTNET_PRIVATE_KEYS,
       saveDeployments: true,
       tags: ['testnet_nodeploy'],
     },
     ethereum_testnet: {
       url: 'https://eth-goerli.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
-      // url: 'https://goerli.infura.io/v3/' + INFURA_API_KEYS,
       accounts: TESTNET_PRIVATE_KEYS,
       saveDeployments: true,
       tags: ['testnet'],
     },
     ethereum_mainnet: {
       url: 'https://eth-mainnet.alchemyapi.io/v2/' + ALCHEMY_PROJECT_ID,
-      //url: 'https://mainnet.infura.io/v3/' + INFURA_API_KEYS,
       accounts: MAINNET_PRIVATE_KEYS,
       saveDeployments: true,
       tags: ['mainnet'],
-      // gasPrice: 150000000000, // 150 gwei
+    },
+    bsc_testnet: {
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
+      accounts: TESTNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
+    bsc_mainnet: {
+      url: 'https://bsc-dataseed.binance.org/',
+      accounts: MAINNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['mainnet'],
+    },
+    avalanche_testnet: {
+      url: 'https://api.avax-test.network/ext/bc/C/rpc',
+      accounts: TESTNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
+    avalanche_mainnet: {
+      url: 'https://api.avax.network/ext/bc/C/rpc',
+      accounts: MAINNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['mainnet'],
+    },
+    polygon_testnet: {
+      url: 'https://polygon-mumbai.g.alchemy.com/v2/' + ALCHEMY_PROJECT_ID,
+      accounts: TESTNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
+    polygon_mainnet: {
+      url: 'https://polygon-mainnet.g.alchemy.com/v2/' + ALCHEMY_PROJECT_ID,
+      accounts: MAINNET_PRIVATE_KEYS,
+      saveDeployments: true,
+      tags: ['mainnet'],
     },
   },
   etherscan: {

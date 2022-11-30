@@ -1,17 +1,16 @@
 {
-  "name": "template-ethereum-contracts",
-  "version": "0.1.0",
-  "description": "Template to develop ethereum smart contracts",
+  "name": "evm-trading-contracts",
+  "version": "1.0.0",
+  "description": "GhostMarket EVM trading smart contracts",
   "engines": {
     "node": ">= 12.18.0"
   },
-  "repository": "github:wighawag/template-ethereum-contracts",
-  "author": "wighawag",
+  "repository": "github:onblockio/evm-trading-contracts",
+  "author": "onblockio",
   "license": "MIT",
   "keywords": [
     "ethereum",
     "smart-contracts",
-    "template",
     "boilerplate",
     "hardhat",
     "solidity"
@@ -56,7 +55,7 @@
     "format:fix": "prettier --write \"**/*.{ts,js,sol}\"",
     "compile": "hardhat compile",
     "void:deploy": "hardhat deploy",
-    "test_hd": "cross-env HARDHAT_DEPLOY_FIXTURE=true HARDHAT_COMPILE=true mocha --bail --recursive test",
+    "test": "cross-env HARDHAT_DEPLOY_FIXTURE=true HARDHAT_COMPILE=true mocha --bail --recursive test",
     "gas": "cross-env REPORT_GAS=true hardhat test",
     "coverage": "cross-env HARDHAT_DEPLOY_FIXTURE=true hardhat coverage",
     "dev": "hardhat node --watch --export contractsInfo.json",
@@ -64,6 +63,7 @@
     "execute": "node ./_scripts.js run",
     "deploy": "node ./_scripts.js deploy",
     "export": "node ./_scripts.js export",
+    "hardhat": "hardhat",
     "fork:execute": "node ./_scripts.js fork:run",
     "fork:deploy": "node ./_scripts.js fork:deploy",
     "fork:dev": "node ./_scripts.js fork:dev",

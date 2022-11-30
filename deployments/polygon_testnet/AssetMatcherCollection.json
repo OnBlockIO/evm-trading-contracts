@@ -1,0 +1,116 @@
+{
+  "address": "0x6Da6b21004B51e27d13dF00E528904A4587e088c",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes4",
+              "name": "assetClass",
+              "type": "bytes4"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct LibAsset.AssetType",
+          "name": "leftAssetType",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "bytes4",
+              "name": "assetClass",
+              "type": "bytes4"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct LibAsset.AssetType",
+          "name": "rightAssetType",
+          "type": "tuple"
+        }
+      ],
+      "name": "matchAssets",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes4",
+              "name": "assetClass",
+              "type": "bytes4"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct LibAsset.AssetType",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xee7453f4a4e247f7996a26a84f9e890ac154e9428beeb27d77bf89f0fe4de7df",
+  "receipt": {
+    "to": null,
+    "from": "0x9E1bd73820A607b06086b5B5173765a61CEEE7dC",
+    "contractAddress": "0x6Da6b21004B51e27d13dF00E528904A4587e088c",
+    "transactionIndex": 19,
+    "gasUsed": "257204",
+    "logsBloom": "0x00000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000800000000000000000000100000000004000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000080000000000000000000200000000000040000000000000000000000000000000000000000000000004000000000000000000001000000000000004000000000000000100040000000000000000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0xd7cfb44f1a9d667a85362d18809ac0ca49c2df1431aec933d0c2116d7425ce07",
+    "transactionHash": "0xee7453f4a4e247f7996a26a84f9e890ac154e9428beeb27d77bf89f0fe4de7df",
+    "logs": [
+      {
+        "transactionIndex": 19,
+        "blockNumber": 26341099,
+        "transactionHash": "0xee7453f4a4e247f7996a26a84f9e890ac154e9428beeb27d77bf89f0fe4de7df",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x0000000000000000000000009e1bd73820a607b06086b5b5173765a61ceee7dc",
+          "0x000000000000000000000000be188d6641e8b680743a4815dfa0f6208038960f"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000015ee375950c000000000000000000000000000000000000000000000000000d0e71c51b55f8680000000000000000000000000000000000000000000016cb32a5d677c009fe520000000000000000000000000000000000000000000000000d0d12e1a5c0ec680000000000000000000000000000000000000000000016cb32a7355b359f0a52",
+        "logIndex": 47,
+        "blockHash": "0xd7cfb44f1a9d667a85362d18809ac0ca49c2df1431aec933d0c2116d7425ce07"
+      }
+    ],
+    "blockNumber": 26341099,
+    "cumulativeGasUsed": "2900285",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "solcInputHash": "34a24ccd634cbe27df10cb9ad1fadc20",
+  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"components\":[{\"internalType\":\"bytes4\",\"name\":\"assetClass\",\"type\":\"bytes4\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"struct LibAsset.AssetType\",\"name\":\"leftAssetType\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"bytes4\",\"name\":\"assetClass\",\"type\":\"bytes4\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"struct LibAsset.AssetType\",\"name\":\"rightAssetType\",\"type\":\"tuple\"}],\"name\":\"matchAssets\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes4\",\"name\":\"assetClass\",\"type\":\"bytes4\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"struct LibAsset.AssetType\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/custom-matcher/AssetMatcherCollection.sol\":\"AssetMatcherCollection\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":100},\"remappings\":[]},\"sources\":{\"src/IAssetMatcher.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity >=0.6.2 <0.8.0;\\npragma abicoder v2;\\n\\nimport \\\"./lib/LibAsset.sol\\\";\\n\\ninterface IAssetMatcher {\\n    function matchAssets(LibAsset.AssetType memory leftAssetType, LibAsset.AssetType memory rightAssetType)\\n        external\\n        view\\n        returns (LibAsset.AssetType memory);\\n}\\n\",\"keccak256\":\"0xa6f10068b04456720cc95357f6d3173df6440109ead124dc6d95d1e78cf42ed3\",\"license\":\"MIT\"},\"src/custom-matcher/AssetMatcherCollection.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity >=0.6.2 <0.8.0;\\npragma abicoder v2;\\n\\nimport \\\"../IAssetMatcher.sol\\\";\\n\\n/*\\n * Custom matcher for collection (assetClass, that need any/all elements from collection)\\n */\\ncontract AssetMatcherCollection is IAssetMatcher {\\n    bytes constant EMPTY = \\\"\\\";\\n\\n    function matchAssets(LibAsset.AssetType memory leftAssetType, LibAsset.AssetType memory rightAssetType)\\n        public\\n        view\\n        override\\n        returns (LibAsset.AssetType memory)\\n    {\\n        if (\\n            (rightAssetType.assetClass == LibAsset.ERC721_ASSET_CLASS) ||\\n            (rightAssetType.assetClass == LibAsset.ERC1155_ASSET_CLASS)\\n        ) {\\n            address leftToken = abi.decode(leftAssetType.data, (address));\\n            (address rightToken, ) = abi.decode(rightAssetType.data, (address, uint256));\\n            if (leftToken == rightToken) {\\n                return LibAsset.AssetType(rightAssetType.assetClass, rightAssetType.data);\\n            }\\n        }\\n        return LibAsset.AssetType(0, EMPTY);\\n    }\\n}\\n\",\"keccak256\":\"0x42d824c39a0dbdcd59ca3d1ef9c2b49bfad9404f6fd8172c9db394d3d5011d89\",\"license\":\"MIT\"},\"src/lib/LibAsset.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity >=0.6.2 <0.8.0;\\n\\nlibrary LibAsset {\\n    bytes4 public constant ETH_ASSET_CLASS = bytes4(keccak256(\\\"ETH\\\"));\\n    bytes4 public constant ERC20_ASSET_CLASS = bytes4(keccak256(\\\"ERC20\\\"));\\n    bytes4 public constant ERC721_ASSET_CLASS = bytes4(keccak256(\\\"ERC721\\\"));\\n    bytes4 public constant ERC1155_ASSET_CLASS = bytes4(keccak256(\\\"ERC1155\\\"));\\n    bytes4 public constant _GHOSTMARKET_NFT_ROYALTIES = bytes4(keccak256(\\\"_GHOSTMARKET_NFT_ROYALTIES\\\"));\\n    bytes4 public constant COLLECTION = bytes4(keccak256(\\\"COLLECTION\\\"));\\n\\n    bytes32 constant ASSET_TYPE_TYPEHASH = keccak256(\\\"AssetType(bytes4 assetClass,bytes data)\\\");\\n\\n    bytes32 constant ASSET_TYPEHASH =\\n        keccak256(\\\"Asset(AssetType assetType,uint256 value)AssetType(bytes4 assetClass,bytes data)\\\");\\n\\n    struct AssetType {\\n        bytes4 assetClass;\\n        bytes data;\\n    }\\n\\n    struct Asset {\\n        AssetType assetType;\\n        uint256 value;\\n    }\\n\\n    function hash(AssetType memory assetType) internal pure returns (bytes32) {\\n        return keccak256(abi.encode(ASSET_TYPE_TYPEHASH, assetType.assetClass, keccak256(assetType.data)));\\n    }\\n\\n    function hash(Asset memory asset) internal pure returns (bytes32) {\\n        return keccak256(abi.encode(ASSET_TYPEHASH, hash(asset.assetType), asset.value));\\n    }\\n}\\n\",\"keccak256\":\"0x606a6c9b7302caea558e5dc96a5a1e086aff3b6dced094179b876527f6cebec9\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506103b0806100206000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c80636d3f7cb014610030575b600080fd5b61004361003e366004610287565b610059565b60405161005091906102e8565b60405180910390f35b610061610142565b81516001600160e01b0319166339d690a360e11b1480610092575081516001600160e01b03191663025ceed960e61b145b1561011857600083602001518060200190518101906100b1919061023b565b9050600083602001518060200190518101906100cd919061025c565b509050806001600160a01b0316826001600160a01b031614156101155750506040805180820190915282516001600160e01b031916815260208084015190820152905061013c565b50505b50604080518082018252600080825282516020818101909452908152918101919091525b92915050565b60408051808201909152600081526060602082015290565b80516001600160a01b038116811461017157600080fd5b919050565b600060408284031215610187578081fd5b6040516040810167ffffffffffffffff82821081831117156101a557fe5b816040528293508435915063ffffffff60e01b821682146101c557600080fd5b90825260209084820135818111156101dc57600080fd5b8501601f810187136101ed57600080fd5b8035828111156101f957fe5b61020b601f8201601f19168501610356565b9250808352878482840101111561022157600080fd5b808483018585013760009083018401525091015292915050565b60006020828403121561024c578081fd5b6102558261015a565b9392505050565b6000806040838503121561026e578081fd5b6102778361015a565b9150602083015190509250929050565b60008060408385031215610299578182fd5b823567ffffffffffffffff808211156102b0578384fd5b6102bc86838701610176565b935060208501359150808211156102d1578283fd5b506102de85828601610176565b9150509250929050565b6000602080835263ffffffff60e01b84511681840152808401516040808501528051806060860152835b8181101561032e57828101840151868201608001528301610312565b8181111561033f5784608083880101525b50601f01601f191693909301608001949350505050565b60405181810167ffffffffffffffff8111828210171561037257fe5b60405291905056fea2646970667358221220005f1ad160a5ae3278b4f879d9a5fad1e6f9742a57e7fcbc5f5f501832a3a99d64736f6c63430007060033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c80636d3f7cb014610030575b600080fd5b61004361003e366004610287565b610059565b60405161005091906102e8565b60405180910390f35b610061610142565b81516001600160e01b0319166339d690a360e11b1480610092575081516001600160e01b03191663025ceed960e61b145b1561011857600083602001518060200190518101906100b1919061023b565b9050600083602001518060200190518101906100cd919061025c565b509050806001600160a01b0316826001600160a01b031614156101155750506040805180820190915282516001600160e01b031916815260208084015190820152905061013c565b50505b50604080518082018252600080825282516020818101909452908152918101919091525b92915050565b60408051808201909152600081526060602082015290565b80516001600160a01b038116811461017157600080fd5b919050565b600060408284031215610187578081fd5b6040516040810167ffffffffffffffff82821081831117156101a557fe5b816040528293508435915063ffffffff60e01b821682146101c557600080fd5b90825260209084820135818111156101dc57600080fd5b8501601f810187136101ed57600080fd5b8035828111156101f957fe5b61020b601f8201601f19168501610356565b9250808352878482840101111561022157600080fd5b808483018585013760009083018401525091015292915050565b60006020828403121561024c578081fd5b6102558261015a565b9392505050565b6000806040838503121561026e578081fd5b6102778361015a565b9150602083015190509250929050565b60008060408385031215610299578182fd5b823567ffffffffffffffff808211156102b0578384fd5b6102bc86838701610176565b935060208501359150808211156102d1578283fd5b506102de85828601610176565b9150509250929050565b6000602080835263ffffffff60e01b84511681840152808401516040808501528051806060860152835b8181101561032e57828101840151868201608001528301610312565b8181111561033f5784608083880101525b50601f01601f191693909301608001949350505050565b60405181810167ffffffffffffffff8111828210171561037257fe5b60405291905056fea2646970667358221220005f1ad160a5ae3278b4f879d9a5fad1e6f9742a57e7fcbc5f5f501832a3a99d64736f6c63430007060033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

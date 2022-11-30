@@ -1,0 +1,36 @@
+name: EVM Contracts
+
+on:
+  push:
+    paths:
+      - 'src/Contracts/**'
+
+  pull_request:
+    paths:
+      - 'src/Contracts/**'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup NodeJS
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Install dependencies
+      run: |
+        cd ./src/Contracts
+        cp ./secrets.build.json ./.secrets.json
+        yarn
+        
+
+    - name: Test
+      run: |
+        cd ./src/Contracts
+        yarn test

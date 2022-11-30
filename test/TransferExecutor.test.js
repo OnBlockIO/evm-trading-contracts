@@ -15,15 +15,12 @@ describe('TransferExecutor', async function () {
   let ghostERC1155Token
   let transferProxy
   let erc20TransferProxy
-
-  let erc20TransferProxy
   let transferManagerTest
-  const transferExecutorContract
+  let transferExecutorContract
 
   let accounts0
   let accounts1
   let accounts2
-  let wallet1
   let wallet1
   const data = '0x'
   beforeEach(async () => {
