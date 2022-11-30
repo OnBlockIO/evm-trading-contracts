@@ -2,11 +2,13 @@ name: EVM Contracts
 
 on:
   push:
-  - 'src/**'
-  - 'test/**'
+    paths:
+    - 'src/**'
+    - 'test/**'
   pull_request:
-  - 'src/**'
-  - 'test/**'
+    paths:
+    - 'src/**'
+    - 'test/**'
 
 jobs:
   build:
