@@ -2,12 +2,7 @@ name: EVM Contracts
 
 on:
   push:
-    paths:
-      - 'src/Contracts/**'
-
   pull_request:
-    paths:
-      - 'src/Contracts/**'
 
 jobs:
   build:
@@ -25,12 +20,10 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd ./src/Contracts
         cp ./secrets.build.json ./.secrets.json
         yarn
         
 
     - name: Test
       run: |
-        cd ./src/Contracts
         yarn test
