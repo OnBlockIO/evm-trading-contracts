@@ -1,6 +1,10 @@
 const ethUtil = require('ethereumjs-util');
+const Buffer = require("buffer").Buffer
 
 function id(str) {
+    if (typeof str === 'string') {
+        str = Buffer.from(str, 'utf8')
+    }
 	const hex = `0x${ethUtil.keccak256(str).toString("hex").substring(0, 8)}`
 	// console.log("id: "+ str + ": ",hex)
 	return hex;
