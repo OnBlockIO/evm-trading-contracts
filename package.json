@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "GhostMarket EVM trading smart contracts",
   "engines": {
-    "node": ">= 12.18.0"
+    "node": ">= 16.16.0"
   },
   "repository": "github:onblockio/evm-trading-contracts",
   "author": "onblockio",
