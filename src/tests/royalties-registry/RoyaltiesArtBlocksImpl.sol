@@ -15,7 +15,9 @@ contract RoyaltiesArtBlocksImpl is RoyaltyArtBlocks {
 
     mapping(uint256 => Project) projects;
 
-    function getRoyaltyData(uint256 _tokenId)
+    function getRoyaltyData(
+        uint256 _tokenId
+    )
         external
         view
         override

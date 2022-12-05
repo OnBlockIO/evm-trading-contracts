@@ -10,12 +10,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     log: true,
   });
-  
-  await execute(
-    'ERC20TransferProxy',
-    {from: deployer, log: true},
-    '__ERC20TransferProxy_init'
-  );
+
+  await execute('ERC20TransferProxy', {from: deployer, log: true}, '__ERC20TransferProxy_init');
 };
 
 export default func;

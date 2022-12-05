@@ -5,7 +5,7 @@ pragma solidity >=0.6.2 <0.8.0;
 import "./LibOrder.sol";
 
 library LibOrderData {
-    function parse(LibOrder.Order memory order) pure internal returns (LibOrderDataV2.DataV2 memory dataOrder) {
+    function parse(LibOrder.Order memory order) internal pure returns (LibOrderDataV2.DataV2 memory dataOrder) {
         if (order.dataType == LibOrderDataV1.V1) {
             LibOrderDataV1.DataV1 memory dataV1 = LibOrderDataV1.decodeOrderDataV1(order.data);
             dataOrder.payouts = dataV1.payouts;
@@ -13,8 +13,7 @@ library LibOrderData {
             dataOrder.isMakeFill = false;
         } else if (order.dataType == LibOrderDataV2.V2) {
             dataOrder = LibOrderDataV2.decodeOrderDataV2(order.data);
-        } else if (order.dataType == 0xffffffff) {
-        } else {
+        } else if (order.dataType == 0xffffffff) {} else {
             revert("Unknown Order data type");
         }
         if (dataOrder.payouts.length == 0) {
@@ -22,7 +21,7 @@ library LibOrderData {
         }
     }
 
-    function payoutSet(address orderAddress) pure internal returns (LibPart.Part[] memory) {
+    function payoutSet(address orderAddress) internal pure returns (LibPart.Part[] memory) {
         LibPart.Part[] memory payout = new LibPart.Part[](1);
         payout[0].account = payable(orderAddress);
         payout[0].value = 10000;

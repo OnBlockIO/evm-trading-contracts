@@ -10,11 +10,7 @@ contract RoyaltiesV2TestImpl is RoyaltiesV2Impl {
         _saveRoyalties(id, royalties);
     }
 
-    function updateAccount(
-        uint256 id,
-        address from,
-        address to
-    ) external {
+    function updateAccount(uint256 id, address from, address to) external {
         _updateAccount(id, from, to);
     }
 }

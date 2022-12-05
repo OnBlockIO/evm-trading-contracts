@@ -53,15 +53,11 @@ contract GhostMarketERC721 is
     bytes4 constant _INTERFACE_ID_ERC721_GHOSTMARKET = bytes4(keccak256("_INTERFACE_ID_ERC721_GHOSTMARKET"));
 
     /**
-     * bytes4(keccak256(_GHOSTMARKET_NFT_ROYALTIES)) == 0xee40ffc1
+     * bytes4(keccak256(_GHOSTMARKET_NFT_ROYALTIES)) == 0xe42093a6
      */
     bytes4 constant _GHOSTMARKET_NFT_ROYALTIES = bytes4(keccak256("_GHOSTMARKET_NFT_ROYALTIES"));
 
-    function initialize(
-        string memory name,
-        string memory symbol,
-        string memory uri
-    ) public override initializer {
+    function initialize(string memory name, string memory symbol, string memory uri) public override initializer {
         __Context_init_unchained();
         __ERC165_init_unchained();
         __AccessControl_init_unchained();
@@ -81,7 +77,9 @@ contract GhostMarketERC721 is
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterface(
+        bytes4 interfaceId
+    )
         public
         view
         virtual
@@ -238,7 +236,7 @@ contract GhostMarketERC721 is
     /**
      * @dev get royalties array
      */
-    function getRoyalties(uint256 tokenId) external view virtual returns (Royalty[] memory) {
+    function getRoyalties(uint256 tokenId) external view returns (Royalty[] memory) {
         return _royalties[tokenId];
     }
 

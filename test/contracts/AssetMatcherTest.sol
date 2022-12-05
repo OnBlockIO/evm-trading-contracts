@@ -13,11 +13,10 @@ contract AssetMatcherTest is Initializable, OwnableUpgradeable, AssetMatcher {
         __Ownable_init_unchained();
     }
 
-    function matchAssetsTest(LibAsset.AssetType calldata leftAssetType, LibAsset.AssetType calldata rightAssetType)
-        external
-        view
-        returns (LibAsset.AssetType memory)
-    {
+    function matchAssetsTest(
+        LibAsset.AssetType calldata leftAssetType,
+        LibAsset.AssetType calldata rightAssetType
+    ) external view returns (LibAsset.AssetType memory) {
         return matchAssets(leftAssetType, rightAssetType);
     }
 }

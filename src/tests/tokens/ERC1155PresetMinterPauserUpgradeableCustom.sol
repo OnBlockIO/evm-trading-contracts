@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable410/token/ERC1155/ERC1155Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/token/ERC1155/extensions/ERC1155BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/token/ERC1155/extensions/ERC1155PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/access/AccessControlEnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable410/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable410/proxy/utils/Initializable.sol";
 
 /**
  * @dev {ERC1155} token, including:
@@ -57,12 +60,7 @@ contract ERC1155PresetMinterPauserUpgradeableCustom is
     /**
      * @dev polynetwork CrossChainNFTMapping
      */
-    function mintWithURI(
-        address to,
-        uint256 tokenId,
-        string memory uri,
-        uint256 amount
-    ) external {
+    function mintWithURI(address to, uint256 tokenId, string memory uri, uint256 amount) external {
         require(hasRole(POLYNETWORK_ROLE, _msgSender()), "mintWithURI: must have POLYNETWORK_ROLE role to mint");
         _mint(to, tokenId, amount, "");
         _setURI(uri);
@@ -85,24 +83,14 @@ contract ERC1155PresetMinterPauserUpgradeableCustom is
      *
      * - the caller must have the `MINTER_ROLE`.
      */
-    function mint(
-        address to,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) internal virtual {
+    function mint(address to, uint256 id, uint256 amount, bytes memory data) internal virtual {
         _mint(to, id, amount, data);
     }
 
     /**
      * @dev xref:ROOT:erc1155.adoc#batch-operations[Batched] variant of {mint}.
      */
-    function mintBatch(
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
-    ) internal virtual {
+    function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) internal virtual {
         require(hasRole(MINTER_ROLE, _msgSender()), "ERC1155PresetMinterPauser: must have minter role to mint");
 
         _mintBatch(to, ids, amounts, data);
@@ -139,13 +127,9 @@ contract ERC1155PresetMinterPauserUpgradeableCustom is
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(AccessControlEnumerableUpgradeable, ERC1155Upgradeable)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(AccessControlEnumerableUpgradeable, ERC1155Upgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

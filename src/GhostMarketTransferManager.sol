@@ -76,15 +76,31 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         LibOrder.Order memory rightOrder,
         LibOrderDataV2.DataV2 memory leftOrderData,
         LibOrderDataV2.DataV2 memory rightOrderData
-    ) override internal returns (uint totalMakeValue, uint totalTakeValue) {
+    ) internal override returns (uint totalMakeValue, uint totalTakeValue) {
         LibFeeSide.FeeSide feeSide = LibFeeSide.getFeeSide(makeMatch.assetClass, takeMatch.assetClass);
         totalMakeValue = fill.leftValue;
         totalTakeValue = fill.rightValue;
         if (feeSide == LibFeeSide.FeeSide.MAKE) {
-            totalMakeValue = doTransfersWithFees(fill.leftValue, leftOrder.maker, leftOrderData, rightOrderData, makeMatch, takeMatch,  TO_TAKER);
+            totalMakeValue = doTransfersWithFees(
+                fill.leftValue,
+                leftOrder.maker,
+                leftOrderData,
+                rightOrderData,
+                makeMatch,
+                takeMatch,
+                TO_TAKER
+            );
             transferPayouts(takeMatch, fill.rightValue, rightOrder.maker, leftOrderData.payouts, TO_MAKER);
         } else if (feeSide == LibFeeSide.FeeSide.TAKE) {
-            totalTakeValue = doTransfersWithFees(fill.rightValue, rightOrder.maker, rightOrderData, leftOrderData, takeMatch, makeMatch, TO_MAKER);
+            totalTakeValue = doTransfersWithFees(
+                fill.rightValue,
+                rightOrder.maker,
+                rightOrderData,
+                leftOrderData,
+                takeMatch,
+                makeMatch,
+                TO_MAKER
+            );
             transferPayouts(makeMatch, fill.leftValue, leftOrder.maker, rightOrderData.payouts, TO_TAKER);
         } else {
             transferPayouts(makeMatch, fill.leftValue, leftOrder.maker, rightOrderData.payouts, TO_TAKER);
@@ -104,8 +120,16 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         totalAmount = calculateTotalAmount(amount, protocolFee, dataCalculate.originFees);
         uint rest = transferProtocolFee(totalAmount, amount, from, matchCalculate, transferDirection);
         rest = transferRoyalties(matchCalculate, matchNft, rest, amount, from, transferDirection);
-        (rest,) = transferFees(matchCalculate, rest, amount, dataCalculate.originFees, from, transferDirection, ORIGIN);
-        (rest,) = transferFees(matchCalculate, rest, amount, dataNft.originFees, from, transferDirection, ORIGIN);
+        (rest, ) = transferFees(
+            matchCalculate,
+            rest,
+            amount,
+            dataCalculate.originFees,
+            from,
+            transferDirection,
+            ORIGIN
+        );
+        (rest, ) = transferFees(matchCalculate, rest, amount, dataNft.originFees, from, transferDirection, ORIGIN);
         transferPayouts(matchCalculate, rest, from, dataNft.payouts, transferDirection);
     }
 
@@ -125,11 +149,17 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
             address tokenAddress = address(0);
             if (matchCalculate.assetClass == LibAsset.ERC20_ASSET_CLASS) {
                 tokenAddress = abi.decode(matchCalculate.data, (address));
-            } else  if (matchCalculate.assetClass == LibAsset.ERC1155_ASSET_CLASS) {
+            } else if (matchCalculate.assetClass == LibAsset.ERC1155_ASSET_CLASS) {
                 uint tokenId;
                 (tokenAddress, tokenId) = abi.decode(matchCalculate.data, (address, uint));
             }
-            transfer(LibAsset.Asset(matchCalculate, fee), from, getFeeReceiver(tokenAddress), transferDirection, PROTOCOL);
+            transfer(
+                LibAsset.Asset(matchCalculate, fee),
+                from,
+                getFeeReceiver(tokenAddress),
+                transferDirection,
+                PROTOCOL
+            );
         }
         return rest;
     }
@@ -182,7 +212,13 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
             (uint newRestValue, uint feeValue) = subFeeInBp(restValue, amount, fees[i].value);
             restValue = newRestValue;
             if (feeValue > 0) {
-                transfer(LibAsset.Asset(matchCalculate, feeValue), from,  fees[i].account, transferDirection, transferType);
+                transfer(
+                    LibAsset.Asset(matchCalculate, feeValue),
+                    from,
+                    fees[i].account,
+                    transferDirection,
+                    transferType
+                );
             }
         }
     }

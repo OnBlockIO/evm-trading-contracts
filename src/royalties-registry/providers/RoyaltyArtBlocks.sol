@@ -6,7 +6,9 @@ pragma abicoder v2;
 import "../../lib/LibPart.sol";
 
 abstract contract RoyaltyArtBlocks {
-    function getRoyaltyData(uint256 _tokenId)
+    function getRoyaltyData(
+        uint256 _tokenId
+    )
         external
         view
         virtual

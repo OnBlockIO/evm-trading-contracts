@@ -8,8 +8,7 @@ import "./interfaces/ICryptoPunksMarket.sol";
 import "./OperatorRole.sol";
 
 contract PunkTransferProxy is OperatorRole, ITransferProxy {
-
-    function transfer(LibAsset.Asset memory asset, address from, address to) override onlyOperator external {
+    function transfer(LibAsset.Asset memory asset, address from, address to) external override onlyOperator {
         (address token, uint punkIndex) = abi.decode(asset.assetType.data, (address, uint));
         ICryptoPunksMarket punkToken = ICryptoPunksMarket(token);
         //check punk from real owner

@@ -8,11 +8,11 @@ import "../../src/GhostMarketTransferManager.sol";
 import "../../src/OrderValidator.sol";
 
 contract GhostMarketTransferManagerTest is GhostMarketTransferManager, TransferExecutor, OrderValidator {
-    function encode(LibOrderDataV1.DataV1 memory data) pure external returns (bytes memory) {
+    function encode(LibOrderDataV1.DataV1 memory data) external pure returns (bytes memory) {
         return abi.encode(data);
     }
 
-    function encodeV2(LibOrderDataV2.DataV2 memory data) pure external returns (bytes memory) {
+    function encodeV2(LibOrderDataV2.DataV2 memory data) external pure returns (bytes memory) {
         return abi.encode(data);
     }
 
@@ -22,8 +22,16 @@ contract GhostMarketTransferManagerTest is GhostMarketTransferManager, TransferE
         LibFill.FillResult memory fill,
         LibOrder.Order memory leftOrder,
         LibOrder.Order memory rightOrder
-    ) payable external {
-        doTransfers(makeMatch, takeMatch, fill, leftOrder, rightOrder, LibOrderData.parse(leftOrder), LibOrderData.parse(rightOrder));
+    ) external payable {
+        doTransfers(
+            makeMatch,
+            takeMatch,
+            fill,
+            leftOrder,
+            rightOrder,
+            LibOrderData.parse(leftOrder),
+            LibOrderData.parse(rightOrder)
+        );
     }
 
     function __TransferManager_init(

@@ -19,11 +19,7 @@ abstract contract AbstractRoyalties {
         _onRoyaltiesSet(id, _royalties);
     }
 
-    function _updateAccount(
-        uint256 _id,
-        address _from,
-        address _to
-    ) internal {
+    function _updateAccount(uint256 _id, address _from, address _to) internal {
         uint256 length = royalties[_id].length;
         for (uint256 i = 0; i < length; i++) {
             if (royalties[_id][i].account == _from) {

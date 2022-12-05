@@ -20,11 +20,7 @@ contract TestERC721WithRoyaltiesV2OwnableUpgradeable is
         __Ownable_init_unchained();
     }
 
-    function mint(
-        address to,
-        uint256 tokenId,
-        LibPart.Part[] memory _fees
-    ) external {
+    function mint(address to, uint256 tokenId, LibPart.Part[] memory _fees) external {
         _mint(to, tokenId);
         _saveRoyalties(tokenId, _fees);
     }

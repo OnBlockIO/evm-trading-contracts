@@ -1,6 +1,6 @@
-import { expect } from 'chai';
-import { BigNumber, ContractReceipt } from 'ethers';
-import { Interface, LogDescription } from 'ethers/lib/utils';
+import {expect} from 'chai';
+import {BigNumber, ContractReceipt} from 'ethers';
+import {Interface, LogDescription} from 'ethers/lib/utils';
 
 // Ported from @openzeppelin/test-helpers to use with Ethers. The Test Helpers don't
 // yet have Typescript typings, so we're being lax about them here.
@@ -96,7 +96,7 @@ export function notEmitted(receipt: ContractReceipt, eventName: string): void {
   }
 }
 
-function contains(args: { [key: string]: any | undefined }, key: string, value: any) {
+function contains(args: {[key: string]: any | undefined}, key: string, value: any) {
   expect(key in args).to.equal(true, `Event argument '${key}' not found`);
 
   if (value === null) {
@@ -107,9 +107,6 @@ function contains(args: { [key: string]: any | undefined }, key: string, value: 
 
     expect(args[key]).to.equal(value, `expected event argument '${key}' to have value ${expected} but got ${actual}`);
   } else {
-    expect(args[key]).to.eql(
-      value,
-      `expected event argument '${key}' to have value ${value} but got ${args[key]}`
-    );
+    expect(args[key]).to.eql(value, `expected event argument '${key}' to have value ${value} but got ${args[key]}`);
   }
 }

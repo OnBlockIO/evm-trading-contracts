@@ -18,11 +18,10 @@ abstract contract AssetMatcher is Initializable, OwnableUpgradeable {
         emit MatcherChange(assetType, matcher);
     }
 
-    function matchAssets(LibAsset.AssetType memory leftAssetType, LibAsset.AssetType memory rightAssetType)
-        internal
-        view
-        returns (LibAsset.AssetType memory)
-    {
+    function matchAssets(
+        LibAsset.AssetType memory leftAssetType,
+        LibAsset.AssetType memory rightAssetType
+    ) internal view returns (LibAsset.AssetType memory) {
         LibAsset.AssetType memory result = matchAssetOneSide(leftAssetType, rightAssetType);
         if (result.assetClass == 0) {
             return matchAssetOneSide(rightAssetType, leftAssetType);
@@ -31,11 +30,10 @@ abstract contract AssetMatcher is Initializable, OwnableUpgradeable {
         }
     }
 
-    function matchAssetOneSide(LibAsset.AssetType memory leftAssetType, LibAsset.AssetType memory rightAssetType)
-        private
-        view
-        returns (LibAsset.AssetType memory)
-    {
+    function matchAssetOneSide(
+        LibAsset.AssetType memory leftAssetType,
+        LibAsset.AssetType memory rightAssetType
+    ) private view returns (LibAsset.AssetType memory) {
         bytes4 classLeft = leftAssetType.assetClass;
         bytes4 classRight = rightAssetType.assetClass;
         if (classLeft == LibAsset.ETH_ASSET_CLASS) {
@@ -72,11 +70,10 @@ abstract contract AssetMatcher is Initializable, OwnableUpgradeable {
         revert("not found IAssetMatcher");
     }
 
-    function simpleMatch(LibAsset.AssetType memory leftAssetType, LibAsset.AssetType memory rightAssetType)
-        private
-        pure
-        returns (LibAsset.AssetType memory)
-    {
+    function simpleMatch(
+        LibAsset.AssetType memory leftAssetType,
+        LibAsset.AssetType memory rightAssetType
+    ) private pure returns (LibAsset.AssetType memory) {
         bytes32 leftHash = keccak256(leftAssetType.data);
         bytes32 rightHash = keccak256(rightAssetType.data);
         if (leftHash == rightHash) {

@@ -145,11 +145,7 @@ contract CryptoPunksMarket {
         PunkOffered(punkIndex, minSalePriceInWei, 0x0);
     }
 
-    function offerPunkForSaleToAddress(
-        uint256 punkIndex,
-        uint256 minSalePriceInWei,
-        address toAddress
-    ) {
+    function offerPunkForSaleToAddress(uint256 punkIndex, uint256 minSalePriceInWei, address toAddress) {
         if (!allPunksAssigned) throw;
         if (punkIndexToAddress[punkIndex] != msg.sender) throw;
         if (punkIndex >= 10000) throw;

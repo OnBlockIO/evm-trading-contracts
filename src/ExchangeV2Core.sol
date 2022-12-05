@@ -20,7 +20,7 @@ abstract contract ExchangeV2Core is
     using SafeMathUpgradeable for uint256;
     using LibTransfer for address;
 
-    uint256 private constant UINT256_MAX = 2**256 - 1;
+    uint256 private constant UINT256_MAX = 2 ** 256 - 1;
 
     address public matchAndTransferAdmin;
 
@@ -28,8 +28,22 @@ abstract contract ExchangeV2Core is
     mapping(bytes32 => uint256) public fills;
 
     //events
-    event OrderCancelled(bytes32 hash, address maker, LibAsset.AssetType makeAssetType, LibAsset.AssetType takeAssetType);
-    event OrderFilled(bytes32 leftHash, bytes32 rightHash, address leftMaker, address rightMaker, uint newLeftFill, uint newRightFill, LibAsset.AssetType leftAsset, LibAsset.AssetType rightAsset);
+    event OrderCancelled(
+        bytes32 hash,
+        address maker,
+        LibAsset.AssetType makeAssetType,
+        LibAsset.AssetType takeAssetType
+    );
+    event OrderFilled(
+        bytes32 leftHash,
+        bytes32 rightHash,
+        address leftMaker,
+        address rightMaker,
+        uint newLeftFill,
+        uint newRightFill,
+        LibAsset.AssetType leftAsset,
+        LibAsset.AssetType rightAsset
+    );
 
     /**
      * @dev cancel the the given order by adding the biggest possible number to fills mapping
@@ -53,7 +67,12 @@ abstract contract ExchangeV2Core is
             require(orders[i].salt != 0, "0 salt can't be used");
             bytes32 orderKeyHash = LibOrder.hashKey(orders[i]);
             fills[orderKeyHash] = UINT256_MAX;
-            emit OrderCancelled(orderKeyHash, orders[i].maker, orders[i].makeAsset.assetType, orders[i].takeAsset.assetType);
+            emit OrderCancelled(
+                orderKeyHash,
+                orders[i].maker,
+                orders[i].makeAsset.assetType,
+                orders[i].takeAsset.assetType
+            );
         }
     }
 
@@ -85,10 +104,10 @@ abstract contract ExchangeV2Core is
     /**
      * @dev match orders without a signature, only admin
      */
-    function matchAndTransferWithoutSignature(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight)
-        external
-        payable
-    {
+    function matchAndTransferWithoutSignature(
+        LibOrder.Order memory orderLeft,
+        LibOrder.Order memory orderRight
+    ) external payable {
         require(msg.sender == matchAndTransferAdmin, "not allowed to matchAndTransfer without a signature");
         matchAndTransfer(orderLeft, orderRight);
     }
@@ -101,9 +120,24 @@ abstract contract ExchangeV2Core is
         LibOrderDataV2.DataV2 memory leftOrderData = LibOrderData.parse(orderLeft);
         LibOrderDataV2.DataV2 memory rightOrderData = LibOrderData.parse(orderRight);
 
-        LibFill.FillResult memory newFill = getFillSetNew(orderLeft, orderRight, leftOrderKeyHash, rightOrderKeyHash, leftOrderData, rightOrderData);
+        LibFill.FillResult memory newFill = getFillSetNew(
+            orderLeft,
+            orderRight,
+            leftOrderKeyHash,
+            rightOrderKeyHash,
+            leftOrderData,
+            rightOrderData
+        );
 
-        (uint totalMakeValue, uint totalTakeValue) = doTransfers(makeMatch, takeMatch, newFill, orderLeft, orderRight, leftOrderData, rightOrderData);
+        (uint totalMakeValue, uint totalTakeValue) = doTransfers(
+            makeMatch,
+            takeMatch,
+            newFill,
+            orderLeft,
+            orderRight,
+            leftOrderData,
+            rightOrderData
+        );
         if (makeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
             require(takeMatch.assetClass != LibAsset.ETH_ASSET_CLASS);
             require(msg.value >= totalMakeValue, "not enough BaseCurrency");
@@ -116,7 +150,16 @@ abstract contract ExchangeV2Core is
                 address(msg.sender).transferEth(msg.value.sub(totalTakeValue));
             }
         }
-        emit OrderFilled(leftOrderKeyHash, rightOrderKeyHash, orderLeft.maker, orderRight.maker, newFill.rightValue, newFill.leftValue, makeMatch, takeMatch);
+        emit OrderFilled(
+            leftOrderKeyHash,
+            rightOrderKeyHash,
+            orderLeft.maker,
+            orderRight.maker,
+            newFill.rightValue,
+            newFill.leftValue,
+            makeMatch,
+            takeMatch
+        );
     }
 
     function getFillSetNew(
@@ -129,7 +172,14 @@ abstract contract ExchangeV2Core is
     ) internal returns (LibFill.FillResult memory) {
         uint leftOrderFill = getOrderFill(orderLeft, leftOrderKeyHash);
         uint rightOrderFill = getOrderFill(orderRight, rightOrderKeyHash);
-        LibFill.FillResult memory newFill = LibFill.fillOrder(orderLeft, orderRight, leftOrderFill, rightOrderFill, leftOrderData.isMakeFill, rightOrderData.isMakeFill);
+        LibFill.FillResult memory newFill = LibFill.fillOrder(
+            orderLeft,
+            orderRight,
+            leftOrderFill,
+            rightOrderFill,
+            leftOrderData.isMakeFill,
+            rightOrderData.isMakeFill
+        );
 
         require(newFill.rightValue > 0 && newFill.leftValue > 0, "nothing to fill");
 
@@ -159,11 +209,10 @@ abstract contract ExchangeV2Core is
         }
     }
 
-    function matchAssets(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight)
-        internal
-        view
-        returns (LibAsset.AssetType memory makeMatch, LibAsset.AssetType memory takeMatch)
-    {
+    function matchAssets(
+        LibOrder.Order memory orderLeft,
+        LibOrder.Order memory orderRight
+    ) internal view returns (LibAsset.AssetType memory makeMatch, LibAsset.AssetType memory takeMatch) {
         makeMatch = matchAssets(orderLeft.makeAsset.assetType, orderRight.takeAsset.assetType);
         require(makeMatch.assetClass != 0, "assets don't match");
         takeMatch = matchAssets(orderLeft.takeAsset.assetType, orderRight.makeAsset.assetType);

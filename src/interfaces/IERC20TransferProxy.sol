@@ -10,10 +10,5 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
  * contracts that implement this interface must support erc20safeTransferFrom method
  */
 interface IERC20TransferProxy {
-    function erc20safeTransferFrom(
-        IERC20Upgradeable token,
-        address from,
-        address to,
-        uint256 value
-    ) external;
+    function erc20safeTransferFrom(IERC20Upgradeable token, address from, address to, uint256 value) external;
 }

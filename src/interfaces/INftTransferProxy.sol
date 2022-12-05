@@ -12,12 +12,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.so
  * erc721safeTransferFrom and erc1155safeTransferFrom functions
  */
 interface INftTransferProxy {
-    function erc721safeTransferFrom(
-        IERC721Upgradeable token,
-        address from,
-        address to,
-        uint256 tokenId
-    ) external;
+    function erc721safeTransferFrom(IERC721Upgradeable token, address from, address to, uint256 tokenId) external;
 
     function erc1155safeTransferFrom(
         IERC1155Upgradeable token,

@@ -10,12 +10,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     log: true,
   });
-  
-  await execute(
-    'TransferProxy',
-    {from: deployer, log: true},
-    '__TransferProxy_init'
-  );
+
+  await execute('TransferProxy', {from: deployer, log: true}, '__TransferProxy_init');
 };
 
 export default func;

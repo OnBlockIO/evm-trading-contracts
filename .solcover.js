@@ -1,3 +1,3 @@
 module.exports = {
-    skipFiles: ['tests/CryptoPunkMarket.sol']
-  };
+  skipFiles: ['tests/CryptoPunkMarket.sol'],
+};

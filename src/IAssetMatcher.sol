@@ -6,8 +6,8 @@ pragma abicoder v2;
 import "./lib/LibAsset.sol";
 
 interface IAssetMatcher {
-    function matchAssets(LibAsset.AssetType memory leftAssetType, LibAsset.AssetType memory rightAssetType)
-        external
-        view
-        returns (LibAsset.AssetType memory);
+    function matchAssets(
+        LibAsset.AssetType memory leftAssetType,
+        LibAsset.AssetType memory rightAssetType
+    ) external view returns (LibAsset.AssetType memory);
 }

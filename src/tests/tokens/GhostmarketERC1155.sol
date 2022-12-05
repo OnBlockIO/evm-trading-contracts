@@ -5,7 +5,7 @@ import "./ERC1155PresetMinterPauserUpgradeableCustom.sol";
 import "@openzeppelin/contracts-upgradeable410/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/access/OwnableUpgradeable.sol";
-
+import "@openzeppelin/contracts-upgradeable410/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable410/utils/introspection/ERC165StorageUpgradeable.sol";
 
 /**
@@ -58,15 +58,11 @@ contract GhostMarketERC1155 is
     bytes4 constant _INTERFACE_ID_ERC1155_GHOSTMARKET = bytes4(keccak256("_INTERFACE_ID_ERC1155_GHOSTMARKET"));
 
     /**
-     * bytes4(keccak256(_GHOSTMARKET_NFT_ROYALTIES)) == 0xee40ffc1
+     * bytes4(keccak256(_GHOSTMARKET_NFT_ROYALTIES)) == 0xe42093a6
      */
     bytes4 constant _GHOSTMARKET_NFT_ROYALTIES = bytes4(keccak256("_GHOSTMARKET_NFT_ROYALTIES"));
 
-    function initialize(
-        string memory _name,
-        string memory _symbol,
-        string memory uri
-    ) public virtual initializer {
+    function initialize(string memory _name, string memory _symbol, string memory uri) public virtual initializer {
         __Context_init_unchained();
         __ERC165_init_unchained();
         __AccessControl_init_unchained();
@@ -92,7 +88,9 @@ contract GhostMarketERC1155 is
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterface(
+        bytes4 interfaceId
+    )
         public
         view
         virtual
@@ -105,7 +103,7 @@ contract GhostMarketERC1155 is
     /**
      * @dev check if msg.sender is owner of NFT id
      */
-    function _ownerOf(uint256 tokenId) public view returns (bool) {
+    function _ownerOf(uint256 tokenId) internal view returns (bool) {
         return balanceOf(msg.sender, tokenId) != 0;
     }
 
@@ -248,7 +246,7 @@ contract GhostMarketERC1155 is
     /**
      * @dev get royalties array
      */
-    function getRoyalties(uint256 tokenId) external view virtual returns (Royalty[] memory) {
+    function getRoyalties(uint256 tokenId) external view returns (Royalty[] memory) {
         return _royalties[tokenId];
     }
 

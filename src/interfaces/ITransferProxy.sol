@@ -6,9 +6,5 @@ pragma abicoder v2;
 import "../lib/LibAsset.sol";
 
 interface ITransferProxy {
-    function transfer(
-        LibAsset.Asset calldata asset,
-        address from,
-        address to
-    ) external;
+    function transfer(LibAsset.Asset calldata asset, address from, address to) external;
 }

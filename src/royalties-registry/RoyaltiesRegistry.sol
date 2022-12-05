@@ -58,7 +58,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
     /// @dev returns royalties type from uint
     function _getRoyaltiesType(uint256 data) internal pure returns (uint256) {
         for (uint256 i = 1; i <= royaltiesTypesAmount; i++) {
-            if (data / 2**(256 - i) == 1) {
+            if (data / 2 ** (256 - i) == 1) {
                 return i;
             }
         }
@@ -66,13 +66,9 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
     }
 
     /// @dev sets royalties type for token contract
-    function setRoyaltiesType(
-        address token,
-        uint256 royaltiesType,
-        address royaltiesProvider
-    ) internal {
+    function setRoyaltiesType(address token, uint256 royaltiesType, address royaltiesProvider) internal {
         require(royaltiesType > 0 && royaltiesType <= royaltiesTypesAmount, "wrong royaltiesType");
-        royaltiesProviders[token] = uint256(royaltiesProvider) + 2**(256 - royaltiesType);
+        royaltiesProviders[token] = uint256(royaltiesProvider) + 2 ** (256 - royaltiesType);
     }
 
     /// @dev clears and sets new royalties type for token contract
@@ -116,8 +112,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
 
     /// @dev calculates royalties type for token contract
     function calculateRoyaltiesType(address token, address royaltiesProvider) internal view returns (uint256) {
-
-        try IERC165Upgradeable(token).supportsInterface(LibRoyaltiesV2._INTERFACE_ID_ROYALTIES) returns(bool result) {
+        try IERC165Upgradeable(token).supportsInterface(LibRoyaltiesV2._INTERFACE_ID_ROYALTIES) returns (bool result) {
             if (result) {
                 return 2;
             }

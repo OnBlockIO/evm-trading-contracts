@@ -21,12 +21,10 @@ contract RoyaltiesV2Impl is AbstractRoyalties, RoyaltiesV2, IERC2981 {
      *Token (ERC721, ERC721Minimal, ERC721MinimalMeta, ERC1155 ) can have a number of different royalties beneficiaries
      *calculate sum all royalties, but royalties beneficiary will be only one royalties[0].account, according to rules of IERC2981
      */
-    function royaltyInfo(uint256 id, uint256 _salePrice)
-        external
-        view
-        override
-        returns (address receiver, uint256 royaltyAmount)
-    {
+    function royaltyInfo(
+        uint256 id,
+        uint256 _salePrice
+    ) external view override returns (address receiver, uint256 royaltyAmount) {
         if (royalties[id].length == 0) {
             receiver = address(0);
             royaltyAmount = 0;

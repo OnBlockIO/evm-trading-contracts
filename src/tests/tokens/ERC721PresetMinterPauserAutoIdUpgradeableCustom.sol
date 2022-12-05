@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable410/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/token/ERC721/extensions/ERC721PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/access/AccessControlEnumerableUpgradeable.sol";
-
+import "@openzeppelin/contracts-upgradeable410/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable410/utils/CountersUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable410/proxy/utils/Initializable.sol";
 
 /**
  * @dev {ERC721} token, including:
@@ -115,24 +117,16 @@ contract ERC721PresetMinterPauserAutoIdUpgradeableCustom is
     /**
      * @dev See {IERC721Metadata-tokenURI}.
      */
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        virtual
-        override(ERC721URIStorageUpgradeable, ERC721Upgradeable)
-        returns (string memory)
-    {
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override(ERC721URIStorageUpgradeable, ERC721Upgradeable) returns (string memory) {
         return ERC721URIStorageUpgradeable.tokenURI(tokenId);
     }
 
     /**
      * @dev polynetwork CrossChainNFTMapping
      */
-    function mintWithURI(
-        address to,
-        uint256 tokenId,
-        string memory uri
-    ) external {
+    function mintWithURI(address to, uint256 tokenId, string memory uri) external {
         require(hasRole(POLYNETWORK_ROLE, _msgSender()), "mintWithURI: must have POLYNETWORK_ROLE role to mint");
         require(!_exists(tokenId), "token id already exist");
         _safeMint(to, tokenId);
@@ -204,7 +198,9 @@ contract ERC721PresetMinterPauserAutoIdUpgradeableCustom is
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterface(
+        bytes4 interfaceId
+    )
         public
         view
         virtual

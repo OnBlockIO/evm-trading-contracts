@@ -8,12 +8,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deploy, get} = deployments;
   const {deployer} = await getNamedAccounts();
 
-  const [TransferProxy, ERC20TransferProxy, RoyaltiesRegistry, AssetMatcherCollection, PunkTransferProxy] = await Promise.all([get("TransferProxy"), get("ERC20TransferProxy"), get("RoyaltiesRegistry"), get("AssetMatcherCollection"), get("PunkTransferProxy")]);
+  const [TransferProxy, ERC20TransferProxy, RoyaltiesRegistry, AssetMatcherCollection, PunkTransferProxy] =
+    await Promise.all([
+      get('TransferProxy'),
+      get('ERC20TransferProxy'),
+      get('RoyaltiesRegistry'),
+      get('AssetMatcherCollection'),
+      get('PunkTransferProxy'),
+    ]);
 
   const transferProxyContract = await ethers.getContractAt('TransferProxy', TransferProxy.address);
   const erc20TransferProxyContract = await ethers.getContractAt('ERC20TransferProxy', ERC20TransferProxy.address);
   const royaltiesRegistryContract = await ethers.getContractAt('RoyaltiesRegistry', RoyaltiesRegistry.address);
-  const assetMatcherCollectionContract = await ethers.getContractAt('AssetMatcherCollection', AssetMatcherCollection.address);
+  const assetMatcherCollectionContract = await ethers.getContractAt(
+    'AssetMatcherCollection',
+    AssetMatcherCollection.address
+  );
   const feesBP = 200;
 
   const ExchangeV2_Proxy = await deploy('ExchangeV2', {
@@ -29,7 +39,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             erc20TransferProxyContract.address,
             feesBP,
             deployer,
-            royaltiesRegistryContract.address
+            royaltiesRegistryContract.address,
           ],
         },
       },
@@ -47,7 +57,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // set punk transfer proxy
   const punkTransferProxyContract = await ethers.getContractAt('PunkTransferProxy', PunkTransferProxy.address);
-  await exchangeV2Contract.setTransferProxy(CRYPTO_PUNKS, punkTransferProxyContract.address)
+  await exchangeV2Contract.setTransferProxy(CRYPTO_PUNKS, punkTransferProxyContract.address);
 
   console.log('deployer is: ', deployer);
   console.log('transferProxyContract deployed at: ', transferProxyContract.address);
@@ -62,4 +72,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 func.tags = ['ExchangeV2'];
-module.exports.dependencies = ['TransferProxy', 'ERC20TransferProxy', 'RoyaltiesRegistry', 'AssetMatcherCollection', 'PunkTransferProxy'];
+module.exports.dependencies = [
+  'TransferProxy',
+  'ERC20TransferProxy',
+  'RoyaltiesRegistry',
+  'AssetMatcherCollection',
+  'PunkTransferProxy',
+];

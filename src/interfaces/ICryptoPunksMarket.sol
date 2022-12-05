@@ -7,7 +7,7 @@ interface ICryptoPunksMarket {
     //to get address punk owner from mapping (uint => address) public punkIndexToAddress;
     function punkIndexToAddress(uint key) external returns (address);
 
-    function buyPunk(uint punkIndex) payable external;
+    function buyPunk(uint punkIndex) external payable;
 
     function transferPunk(address to, uint punkIndex) external;
 

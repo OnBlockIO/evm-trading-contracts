@@ -8,12 +8,10 @@ import "./LibRoyalties2981.sol";
 import "../lib/LibPart.sol";
 
 contract Royalties2981TestImpl is IERC2981 {
-    function royaltyInfo(uint256 _tokenId, uint256 _salePrice)
-        external
-        view
-        override
-        returns (address receiver, uint256 royaltyAmount)
-    {
+    function royaltyInfo(
+        uint256 _tokenId,
+        uint256 _salePrice
+    ) external view override returns (address receiver, uint256 royaltyAmount) {
         receiver = address(_tokenId >> 96);
         royaltyAmount = _salePrice / 10;
     }

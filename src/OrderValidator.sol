@@ -13,7 +13,7 @@ abstract contract OrderValidator is Initializable, ContextUpgradeable, EIP712Upg
     using LibSignature for bytes32;
     using AddressUpgradeable for address;
 
-    bytes4 constant internal MAGICVALUE = 0x1626ba7e;
+    bytes4 internal constant MAGICVALUE = 0x1626ba7e;
 
     function __OrderValidator_init_unchained() internal initializer {
         __EIP712_init_unchained("GhostMarket", "2");
@@ -33,7 +33,7 @@ abstract contract OrderValidator is Initializable, ContextUpgradeable, EIP712Upg
                 if (signature.length == 65) {
                     signer = _hashTypedDataV4(hash).recover(signature);
                 }
-                if  (signer != order.maker) {
+                if (signer != order.maker) {
                     if (order.maker.isContract()) {
                         require(
                             IERC1271(order.maker).isValidSignature(_hashTypedDataV4(hash), signature) == MAGICVALUE,
@@ -43,7 +43,7 @@ abstract contract OrderValidator is Initializable, ContextUpgradeable, EIP712Upg
                         revert("order signature verification error");
                     }
                 } else {
-                    require (order.maker != address(0), "no maker");
+                    require(order.maker != address(0), "no maker");
                 }
             }
         }

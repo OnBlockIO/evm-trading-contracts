@@ -8,10 +8,10 @@ import "../ExchangeV2Core.sol";
 import "../GhostMarketTransferManager.sol";
 
 contract TestExchangeV2 is ExchangeV2 {
-    function matchAndTransferExternal(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight)
-        public
-        payable
-    {
+    function matchAndTransferExternal(
+        LibOrder.Order memory orderLeft,
+        LibOrder.Order memory orderRight
+    ) public payable {
         matchAndTransfer(orderLeft, orderRight);
     }
 

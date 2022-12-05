@@ -11,11 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  await execute(
-    'PunkTransferProxy',
-    {from: deployer, log: true},
-    '__OperatorRole_init'
-  );
+  await execute('PunkTransferProxy', {from: deployer, log: true}, '__OperatorRole_init');
 };
 
 export default func;

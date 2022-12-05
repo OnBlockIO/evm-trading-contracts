@@ -17,11 +17,7 @@ library LibSignature {
      * this is by receiving a hash of the original message (which may otherwise
      * be too long), and then calling {toEthSignedMessageHash} on it.
      */
-    function recover(bytes32 hash, bytes memory signature)
-        internal
-        pure
-        returns (address)
-    {
+    function recover(bytes32 hash, bytes memory signature) internal pure returns (address) {
         // Check the signature length
         if (signature.length != 65) {
             revert("ECDSA: invalid signature length");
@@ -48,12 +44,7 @@ library LibSignature {
      * @dev Overload of {ECDSA-recover-bytes32-bytes-} that receives the `v`,
      * `r` and `s` signature fields separately.
      */
-    function recover(
-        bytes32 hash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) internal pure returns (address) {
+    function recover(bytes32 hash, uint8 v, bytes32 r, bytes32 s) internal pure returns (address) {
         // EIP-2 still allows signature malleability for ecrecover(). Remove this possibility and make the signature
         // unique. Appendix F in the Ethereum Yellow paper (https://ethereum.github.io/yellowpaper/paper.pdf), defines
         // the valid range for s in (281): 0 < s < secp256k1n ÷ 2 + 1, and for v in (282): v ∈ {27, 28}. Most
@@ -64,8 +55,7 @@ library LibSignature {
         // vice versa. If your library also generates signatures with 0/1 for v instead 27/28, add 27 to v to accept
         // these malleable signatures as well.
         require(
-            uint256(s) <=
-                0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0,
+            uint256(s) <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0,
             "ECDSA: invalid signature 's' value"
         );
 
@@ -74,10 +64,7 @@ library LibSignature {
         // and v = v - 4
         address signer;
         if (v > 30) {
-            require(
-                v - 4 == 27 || v - 4 == 28,
-                "ECDSA: invalid signature 'v' value"
-            );
+            require(v - 4 == 27 || v - 4 == 28, "ECDSA: invalid signature 'v' value");
             signer = ecrecover(toEthSignedMessageHash(hash), v - 4, r, s);
         } else {
             require(v == 27 || v == 28, "ECDSA: invalid signature 'v' value");
@@ -97,16 +84,9 @@ library LibSignature {
      *
      * See {recover}.
      */
-    function toEthSignedMessageHash(bytes32 hash)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function toEthSignedMessageHash(bytes32 hash) internal pure returns (bytes32) {
         // 32 is the length in bytes of hash,
         // enforced by the type signature above
-        return
-            keccak256(
-                abi.encodePacked("\x19Ethereum Signed Message:\n32", hash)
-            );
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
     }
 }
