@@ -120,7 +120,7 @@ describe('Exchange Test', async function () {
     await expect(tx2).to.be.revertedWith('revert');
   });
 
-  it("should failt for order with salt 0 cancel", async () => {
+  it('should failt for order with salt 0 cancel', async () => {
     const {left} = await prepare2Orders();
     left.salt = '0';
 
@@ -611,7 +611,6 @@ describe('Exchange Test', async function () {
     await expect(wrongAccount).to.be.revertedWith('not allowed to matchAndTransfer without a signature');
   });
 
-
   async function prepare721sellingWithOptionalOriginRoyalties(
     encDataLeft: any,
     encDataRight: any,
@@ -707,7 +706,6 @@ describe('Exchange Test', async function () {
     expect((await ghostERC721.balanceOf(wallet2.address)).toString()).to.equal('1');
   }
 
-
   async function prepareMultiple2Orders(orderAmount: number) {
     const ordersArray = [];
     let i = 0;
@@ -752,5 +750,4 @@ describe('Exchange Test', async function () {
     );
     return {left, right};
   }
-
 });

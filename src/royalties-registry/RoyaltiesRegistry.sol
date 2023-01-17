@@ -119,7 +119,9 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
             }
         } catch {}
 
-        try IERC165Upgradeable(token).supportsInterface(LibRoyaltiesGhostMarketV2._INTERFACE_ID_ROYALTIES) returns (bool result) {
+        try IERC165Upgradeable(token).supportsInterface(LibRoyaltiesGhostMarketV2._INTERFACE_ID_ROYALTIES) returns (
+            bool result
+        ) {
             if (result) {
                 return 3;
             }

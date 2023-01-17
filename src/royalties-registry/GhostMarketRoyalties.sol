@@ -8,7 +8,7 @@ abstract contract GhostMarketRoyalties {
         address payable recipient;
         uint256 value;
     }
-    
+
     /*
      * https://eips.ethereum.org/EIPS/eip-2981: bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
      */
