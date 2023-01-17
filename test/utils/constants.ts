@@ -1,0 +1,9 @@
+export const TOKEN_NAME = 'GhostMarket';
+export const TOKEN_SYMBOL = 'GHOST';
+export const BASE_URI = 'https://ghostmarket.io/';
+export const MINTER_ROLE = '0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6';
+export const PAUSER_ROLE = '0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a';
+export const DATA = '0x';
+export const INTERFACE_ID_ERC165 = '0x01ffc9a7';
+export const INTERFACE_ID_ROYALTIES_EIP2981 = '0x2a55205a';
+export const INTERFACE_ID_ERC721 = '0x80ac58cd';
