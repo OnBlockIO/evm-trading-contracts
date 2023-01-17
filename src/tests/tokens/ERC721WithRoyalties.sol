@@ -49,7 +49,8 @@ contract ERC721WithRoyalties is ERC721, ERC2981PerTokenRoyalties {
             "ERC721: Arrays length mismatch"
         );
 
-        for (uint256 i; i < recipients.length; i++) {
+        uint256 length = recipients.length;
+        for (uint256 i; i < length; ++i) {
             _safeMint(recipients[i], tokenId, "");
             if (royaltyValues[i] > 0) {
                 _setTokenRoyalty(tokenId, royaltyRecipients[i], royaltyValues[i]);

@@ -23,7 +23,8 @@ library LibERC721LazyMint {
 
     function hash(Mint721Data memory data) internal pure returns (bytes32) {
         bytes32[] memory royaltiesBytes = new bytes32[](data.royalties.length);
-        for (uint i = 0; i < data.royalties.length; ++i) {
+        uint length = data.royalties.length;
+        for (uint i; i < length; ++i) {
             royaltiesBytes[i] = LibPart.hash(data.royalties[i]);
         }
         return

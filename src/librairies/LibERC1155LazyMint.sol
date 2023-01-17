@@ -24,7 +24,8 @@ library LibERC1155LazyMint {
 
     function hash(Mint1155Data memory data) internal pure returns (bytes32) {
         bytes32[] memory royaltiesBytes = new bytes32[](data.royalties.length);
-        for (uint i = 0; i < data.royalties.length; ++i) {
+        uint length = data.royalties.length;
+        for (uint i; i < length; ++i) {
             royaltiesBytes[i] = LibPart.hash(data.royalties[i]);
         }
         return

@@ -60,7 +60,8 @@ abstract contract ExchangeV2Core is
      * @dev call the cancel fucntion in a loop canceling multiple orders
      */
     function bulkCancelOrders(LibOrder.Order[] memory orders) external {
-        for (uint256 i = 0; i < orders.length; i++) {
+        uint256 length = orders.length;
+        for (uint256 i; i < length; ++i) {
             // we can't call this.cancel function as the _msgSender() is changed to the contract address
             // and the _msgSender() == order.maker check fails
             require(_msgSender() == orders[i].maker, "not a maker");

@@ -215,7 +215,8 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
     ) internal returns (uint restValue, uint totalFees) {
         totalFees = 0;
         restValue = rest;
-        for (uint256 i = 0; i < fees.length; i++) {
+        uint256 length = fees.length;
+        for (uint256 i; i < length; ++i) {
             totalFees = totalFees.add(fees[i].value);
             (uint newRestValue, uint feeValue) = subFeeInBp(restValue, amount, fees[i].value);
             restValue = newRestValue;
@@ -239,7 +240,8 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         bytes4 transferDirection
     ) internal {
         uint256 sumBps = 0;
-        for (uint256 i = 0; i < payouts.length; i++) {
+        uint256 length = payouts.length;
+        for (uint256 i; i < length; ++i) {
             uint256 currentAmount = amount.bp(payouts[i].value);
             sumBps = sumBps.add(payouts[i].value);
             if (currentAmount > 0) {
@@ -261,7 +263,8 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         LibPart.Part[] memory orderOriginFees
     ) internal pure returns (uint256 total) {
         total = amount.add(amount.bp(feeOnTopBp));
-        for (uint256 i = 0; i < orderOriginFees.length; i++) {
+        uint256 length = orderOriginFees.length;
+        for (uint256 i; i < length; ++i) {
             total = total.add(amount.bp(orderOriginFees[i].value));
         }
     }

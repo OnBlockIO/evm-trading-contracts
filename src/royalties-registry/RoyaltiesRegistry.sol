@@ -57,7 +57,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
 
     /// @dev returns royalties type from uint
     function _getRoyaltiesType(uint256 data) internal pure returns (uint256) {
-        for (uint256 i = 1; i <= royaltiesTypesAmount; i++) {
+        for (uint256 i = 1; i <= royaltiesTypesAmount; ++i) {
             if (data / 2 ** (256 - i) == 1) {
                 return i;
             }
@@ -92,7 +92,8 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
         setRoyaltiesType(token, 1, address(0));
         uint256 sumRoyalties = 0;
         delete royaltiesByToken[token];
-        for (uint256 i = 0; i < royalties.length; i++) {
+        uint256 length = royalties.length;
+        for (uint256 i; i < length; ++i) {
             require(royalties[i].account != address(0x0), "RoyaltiesByToken recipient should be present");
             require(royalties[i].value != 0, "Royalty value for RoyaltiesByToken should be > 0");
             royaltiesByToken[token].royalties.push(royalties[i]);
@@ -204,7 +205,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
         GhostMarketRoyalties royalties = GhostMarketRoyalties(token);
         Royalty[] memory values = royalties.getRoyalties(tokenId);
         LibPart.Part[] memory result = new LibPart.Part[](values.length);
-        for (uint256 i = 0; i < values.length; i++) {
+        for (uint256 i; i < values.length; ++i) {
             result[i].value = uint96(values[i].value);
             result[i].account = values[i].recipient;
         }

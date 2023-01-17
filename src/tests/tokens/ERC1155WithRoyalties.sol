@@ -51,7 +51,8 @@ contract ERC1155WithRoyalties is ERC1155, ERC2981PerTokenRoyalties {
 
         _mintBatch(to, ids, amounts, "");
 
-        for (uint256 i; i < ids.length; i++) {
+        uint256 length = ids.length;
+        for (uint256 i; i < length; ++i) {
             if (royaltyValues[i] > 0) {
                 _setTokenRoyalty(ids[i], royaltyRecipients[i], royaltyValues[i]);
             }

@@ -11,7 +11,8 @@ contract RoyaltiesProviderTest is IRoyaltiesProvider {
 
     function initializeProvider(address token, uint256 tokenId, LibPart.Part[] memory royalties) public {
         delete royaltiesTest[token][tokenId];
-        for (uint256 i = 0; i < royalties.length; i++) {
+        uint256 length = royalties.length;
+        for (uint256 i; i < length; ++i) {
             royaltiesTest[token][tokenId].push(royalties[i]);
         }
     }
