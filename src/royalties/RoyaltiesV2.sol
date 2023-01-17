@@ -3,7 +3,7 @@
 pragma solidity ^0.7.6;
 pragma abicoder v2;
 
-import "../lib/LibPart.sol";
+import "../librairies/LibPart.sol";
 
 interface RoyaltiesV2 {
     event RoyaltiesSet(uint256 tokenId, LibPart.Part[] royalties);

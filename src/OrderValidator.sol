@@ -5,7 +5,7 @@ pragma abicoder v2;
 
 import "./IERC1271.sol";
 import "./LibOrder.sol";
-import "./libraries/LibSignature.sol";
+import "./librairies/LibSignature.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/drafts/EIP712Upgradeable.sol";

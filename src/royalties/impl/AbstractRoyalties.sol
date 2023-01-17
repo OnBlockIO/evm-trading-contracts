@@ -3,7 +3,7 @@
 pragma solidity ^0.7.6;
 pragma abicoder v2;
 
-import "../../lib/LibPart.sol";
+import "../../librairies/LibPart.sol";
 
 abstract contract AbstractRoyalties {
     mapping(uint256 => LibPart.Part[]) internal royalties;

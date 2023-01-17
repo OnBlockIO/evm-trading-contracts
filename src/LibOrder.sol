@@ -3,8 +3,8 @@
 pragma solidity ^0.7.6;
 pragma abicoder v2;
 
-import "./lib/LibMath.sol";
-import "./lib/LibAsset.sol";
+import "./librairies/LibMath.sol";
+import "./librairies/LibAsset.sol";
 import "./LibOrderDataV2.sol";
 import "./LibOrderDataV1.sol";
 

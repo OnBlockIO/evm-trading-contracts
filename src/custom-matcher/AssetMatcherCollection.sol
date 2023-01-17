@@ -18,6 +18,8 @@ contract AssetMatcherCollection is IAssetMatcher {
         if (
             (rightAssetType.assetClass == LibAsset.ERC721_ASSET_CLASS) ||
             (rightAssetType.assetClass == LibAsset.ERC1155_ASSET_CLASS) ||
+            (rightAssetType.assetClass == LibAsset.ERC721_LAZY_ASSET_CLASS) ||
+            (rightAssetType.assetClass == LibAsset.ERC1155_LAZY_ASSET_CLASS) ||
             (rightAssetType.assetClass == LibAsset.CRYPTO_PUNKS)
         ) {
             address leftToken = abi.decode(leftAssetType.data, (address));

@@ -3,7 +3,7 @@
 pragma solidity ^0.7.6;
 pragma abicoder v2;
 
-import "./lib/LibPart.sol";
+import "./librairies/LibPart.sol";
 
 library LibOrderDataV2 {
     bytes4 public constant V2 = bytes4(keccak256("V2"));

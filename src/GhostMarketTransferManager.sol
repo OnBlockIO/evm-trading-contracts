@@ -7,7 +7,9 @@ import "./LibFeeSide.sol";
 import "./ITransferManager.sol";
 import "./LibOrderData.sol";
 import "./royalties/IRoyaltiesProvider.sol";
-import "./lib/BpLibrary.sol";
+import "./librairies/BpLibrary.sol";
+import "./librairies/LibERC721LazyMint.sol";
+import "./librairies/LibERC1155LazyMint.sol";
 
 abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferManager {
     using BpLibrary for uint;
@@ -191,6 +193,12 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         if (matchNft.assetClass == LibAsset.ERC1155_ASSET_CLASS || matchNft.assetClass == LibAsset.ERC721_ASSET_CLASS) {
             (address token, uint tokenId) = abi.decode(matchNft.data, (address, uint));
             return royaltiesRegistry.getRoyalties(token, tokenId);
+        } else if (matchNft.assetClass == LibERC1155LazyMint.ERC1155_LAZY_ASSET_CLASS) {
+            (, LibERC1155LazyMint.Mint1155Data memory data) = abi.decode(matchNft.data, (address, LibERC1155LazyMint.Mint1155Data));
+            return data.royalties;
+        } else if (matchNft.assetClass == LibERC721LazyMint.ERC721_LAZY_ASSET_CLASS) {
+            (, LibERC721LazyMint.Mint721Data memory data) = abi.decode(matchNft.data, (address, LibERC721LazyMint.Mint721Data));
+            return data.royalties;
         }
         LibPart.Part[] memory empty;
         return empty;

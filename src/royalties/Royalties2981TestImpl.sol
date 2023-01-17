@@ -5,7 +5,7 @@ pragma abicoder v2;
 
 import "./IERC2981.sol";
 import "./LibRoyalties2981.sol";
-import "../lib/LibPart.sol";
+import "../librairies/LibPart.sol";
 
 contract Royalties2981TestImpl is IERC2981 {
     function royaltyInfo(

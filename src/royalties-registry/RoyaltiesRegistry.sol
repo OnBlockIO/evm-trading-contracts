@@ -8,7 +8,7 @@ import "../royalties/LibRoyaltiesV2.sol";
 import "../royalties/LibRoyalties2981.sol";
 import "../royalties/RoyaltiesV2.sol";
 import "../royalties/IERC2981.sol";
-import "../lib/LibAsset.sol";
+import "../royalties/LibRoyaltiesGhostMarketV2.sol";
 import "./GhostMarketRoyalties.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -118,7 +118,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
             }
         } catch {}
 
-        try IERC165Upgradeable(token).supportsInterface(LibAsset._GHOSTMARKET_NFT_ROYALTIES) returns (bool result) {
+        try IERC165Upgradeable(token).supportsInterface(LibRoyaltiesGhostMarketV2._INTERFACE_ID_ROYALTIES) returns (bool result) {
             if (result) {
                 return 3;
             }

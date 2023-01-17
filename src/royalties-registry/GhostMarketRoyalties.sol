@@ -8,12 +8,7 @@ abstract contract GhostMarketRoyalties {
         address payable recipient;
         uint256 value;
     }
-
-    /**
-     * @dev bytes4(keccak256(_GHOSTMARKET_NFT_ROYALTIES)) == 0xe42093a6
-     */
-    bytes4 constant _GHOSTMARKET_NFT_ROYALTIES = bytes4(keccak256("_GHOSTMARKET_NFT_ROYALTIES"));
-
+    
     /*
      * https://eips.ethereum.org/EIPS/eip-2981: bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
      */

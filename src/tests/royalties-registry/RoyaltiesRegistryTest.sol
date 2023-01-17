@@ -4,7 +4,7 @@ pragma solidity ^0.7.6;
 pragma abicoder v2;
 
 import "../../royalties/IRoyaltiesProvider.sol";
-import "../../lib/LibPart.sol";
+import "../../librairies/LibPart.sol";
 
 contract RoyaltiesRegistryTest {
     event getRoyaltiesTest(LibPart.Part[] royalties);

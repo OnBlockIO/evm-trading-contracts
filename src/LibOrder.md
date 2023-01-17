@@ -8,9 +8,9 @@ This library contains struct `Order` with some functions for this struct:
 
 `Order` fields:
 - `address` maker
-- `Asset` leftAsset (see [LibAsset](./lib/LibAsset.md))
+- `Asset` leftAsset (see [LibAsset](./librairies/LibAsset.md))
 - `address` taker (can be zero address)
-- `Asset` rightAsset (see [LibAsset](./lib/LibAsset.md))
+- `Asset` rightAsset (see [LibAsset](./librairies/LibAsset.md))
 - `uint` salt - random number to distinguish different maker's Orders
 - `uint` start - Order can't be matched before this date (optional)
 - `uint` end - Order can't be matched after this date (optional)
