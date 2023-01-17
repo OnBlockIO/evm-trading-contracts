@@ -3,6 +3,7 @@ name: EVM Contracts
 on:
   push:
   pull_request:
+    types: [opened, reopened, review_requested, closed]
 
 jobs:
   build:
@@ -22,7 +23,7 @@ jobs:
       run: |
         cp ./secrets.build.json ./.secrets.json
         yarn
-
+        
     - name: Test
       run: |
         yarn test
