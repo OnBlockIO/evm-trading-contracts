@@ -16,7 +16,9 @@
     ],
     "compiler-version": [
       "error",
-      "^0.8.7"
+      "^0.8.4",
+      "^0.8.7",
+      "^0.8.9"
     ],
     "const-name-snakecase": "off",
     "func-name-mixedcase": "off",
@@ -33,6 +35,7 @@
       {
         "maxLength": 64
       }
-    ]
+    ],
+    "no-empty-blocks": "off"
   }
 }
