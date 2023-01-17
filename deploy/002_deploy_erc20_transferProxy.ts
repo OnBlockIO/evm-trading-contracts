@@ -6,16 +6,16 @@ async function main() {
 
   const CHAIN = hre.network.name;
 
-  console.log(`TransferProxy deployment on ${CHAIN} start`);
+  console.log(`ERC20 TransferProxy deployment on ${CHAIN} start`);
 
-  const transferProxy = await deploy('TransferProxy', {
+  const erc20TransferProxy = await deploy('ERC20TransferProxy', {
     from: deployer,
     log: true,
   });
 
-  await execute('TransferProxy', {from: deployer, log: true}, '__TransferProxy_init');
+  await execute('ERC20TransferProxy', {from: deployer, log: true}, '__ERC20TransferProxy_init');
 
-  console.log('TransferProxy deployed at: ', transferProxy.address);
+  console.log('ERC20 TransferProxy deployed at: ', erc20TransferProxy.address);
 }
 
 main().catch((error) => {
