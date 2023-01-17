@@ -11,5 +11,3 @@ The library recovers address of the signer from a signature.
     - in that case, we need to adjust hash of the message with "\x19Ethereum Signed Message:\n32"
     - and set v = v - 4
 - then the address of the signer is recovered
-
-tests are in [LibSignature.test.js](../../test/v2/LibSignature.test.js)

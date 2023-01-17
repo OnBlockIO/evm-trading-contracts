@@ -7,5 +7,3 @@
 Also, these contracts should be ERC-165 compliant.
 
 We do not use other libraries here to support ERC-165 because different projects can use different libraries (for example, @openzeppelin/contracts or @openzeppelin/contracts-upgradeable)
-
-You can check reference implementations for these interfaces in impl folder

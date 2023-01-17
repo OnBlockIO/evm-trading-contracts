@@ -21,7 +21,3 @@
         - uint256 `royaltyFeeByID` - total percentage of royalties for artist and additionalPayee
     - second element is calcualted using `artistAddress`, `royaltyFeeByID` and `additionalPayeePercentage`
     - then, if `additionalPayeePercentage` is > 0, the third elemnt is calculated using `additionalPayee` and `additionalPayeePercentage`
-
-
-
-Migration is in [5_royalties_provider_art_blocks](../../migrations/5_royalties_provider_art_blocks.js)

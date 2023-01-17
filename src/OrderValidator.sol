@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.6.2 <0.8.0;
+pragma solidity ^0.7.6;
+pragma abicoder v2;
 
 import "./IERC1271.sol";
 import "./LibOrder.sol";

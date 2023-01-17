@@ -14,7 +14,6 @@ At first, fee side of the deal should be calculated (Asset with can be interpret
 
 Then fees are transferred to different types of agents
 
-
 doTransfersWithFees 3th parameter (left|right)OrderData 
 -  LibPart.Part[] payouts
 -  LibPart.Part[] originFees

@@ -1,8 +1,9 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.6.2 <0.8.0;
+
+pragma solidity ^0.7.6;
+pragma abicoder v2;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-
 import "./ERC2981PerTokenRoyalties.sol";
 
 /// @title Example of ERC1155 contract with ERC2981
