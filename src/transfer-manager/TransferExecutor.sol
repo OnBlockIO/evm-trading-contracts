@@ -12,7 +12,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 abstract contract TransferExecutor is Initializable, OwnableUpgradeable, ITransferExecutor {
     using LibTransfer for address;
 
-    mapping(bytes4 => address) proxies;
+    mapping(bytes4 => address) public proxies;
 
     event ProxyChange(bytes4 indexed assetType, address proxy);
 

@@ -77,7 +77,7 @@ describe('RoyaltiesRegistry Test', () => {
           tokenId
         )
       ).wait();
-      inReceipt(part, 'getRoyaltiesTest', Array([[getRoyalties, ethers.BigNumber.from(1000)]]));
+      inReceipt(part, 'GetRoyaltiesTest', Array([[getRoyalties, ethers.BigNumber.from(1000)]]));
     });
 
     it('should test get royalties by token, use RoyaltiesRegistry (call)', async () => {
@@ -114,7 +114,7 @@ describe('RoyaltiesRegistry Test', () => {
       ).wait();
       inReceipt(
         part,
-        'getRoyaltiesTest',
+        'GetRoyaltiesTest',
         Array([
           [wallet5.address, ethers.BigNumber.from(700)],
           [wallet6.address, ethers.BigNumber.from(800)],
@@ -133,7 +133,7 @@ describe('RoyaltiesRegistry Test', () => {
           erc721TokenId1
         )
       ).wait();
-      inReceipt(part, 'getRoyaltiesTest', Array([]));
+      inReceipt(part, 'GetRoyaltiesTest', Array([]));
     });
 
     it('should test setRoyaltiesByToken, initialize by Owner, emit get', async () => {
@@ -150,7 +150,7 @@ describe('RoyaltiesRegistry Test', () => {
       ).wait();
       inReceipt(
         part,
-        'getRoyaltiesTest',
+        'GetRoyaltiesTest',
         Array([
           [wallet3.address, ethers.BigNumber.from(600)],
           [wallet4.address, ethers.BigNumber.from(1100)],

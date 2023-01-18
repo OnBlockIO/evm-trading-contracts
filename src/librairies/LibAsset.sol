@@ -12,9 +12,9 @@ library LibAsset {
     bytes4 public constant COLLECTION = bytes4(keccak256("COLLECTION"));
     bytes4 public constant CRYPTO_PUNKS = bytes4(keccak256("CRYPTO_PUNKS"));
 
-    bytes32 constant ASSET_TYPE_TYPEHASH = keccak256("AssetType(bytes4 assetClass,bytes data)");
+    bytes32 public constant ASSET_TYPE_TYPEHASH = keccak256("AssetType(bytes4 assetClass,bytes data)");
 
-    bytes32 constant ASSET_TYPEHASH =
+    bytes32 public constant ASSET_TYPEHASH =
         keccak256("Asset(AssetType assetType,uint256 value)AssetType(bytes4 assetClass,bytes data)");
 
     struct AssetType {

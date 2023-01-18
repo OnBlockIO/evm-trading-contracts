@@ -5,7 +5,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract OperatorRole is OwnableUpgradeable {
-    mapping(address => bool) operators;
+    mapping(address => bool) public operators;
 
     function __OperatorRole_init() external initializer {
         __Context_init_unchained();

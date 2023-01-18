@@ -35,7 +35,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
     // 4 - external provider,
     // 5 - EIP-2981
     // 6 - unsupported/nonexistent royalties type
-    uint256 constant royaltiesTypesAmount = 6;
+    uint256 public constant royaltiesTypesAmount = 6;
 
     function __RoyaltiesRegistry_init() external initializer {
         __Ownable_init_unchained();

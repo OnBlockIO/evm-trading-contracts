@@ -9,7 +9,7 @@ import "./ERC2981PerTokenRoyalties.sol";
 /// @author Simon Fremaux (@dievardump)
 /// @notice This is a mock, mint and mintBatch are not protected. Please do not use as-is in production
 contract ERC721WithRoyalties is ERC165Upgradeable, ERC721, ERC2981PerTokenRoyalties {
-    uint256 nextTokenId = 1;
+    uint256 public nextTokenId = 1;
 
     constructor(string memory name_, string memory symbol_) ERC721(name_, symbol_) {}
 

@@ -138,7 +138,7 @@ abstract contract ExchangeV2Core is
             rightOrderData
         );
         if (makeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
-            require(takeMatch.assetClass != LibAsset.ETH_ASSET_CLASS);
+            require(takeMatch.assetClass != LibAsset.ETH_ASSET_CLASS, "wrong takeMatch");
             require(msg.value >= totalMakeValue, "not enough BaseCurrency");
             if (msg.value > totalMakeValue) {
                 address(msg.sender).transferEth(msg.value - (totalMakeValue));

@@ -5,4 +5,6 @@ cache/
 coverage/
 node_modules/
 typechain/
-src/legacy
+src/mint/
+src/legacy/
+src/transfer-proxy/tests/CryptoPunkMarket.sol

@@ -11,9 +11,9 @@ abstract contract GhostMarketRoyalties {
     /*
      * https://eips.ethereum.org/EIPS/eip-2981: bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
      */
-    bytes4 constant _INTERFACE_ID_ROYALTIES = 0x2a55205a;
+    bytes4 public constant _INTERFACE_ID_ROYALTIES = 0x2a55205a;
     // to calculate the percentage amount from token with royalty
-    uint96 constant _WEIGHT_VALUE = 1000000;
+    uint96 public constant _WEIGHT_VALUE = 1000000;
 
     /*Method for converting amount to percent and forming Royalty*/
     function calculateRoyalties(address to, uint256 amount) internal pure returns (Royalty[] memory) {

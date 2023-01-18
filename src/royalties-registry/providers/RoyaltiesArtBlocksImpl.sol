@@ -12,7 +12,7 @@ contract RoyaltiesArtBlocksImpl is RoyaltyArtBlocks {
         uint256 secondMarketRoyalty;
     }
 
-    mapping(uint256 => Project) projects;
+    mapping(uint256 => Project) public projects;
 
     function getRoyaltyData(
         uint256 _tokenId

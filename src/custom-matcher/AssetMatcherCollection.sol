@@ -8,7 +8,7 @@ import "../interfaces/IAssetMatcher.sol";
  * Custom matcher for collection (assetClass, that need any/all elements from collection)
  */
 contract AssetMatcherCollection is IAssetMatcher {
-    bytes constant EMPTY = "";
+    bytes public constant EMPTY = "";
 
     function matchAssets(
         LibAsset.AssetType memory leftAssetType,
