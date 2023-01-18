@@ -5,7 +5,6 @@ pragma solidity ^0.8.9;
 import "./LibOrder.sol";
 
 library LibFill {
-
     struct FillResult {
         uint leftValue;
         uint rightValue;

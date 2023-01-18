@@ -2,13 +2,11 @@
 
 pragma solidity ^0.8.9;
 
-
 library BpLibrary {
-
     /**
      * @dev calculate the percentage amount of the given value
      */
     function bp(uint256 value, uint256 bpValue) internal pure returns (uint256) {
-        return value * (bpValue) / (10000);
+        return (value * (bpValue)) / (10000);
     }
 }

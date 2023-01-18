@@ -32,7 +32,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
     // 1 - royaltiesByToken,
     // 2 - v2,
     // 3 - v1,
-    // 4 - external provider, 
+    // 4 - external provider,
     // 5 - EIP-2981
     // 6 - unsupported/nonexistent royalties type
     uint256 constant royaltiesTypesAmount = 6;

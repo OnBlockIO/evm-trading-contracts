@@ -17,7 +17,6 @@ async function main() {
 
   console.log('ERC721 Lazy Mint Proxy deployed at: ', erc721LazyMintTransferProxy.address);
 
-
   console.log(`ERC1155 Lazy Mint Proxy deployment on ${CHAIN} start`);
 
   const erc1155LazyMintTransferProxy = await deploy('ERC1155LazyMintTransferProxy', {

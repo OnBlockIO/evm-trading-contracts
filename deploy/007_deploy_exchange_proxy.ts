@@ -39,7 +39,7 @@ async function main() {
   // add ExchangeV2 proxy address to the the allowed operators of transferProxy & erc20TransferProxy
   await TRANSFER_PROXY.addOperator(exchange_proxy.address);
   await ERC20_TRANSFER_PROXY.addOperator(exchange_proxy.address);
-  
+
   // if required, set lazy mint proxies
   if (ERC721_LAZY_MINT_PROXY && ERC1155_LAZY_MINT_PROXY) {
     const exchangeV2Contract = await ethers.getContractAt('ExchangeV2', exchange_proxy.address);
