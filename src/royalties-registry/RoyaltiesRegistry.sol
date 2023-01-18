@@ -29,8 +29,11 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
 
     /// @dev total amount or supported royalties types
     // 0 - royalties type is unset
-    // 1 - royaltiesByToken, 2 - v2, 3 - v1,
-    // 4 - external provider, 5 - EIP-2981
+    // 1 - royaltiesByToken,
+    // 2 - v2,
+    // 3 - v1,
+    // 4 - external provider, 
+    // 5 - EIP-2981
     // 6 - unsupported/nonexistent royalties type
     uint256 constant royaltiesTypesAmount = 6;
 
@@ -80,6 +83,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
     function clearRoyaltiesType(address token) external {
         checkOwner(token);
         royaltiesProviders[token] = uint256(uint160(getProvider(token)));
+        emit RoyaltiesSetForContract(token, new LibPart.Part[](0));
     }
 
     /// @dev sets royalties for token contract in royaltiesByToken mapping and royalties type = 1
