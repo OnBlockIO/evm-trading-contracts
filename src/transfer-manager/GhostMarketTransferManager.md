@@ -1,6 +1,6 @@
 ### Features
 
-[GhostMarketTransferManager](./GhostMarketTransferManager.sol) is [ITransferManager](../interfaces/ITransferManager.sol).
+GhostMarketTransferManager is ITransferManager.
 It's responsible for transferring all Assets. This manager supports different types of fees, also it supports different beneficiaries (specified in Order.data)  
 
 Types of fees supported:

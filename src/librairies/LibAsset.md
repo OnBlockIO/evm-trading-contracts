@@ -15,4 +15,4 @@ It consists of `asset class` and generic data (format of data is different for d
 - `bytes4` assetClass
 - `bytes` data
 
-`Asset` is used in the [LibOrder](../LibOrder.md)
+`Asset` is used in the LibOrder

@@ -8,14 +8,14 @@ This library contains struct `Order` with some functions for this struct:
 
 `Order` fields:
 - `address` maker
-- `Asset` leftAsset (see [LibAsset](./librairies/LibAsset.md))
+- `Asset` leftAsset (see LibAsset)
 - `address` taker (can be zero address)
-- `Asset` rightAsset (see [LibAsset](./librairies/LibAsset.md))
+- `Asset` rightAsset (see LibAsset)
 - `uint` salt - random number to distinguish different maker's Orders
 - `uint` start - Order can't be matched before this date (optional)
 - `uint` end - Order can't be matched after this date (optional)
-- `bytes4` dataType - type of data, usually hash of some string, e.g.: "v1", "v2" (see more [here](./LibOrderData.md))
-- `bytes` data - generic data, can be anything, extendable part of the order (see more [here](./LibOrderData.md))
+- `bytes4` dataType - type of data, usually hash of some string, e.g.: "v1", "v2"
+- `bytes` data - generic data, can be anything, extendable part of the order
 
 If the taker is zero address any take Order that matches the makers Order can buy
 
