@@ -12,7 +12,6 @@ import "../librairies/LibERC1155LazyMint.sol";
 
 abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferManager {
     using BpLibrary for uint;
-    using SafeMathUpgradeable for uint;
 
     uint public protocolFee;
     IRoyaltiesProvider public royaltiesRegistry;
@@ -222,7 +221,7 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         restValue = rest;
         uint256 length = fees.length;
         for (uint256 i; i < length; ++i) {
-            totalFees = totalFees.add(fees[i].value);
+            totalFees = totalFees + (fees[i].value);
             (uint newRestValue, uint feeValue) = subFeeInBp(restValue, amount, fees[i].value);
             restValue = newRestValue;
             if (feeValue > 0) {
@@ -248,7 +247,7 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         uint256 length = payouts.length;
         for (uint256 i; i < length; ++i) {
             uint256 currentAmount = amount.bp(payouts[i].value);
-            sumBps = sumBps.add(payouts[i].value);
+            sumBps = sumBps + (payouts[i].value);
             if (currentAmount > 0) {
                 transfer(
                     LibAsset.Asset(matchCalculate, currentAmount),
@@ -267,10 +266,10 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         uint256 feeOnTopBp,
         LibPart.Part[] memory orderOriginFees
     ) internal pure returns (uint256 total) {
-        total = amount.add(amount.bp(feeOnTopBp));
+        total = amount + (amount.bp(feeOnTopBp));
         uint256 length = orderOriginFees.length;
         for (uint256 i; i < length; ++i) {
-            total = total.add(amount.bp(orderOriginFees[i].value));
+            total = total + (amount.bp(orderOriginFees[i].value));
         }
     }
 
@@ -284,7 +283,7 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
 
     function subFee(uint256 value, uint256 fee) internal pure returns (uint256 newValue, uint256 realFee) {
         if (value > fee) {
-            newValue = value.sub(fee);
+            newValue = value - (fee);
             realFee = fee;
         } else {
             newValue = 0;

@@ -3,10 +3,8 @@
 pragma solidity ^0.8.9;
 
 import "./LibOrder.sol";
-import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 
 library LibFill {
-    using SafeMathUpgradeable for uint;
 
     struct FillResult {
         uint leftValue;

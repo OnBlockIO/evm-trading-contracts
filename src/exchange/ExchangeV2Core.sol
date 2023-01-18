@@ -16,7 +16,6 @@ abstract contract ExchangeV2Core is
     OrderValidator,
     ITransferManager
 {
-    using SafeMathUpgradeable for uint256;
     using LibTransfer for address;
 
     uint256 private constant UINT256_MAX = 2 ** 256 - 1;
@@ -142,12 +141,12 @@ abstract contract ExchangeV2Core is
             require(takeMatch.assetClass != LibAsset.ETH_ASSET_CLASS);
             require(msg.value >= totalMakeValue, "not enough BaseCurrency");
             if (msg.value > totalMakeValue) {
-                address(msg.sender).transferEth(msg.value.sub(totalMakeValue));
+                address(msg.sender).transferEth(msg.value - (totalMakeValue));
             }
         } else if (takeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
             require(msg.value >= totalTakeValue, "not enough BaseCurrency");
             if (msg.value > totalTakeValue) {
-                address(msg.sender).transferEth(msg.value.sub(totalTakeValue));
+                address(msg.sender).transferEth(msg.value - (totalTakeValue));
             }
         }
         emit OrderFilled(
@@ -185,17 +184,17 @@ abstract contract ExchangeV2Core is
 
         if (orderLeft.salt != 0) {
             if (leftOrderData.isMakeFill) {
-                fills[leftOrderKeyHash] = leftOrderFill.add(newFill.leftValue);
+                fills[leftOrderKeyHash] = leftOrderFill + (newFill.leftValue);
             } else {
-                fills[leftOrderKeyHash] = leftOrderFill.add(newFill.rightValue);
+                fills[leftOrderKeyHash] = leftOrderFill + (newFill.rightValue);
             }
         }
 
         if (orderRight.salt != 0) {
             if (rightOrderData.isMakeFill) {
-                fills[rightOrderKeyHash] = rightOrderFill.add(newFill.rightValue);
+                fills[rightOrderKeyHash] = rightOrderFill + (newFill.rightValue);
             } else {
-                fills[rightOrderKeyHash] = rightOrderFill.add(newFill.leftValue);
+                fills[rightOrderKeyHash] = rightOrderFill + (newFill.leftValue);
             }
         }
         return newFill;

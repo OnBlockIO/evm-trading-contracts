@@ -8,7 +8,6 @@ import "./LibOrderDataV2.sol";
 import "./LibOrderDataV1.sol";
 
 library LibOrder {
-    using SafeMathUpgradeable for uint;
 
     bytes32 constant ORDER_TYPEHASH =
         keccak256(
@@ -33,10 +32,10 @@ library LibOrder {
         bool isMakeFill
     ) internal pure returns (uint makeValue, uint takeValue) {
         if (isMakeFill) {
-            makeValue = order.makeAsset.value.sub(fill);
+            makeValue = order.makeAsset.value - (fill);
             takeValue = LibMath.safeGetPartialAmountFloor(order.takeAsset.value, order.makeAsset.value, makeValue);
         } else {
-            takeValue = order.takeAsset.value.sub(fill);
+            takeValue = order.takeAsset.value - (fill);
             makeValue = LibMath.safeGetPartialAmountFloor(order.makeAsset.value, order.takeAsset.value, takeValue);
         }
     }
