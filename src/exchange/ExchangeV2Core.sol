@@ -28,15 +28,15 @@ abstract contract ExchangeV2Core is
 
     //events
     event OrderCancelled(
-        bytes32 hash,
-        address maker,
+        bytes32 indexed hash,
+        address indexed maker,
         LibAsset.AssetType makeAssetType,
         LibAsset.AssetType takeAssetType
     );
     event OrderFilled(
-        bytes32 leftHash,
-        bytes32 rightHash,
-        address leftMaker,
+        bytes32 indexed leftHash,
+        bytes32 indexed rightHash,
+        address indexed leftMaker,
         address rightMaker,
         uint newLeftFill,
         uint newRightFill,
