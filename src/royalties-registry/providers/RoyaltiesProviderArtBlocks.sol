@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.9;
 
-import "../../royalties/IRoyaltiesProvider.sol";
+import "../../interfaces/IRoyaltiesProvider.sol";
 import "./RoyaltyArtBlocks.sol";
 import "../../librairies/BpLibrary.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";

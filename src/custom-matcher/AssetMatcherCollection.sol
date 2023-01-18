@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.9;
 
-import "../IAssetMatcher.sol";
+import "../interfaces/IAssetMatcher.sol";
 
 /*
  * Custom matcher for collection (assetClass, that need any/all elements from collection)

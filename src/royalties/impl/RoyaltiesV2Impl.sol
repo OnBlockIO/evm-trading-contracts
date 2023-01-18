@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 
 import "./AbstractRoyalties.sol";
 import "../RoyaltiesV2.sol";
-import "../IERC2981.sol";
+import "../../interfaces/IERC2981.sol";
 import "../LibRoyalties2981.sol";
 
 contract RoyaltiesV2Impl is AbstractRoyalties, RoyaltiesV2, IERC2981 {

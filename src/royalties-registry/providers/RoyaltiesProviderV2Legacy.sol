@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.9;
 
-import "../../royalties/IRoyaltiesProvider.sol";
+import "../../interfaces/IRoyaltiesProvider.sol";
 import "./RoyaltyV2Legacy.sol";
 
 contract RoyaltiesProviderV2Legacy is IRoyaltiesProvider {
