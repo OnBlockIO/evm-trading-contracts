@@ -1,5 +1,5 @@
 import {expect} from '../utils/chai-setup';
-import {ethers} from 'hardhat';
+import {ethers, upgrades} from 'hardhat';
 import {
   TransferProxy,
   ERC20TransferProxy,
@@ -41,10 +41,25 @@ describe('TransferExecutor Test', async function () {
     transferExecutorContract = await TransferExecutorTest.deploy();
     await transferExecutorContract.__TransferExecutorTest_init(transferProxy.address, erc20TransferProxy.address);
     erc20Token = await TestERC20.deploy();
-    ghostMarketERC721Token = await GhostMarketERC721.deploy();
-    await ghostMarketERC721Token.initialize(TOKEN_NAME, TOKEN_SYMBOL, BASE_URI);
-    ghostERC1155Token = await GhostERC1155contract.deploy();
-    await ghostERC1155Token.initialize(TOKEN_NAME, TOKEN_SYMBOL, BASE_URI);
+
+    ghostMarketERC721Token = <GhostMarketERC721>await upgrades.deployProxy(
+      GhostMarketERC721,
+      [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI],
+      {
+        initializer: 'initialize',
+        unsafeAllowCustomTypes: true,
+      }
+    );
+
+    ghostERC1155Token = <GhostMarketERC1155>await upgrades.deployProxy(
+      GhostERC1155contract,
+      [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI],
+      {
+        initializer: 'initialize',
+        unsafeAllowCustomTypes: true,
+      }
+    );
+
     await transferProxy.addOperator(transferExecutorContract.address);
     await erc20TransferProxy.addOperator(transferExecutorContract.address);
   });
@@ -64,7 +79,7 @@ describe('TransferExecutor Test', async function () {
   });
 
   it('should support ERC721 transfers', async () => {
-    await ghostMarketERC721Token.mintGhost(wallet1.address, [], 'ext_uri', '', '');
+    await ghostMarketERC721Token.mintGhost(wallet1.address, [], 'ext_uri', '');
     const erc721TokenId1 = await ghostMarketERC721Token.getLastTokenID();
     const account1AsSigner = ghostMarketERC721Token.connect(wallet1);
     await account1AsSigner.setApprovalForAll(transferProxy.address, true, {from: wallet1.address});
@@ -86,7 +101,7 @@ describe('TransferExecutor Test', async function () {
 
   it('should support ERC1155 transfers', async () => {
     const erc1155amount = 100;
-    await ghostERC1155Token.mintGhost(wallet1.address, erc1155amount, DATA, [], 'ext_uri', '', '');
+    await ghostERC1155Token.mintGhost(wallet1.address, erc1155amount, DATA, [], 'ext_uri', '');
     const account1AsSigner = ghostERC1155Token.connect(wallet1);
     await account1AsSigner.setApprovalForAll(transferProxy.address, true, {from: wallet1.address});
     const acc1AsSigner = transferExecutorContract.connect(wallet1);

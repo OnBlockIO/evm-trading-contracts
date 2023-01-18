@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.6;
-pragma abicoder v2;
+pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "./ERC2981PerTokenRoyalties.sol";
@@ -9,11 +8,13 @@ import "./ERC2981PerTokenRoyalties.sol";
 /// @title Example of ERC1155 contract with ERC2981
 /// @author Simon Fremaux (@dievardump)
 /// @notice This is a mock, mint and mintBatch are not protected. Please do not use as-is in production
-contract ERC1155WithRoyalties is ERC1155, ERC2981PerTokenRoyalties {
+contract ERC1155WithRoyalties is ERC165Upgradeable, ERC1155, ERC2981PerTokenRoyalties {
     constructor(string memory uri_) ERC1155(uri_) {}
 
-    /// @inheritdoc	ERC165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, ERC2981Base) returns (bool) {
+    /// @inheritdoc	ERC165Upgradeable
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC165Upgradeable, ERC1155, ERC2981Base) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.6;
-pragma abicoder v2;
+pragma solidity ^0.8.9;
 
 import "./IERC2981.sol";
 import "./LibRoyalties2981.sol";
@@ -12,7 +11,7 @@ contract Royalties2981TestImpl is IERC2981 {
         uint256 _tokenId,
         uint256 _salePrice
     ) external view override returns (address receiver, uint256 royaltyAmount) {
-        receiver = address(_tokenId >> 96);
+        receiver = address(uint160(_tokenId >> 96));
         royaltyAmount = _salePrice / 10;
     }
 

@@ -21,7 +21,6 @@ describe('OrderValidator Test', async function () {
     const TestOrderValidator = await ethers.getContractFactory('OrderValidatorTest');
     const TestERC1271 = await ethers.getContractFactory('TestERC1271');
     orderValidator = await TestOrderValidator.deploy();
-    await orderValidator.__OrderValidatorTest_init();
     erc1271 = await TestERC1271.deploy();
   });
 
@@ -38,7 +37,8 @@ describe('OrderValidator Test', async function () {
       '0x'
     );
     const signature = await EIP712.sign(testOrder, wallet1.address, orderValidator.address);
-    await orderValidator.validateOrderTest(testOrder, signature);
+    const t1AsSigner = orderValidator.connect(wallet1);
+    await t1AsSigner.validateOrderTest(testOrder, signature);
   });
 
   it('should fail validate if signer is incorrect', async () => {
@@ -104,7 +104,8 @@ describe('OrderValidator Test', async function () {
       '0x'
     );
     const signature = await EIP712.sign(testOrder, wallet2.address, orderValidator.address);
-    await expect(orderValidator.validateOrderTest(testOrder, signature)).to.be.reverted;
+    const t2AsSigner = orderValidator.connect(wallet2);
+    await expect(t2AsSigner.validateOrderTest(testOrder, signature)).to.be.reverted;
   });
 
   it('should validate IERC1271 with empty signature', async () => {

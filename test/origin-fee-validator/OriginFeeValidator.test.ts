@@ -6,7 +6,6 @@ import {
   ExchangeV2,
   RoyaltiesRegistry,
   TestERC20,
-  GhostMarketERC1155,
   GhostMarketERC721,
 } from '../../typechain';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
@@ -22,7 +21,6 @@ describe('OriginFeeValidator Test', async function () {
   let exchangeV2Proxy: ExchangeV2;
   let transferProxy: TransferProxy;
   let erc20TransferProxy: ERC20TransferProxy;
-  let ghostERC1155: GhostMarketERC1155;
   let ghostERC721: GhostMarketERC721;
   let royaltiesRegistryProxy: RoyaltiesRegistry;
   let t1: TestERC20;
@@ -49,7 +47,6 @@ describe('OriginFeeValidator Test', async function () {
     const GhostMarketTransferManagerTest = await ethers.getContractFactory('GhostMarketTransferManagerTest');
     const TestERC20 = await ethers.getContractFactory('TestERC20');
     const TestGhostERC721 = await ethers.getContractFactory('GhostMarketERC721');
-    const TestGhostERC1155 = await ethers.getContractFactory('GhostMarketERC1155');
     const TestRoyaltiesRegistry = await ethers.getContractFactory('RoyaltiesRegistry');
     addOperator = true;
 
@@ -73,11 +70,11 @@ describe('OriginFeeValidator Test', async function () {
 
     await GhostMarketTransferManagerTest.deploy();
     t1 = await TestERC20.deploy();
-    ghostERC721 = await TestGhostERC721.deploy();
-    await ghostERC721.initialize(TOKEN_NAME, TOKEN_SYMBOL, BASE_URI);
 
-    ghostERC1155 = await TestGhostERC1155.deploy();
-    await ghostERC1155.initialize(TOKEN_NAME, TOKEN_SYMBOL, BASE_URI);
+    ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(TestGhostERC721, [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI], {
+      initializer: 'initialize',
+      unsafeAllowCustomTypes: true,
+    });
 
     //fee receiver for ETH transfer is the protocol address
     await exchangeV2Proxy.setDefaultFeeReceiver(protocol.address);
@@ -92,8 +89,8 @@ describe('OriginFeeValidator Test', async function () {
     }
   });
 
-  it('should work from ETH(DataV1) to ERC721(RoyalytiV1, DataV1) Protocol, Origin fees only left, no Royalties', async () => {
-    await ghostERC721.mintGhost(wallet1.address, [], 'ext_uri', '', '');
+  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol, Origin fees only left, no Royalties', async () => {
+    await ghostERC721.mintGhost(wallet1.address, [], 'ext_uri', '');
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
     const ghostERC721AsSigner = ghostERC721.connect(wallet1);
 
@@ -173,8 +170,8 @@ describe('OriginFeeValidator Test', async function () {
     }
   });
 
-  it('should work from ETH(DataV1) to ERC721(RoyalytiV1, DataV1) Protocol, Origin fees from left and right, no Royalties,', async () => {
-    await ghostERC721.mintGhost(wallet1.address, [], 'ext_uri', '', '');
+  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol, Origin fees from left and right, no Royalties,', async () => {
+    await ghostERC721.mintGhost(wallet1.address, [], 'ext_uri', '');
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
     const ghostERC721AsSigner = ghostERC721.connect(wallet1);
 
@@ -256,7 +253,7 @@ describe('OriginFeeValidator Test', async function () {
     }
   });
 
-  it('should work from ETH(DataV1) to ERC721(RoyalytiV1, DataV1) Protocol, Origin fees, with Royalties,', async () => {
+  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol, Origin fees, with Royalties,', async () => {
     await ghostERC721.mintGhost(
       wallet1.address,
       [
@@ -264,7 +261,6 @@ describe('OriginFeeValidator Test', async function () {
         {recipient: wallet3.address, value: 400},
       ],
       'ext_uri',
-      '',
       ''
     );
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
@@ -354,7 +350,7 @@ describe('OriginFeeValidator Test', async function () {
     //set protocol fee to 2%
     exchangeV2Proxy.setProtocolFee(200);
 
-    await ghostERC721.mintGhost(wallet1.address, [{recipient: wallet6.address, value: 1000}], 'ext_uri', '', '');
+    await ghostERC721.mintGhost(wallet1.address, [{recipient: wallet6.address, value: 1000}], 'ext_uri', '');
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
     const ghostERC721AsSigner = ghostERC721.connect(wallet1);
 

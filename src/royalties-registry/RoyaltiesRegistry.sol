@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.6;
-pragma abicoder v2;
+pragma solidity ^0.8.9;
 
 import "../royalties/IRoyaltiesProvider.sol";
 import "../royalties/LibRoyaltiesV2.sol";
@@ -47,7 +46,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
 
     /// @dev returns provider address for token contract from royaltiesProviders mapping
     function getProvider(address token) public view returns (address) {
-        return address(royaltiesProviders[token]);
+        return address(uint160(royaltiesProviders[token]));
     }
 
     /// @dev returns royalties type for token contract
@@ -68,7 +67,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
     /// @dev sets royalties type for token contract
     function setRoyaltiesType(address token, uint256 royaltiesType, address royaltiesProvider) internal {
         require(royaltiesType > 0 && royaltiesType <= royaltiesTypesAmount, "wrong royaltiesType");
-        royaltiesProviders[token] = uint256(royaltiesProvider) + 2 ** (256 - royaltiesType);
+        royaltiesProviders[token] = uint256(uint160(royaltiesProvider)) + 2 ** (256 - royaltiesType);
     }
 
     /// @dev clears and sets new royalties type for token contract
@@ -80,7 +79,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
     /// @dev clears royalties type for token contract
     function clearRoyaltiesType(address token) external {
         checkOwner(token);
-        royaltiesProviders[token] = uint256(getProvider(token));
+        royaltiesProviders[token] = uint256(uint160(getProvider(token)));
     }
 
     /// @dev sets royalties for token contract in royaltiesByToken mapping and royalties type = 1
@@ -150,7 +149,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
     function getRoyalties(address token, uint256 tokenId) external override returns (LibPart.Part[] memory) {
         uint256 royaltiesProviderData = royaltiesProviders[token];
 
-        address royaltiesProvider = address(royaltiesProviderData);
+        address royaltiesProvider = address(uint160(royaltiesProviderData));
         uint256 royaltiesType = _getRoyaltiesType(royaltiesProviderData);
         // case when royaltiesType is not set
         if (royaltiesType == 0) {

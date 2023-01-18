@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.6;
-pragma abicoder v2;
+pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/introspection/ERC165.sol";
+import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol";
 import "./ERC2981Base.sol";
 
 /// @dev This is a contract used to add ERC2981 support to ERC721 and 1155

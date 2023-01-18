@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.6;
-pragma abicoder v2;
+pragma solidity ^0.8.9;
 
 import "../../royalties-registry/providers/RoyaltyV2Legacy.sol";
 
@@ -24,7 +23,7 @@ contract RoyaltiesV2LegacyImpl is RoyaltyV2Legacy {
         uint256 length = royalties[_id].length;
         for (uint256 i; i < length; ++i) {
             if (royalties[_id][i].account == _from) {
-                royalties[_id][i].account = address(uint160(_to));
+                royalties[_id][i].account = payable(address(uint160(_to)));
             }
         }
     }

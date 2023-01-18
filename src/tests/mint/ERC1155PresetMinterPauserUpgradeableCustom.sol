@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts-upgradeable410/token/ERC1155/ERC1155Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable410/token/ERC1155/extensions/ERC1155BurnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable410/token/ERC1155/extensions/ERC1155PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable410/access/AccessControlEnumerableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable410/utils/ContextUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable410/proxy/utils/Initializable.sol";
+import "./extensions/ERC1155BurnableUpgradeable.sol";
+import "./extensions/ERC1155PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
  * @dev {ERC1155} token, including:
@@ -32,7 +31,6 @@ contract ERC1155PresetMinterPauserUpgradeableCustom is
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    bytes32 public constant POLYNETWORK_ROLE = keccak256("POLYNETWORK_ROLE");
 
     /**
      * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE`, and `PAUSER_ROLE` to the account that
@@ -54,16 +52,6 @@ contract ERC1155PresetMinterPauserUpgradeableCustom is
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(PAUSER_ROLE, _msgSender());
-        _setupRole(POLYNETWORK_ROLE, _msgSender());
-    }
-
-    /**
-     * @dev polynetwork CrossChainNFTMapping
-     */
-    function mintWithURI(address to, uint256 tokenId, string memory uri, uint256 amount) external {
-        require(hasRole(POLYNETWORK_ROLE, _msgSender()), "mintWithURI: must have POLYNETWORK_ROLE role to mint");
-        _mint(to, tokenId, amount, "");
-        _setURI(uri);
     }
 
     function setURI(string memory uri_) external {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {expect} from './utils/chai-setup';
+import {expect} from '../utils/chai-setup';
 import {
   ERC20TransferProxy,
   TransferProxy,
@@ -9,14 +9,14 @@ import {
   GhostMarketERC1155,
   GhostMarketERC721,
   ERC721WithRoyalties,
-} from '../typechain';
+} from '../../typechain';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {Asset, Order} from './utils/order';
-import EIP712 from './utils/EIP712';
-import {ZERO, ORDER_DATA_V1, ERC721, ERC1155, ERC20, ETH, enc} from './utils/assets';
+import {Asset, Order} from '../utils/order';
+import EIP712 from '../utils/EIP712';
+import {ZERO, ORDER_DATA_V1, ERC721, ERC1155, ERC20, ETH, enc} from '../utils/assets';
 import hre, {ethers, upgrades} from 'hardhat';
-import {BASE_URI, TOKEN_NAME, TOKEN_SYMBOL, DATA} from './utils/constants';
-import {encDataV1JS, expectEqualStringValues, getLastTokenID, verifyBalanceChange} from './utils/helpers';
+import {BASE_URI, TOKEN_NAME, TOKEN_SYMBOL, DATA} from '../utils/constants';
+import {encDataV1JS, expectEqualStringValues, getLastTokenID, verifyBalanceChange} from '../utils/helpers';
 
 describe('Exchange Test', async function () {
   let addOperator = false;
@@ -79,11 +79,20 @@ describe('Exchange Test', async function () {
     await GhostMarketTransferManagerTest.deploy();
     t1 = await TestERC20.deploy();
     t2 = await TestERC20.deploy();
-    ghostERC721 = await TestERC721V1.deploy();
-    await ghostERC721.initialize(TOKEN_NAME, TOKEN_SYMBOL, BASE_URI);
 
-    ghostERC1155 = await TestGhostERC1155.deploy();
-    await ghostERC1155.initialize(TOKEN_NAME, TOKEN_SYMBOL, BASE_URI);
+    ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(TestERC721V1, [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI], {
+      initializer: 'initialize',
+      unsafeAllowCustomTypes: true,
+    });
+
+    ghostERC1155 = <GhostMarketERC1155>await upgrades.deployProxy(
+      TestGhostERC1155,
+      [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI],
+      {
+        initializer: 'initialize',
+        unsafeAllowCustomTypes: true,
+      }
+    );
 
     //fee receiver for ETH transfer is the protocol address
     await exchangeV2Proxy.setFeeReceiver(ZERO, protocol.address);
@@ -100,7 +109,7 @@ describe('Exchange Test', async function () {
     }
   });
 
-  it('should work for cancel erc20 order', async () => {
+  it('should work for cancel ERC20 order', async () => {
     const {left, right} = await prepare2Orders();
     const exchangeV2AsSigner = exchangeV2Proxy.connect(wallet2);
 
@@ -120,7 +129,7 @@ describe('Exchange Test', async function () {
     await expect(tx2).to.be.revertedWith('revert');
   });
 
-  it('should failt for order with salt 0 cancel', async () => {
+  it('should fail for order with salt 0 cancel', async () => {
     const {left} = await prepare2Orders();
     left.salt = '0';
 
@@ -131,7 +140,7 @@ describe('Exchange Test', async function () {
     await expect(tx).to.be.revertedWith("0 salt can't be used");
   });
 
-  it('should work for cancel erc1155 order', async () => {
+  it('should work for cancel ERC1155 order', async () => {
     const {left, right} = await prepare_ERC_1155V1_Orders(5);
     const exchangeV2AsSigner = exchangeV2Proxy.connect(wallet1);
 
@@ -152,7 +161,7 @@ describe('Exchange Test', async function () {
     await expect(tx2).to.be.revertedWith('revert');
   });
 
-  it('should work for bulk cancel erc20 orders', async () => {
+  it('should work for bulk cancel ERC20 orders', async () => {
     //all orders are created with the same maker and taker account,
     //left (order) = account1 tries to bulk cancel his orders
     const orderArray = await prepareMultiple2Orders(3);
@@ -165,7 +174,7 @@ describe('Exchange Test', async function () {
     await exchangeV2AsSigner2.bulkCancelOrders(leftOrderArray, {from: wallet1.address});
   });
 
-  it('should work for eth orders, rest is returned to taker (other side)', async () => {
+  it('should work for ETH orders, rest is returned to taker (other side)', async () => {
     await t1.mint(wallet1.address, 100);
     const t1AsSigner = t1.connect(wallet1);
 
@@ -221,7 +230,7 @@ describe('Exchange Test', async function () {
     }
   });
 
-  it('should work from ETH(DataV1) to ERC721(RoyalytiV1, DataV1) Protocol, NO Origin fees, Royalties', async () => {
+  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol, NO Origin fees, Royalties', async () => {
     await ghostERC721.mintGhost(
       wallet1.address,
       [
@@ -229,7 +238,6 @@ describe('Exchange Test', async function () {
         {recipient: wallet3.address, value: 400},
       ],
       'ext_uri',
-      '',
       ''
     );
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
@@ -296,7 +304,7 @@ describe('Exchange Test', async function () {
     }
   });
 
-  it('should work from ETH(DataV1) to erc721 2981 royalties stndard, NO Origin fees, Royalties', async () => {
+  it('should work from ETH(DataV1) to ERC721 2981 royalties standard, NO Origin fees, Royalties', async () => {
     //await erc721WithRoyalties.mint(wallet1.address, [[wallet2.address, 300], [wallet3.address, 400]], "ext_uri", "", "");
     await erc721WithRoyalties.mint(
       wallet1.address,
@@ -368,7 +376,7 @@ describe('Exchange Test', async function () {
     }
   });
 
-  it('should work from ETH(DataV1) to ERC721(RoyalytiV1, DataV1) Protocol, Origin left and right fees, Royalties', async () => {
+  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol, Origin left and right fees, Royalties', async () => {
     await ghostERC721.mintGhost(
       wallet1.address,
       [
@@ -376,7 +384,6 @@ describe('Exchange Test', async function () {
         {recipient: wallet3.address, value: 400},
       ],
       'ext_uri',
-      '',
       ''
     );
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
@@ -459,7 +466,7 @@ describe('Exchange Test', async function () {
     }
   });
 
-  it('should work from ETH(DataV1) to ERC721(RoyalytiV1, DataV1) Protocol, Origin left fees, no Royalties', async () => {
+  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol, Origin left fees, no Royalties', async () => {
     const addrOriginLeft = [
       [wallet5.address, 500],
       [wallet6.address, 600],
@@ -470,7 +477,7 @@ describe('Exchange Test', async function () {
     await testOriginRoyalties(addrOriginLeft, addrOriginRight, originDataLeft_buyer, originDataRight_seller);
   });
 
-  /*   it("From ETH(DataV1) to ERC721(RoyalytiV1, DataV1) Protocol, Origin left and right fees, no Royalties", async () => {
+  /*   it("From ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol, Origin left and right fees, no Royalties", async () => {
       let addrOriginLeft = [[wallet5.address, 500], [wallet6.address, 600]];
       let addrOriginRight = [[wallet2.address, 700]];
 
@@ -491,7 +498,6 @@ describe('Exchange Test', async function () {
         {recipient: wallet4.address, value: 500},
       ],
       'ext_uri',
-      '',
       ''
     );
     const erc1155TokenId1 = (await getLastTokenID(ghostERC1155)).toString();
@@ -616,7 +622,7 @@ describe('Exchange Test', async function () {
     encDataRight: any,
     royalties: any[] = []
   ) {
-    await ghostERC721.mintGhost(wallet1.address, royalties, 'ext_uri', '', '');
+    await ghostERC721.mintGhost(wallet1.address, royalties, 'ext_uri', '');
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
     const erc721V1AsSigner = ghostERC721.connect(wallet1);
 

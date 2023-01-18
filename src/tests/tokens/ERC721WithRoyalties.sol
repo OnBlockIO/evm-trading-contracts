@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.6;
-pragma abicoder v2;
+pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./ERC2981PerTokenRoyalties.sol";
@@ -9,13 +8,15 @@ import "./ERC2981PerTokenRoyalties.sol";
 /// @title Example of ERC721 contract with ERC2981
 /// @author Simon Fremaux (@dievardump)
 /// @notice This is a mock, mint and mintBatch are not protected. Please do not use as-is in production
-contract ERC721WithRoyalties is ERC721, ERC2981PerTokenRoyalties {
+contract ERC721WithRoyalties is ERC165Upgradeable, ERC721, ERC2981PerTokenRoyalties {
     uint256 nextTokenId = 1;
 
     constructor(string memory name_, string memory symbol_) ERC721(name_, symbol_) {}
 
-    /// @inheritdoc	ERC165
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, ERC2981Base) returns (bool) {
+    /// @inheritdoc	ERC165Upgradeable
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC165Upgradeable, ERC721, ERC2981Base) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
