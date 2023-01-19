@@ -174,6 +174,72 @@ describe('Exchange Test', async function () {
     await exchangeV2AsSigner2.bulkCancelOrders(leftOrderArray, {from: wallet1.address});
   });
 
+  it("doesn't allow to fill more than 100% of the order", async () => {
+    const { left, right } = await prepare2Orders()
+    right.makeAsset.value = '100';
+    right.takeAsset.value = '50';
+    right.salt = '0';
+
+    const t2AsSigner = t2.connect(wallet2);
+    await t2AsSigner.approve(erc20TransferProxy.address, 10000000, {from: wallet2.address});
+
+    const signature = await EIP712.sign(left, wallet1.address, exchangeV2Proxy.address);
+
+    const exchangeV2AsSigner = exchangeV2Proxy.connect(wallet2);
+    await exchangeV2AsSigner.matchOrders(left, signature, right, "0x", { from: wallet2.address })
+    await exchangeV2AsSigner.matchOrders(left, signature, right, "0x", { from: wallet2.address })
+
+    const tx = exchangeV2AsSigner.matchOrders(left, signature, right, "0x", { from: wallet2.address })
+    await expect(tx).to.be.revertedWith('revert');
+
+    expect((await t1.balanceOf(wallet1.address)).toString()).to.equal('0');
+    expect((await t1.balanceOf(wallet2.address)).toString()).to.equal('100');
+    expect((await t2.balanceOf(wallet1.address)).toString()).to.equal('200');
+    expect((await t2.balanceOf(wallet2.address)).toString()).to.equal('0');
+
+  })
+
+  it("should not let proceed if taker is not correct", async () => {
+    const { left, right } = await prepare2Orders()
+    left.taker = wallet3.address
+
+    const leftSig = await EIP712.sign(left, wallet1.address, exchangeV2Proxy.address);
+    const rightSig = await EIP712.sign(right, wallet2.address, exchangeV2Proxy.address);
+
+    await expect(exchangeV2Proxy.matchOrders(left, leftSig, right, rightSig)).to.be.revertedWith('revert');
+
+    await expect(exchangeV2Proxy.matchOrders(right, leftSig, left, rightSig)).to.be.revertedWith('revert');
+
+  });
+
+  it("should not let proceed if one of the signatures is incorrect", async () => {
+    const { left, right } = await prepare2Orders()
+
+    await expect(exchangeV2Proxy.matchOrders(left, await EIP712.sign(left, wallet2.address, exchangeV2Proxy.address), right, await EIP712.sign(right, wallet2.address, exchangeV2Proxy.address))).to.be.revertedWith('revert');
+
+    await expect(exchangeV2Proxy.matchOrders(right, await EIP712.sign(right, wallet2.address, exchangeV2Proxy.address), left, await EIP712.sign(left, wallet2.address, exchangeV2Proxy.address))).to.be.revertedWith('revert');
+  });
+
+  it("should not let proceed if order dates are wrong", async () => {
+    const block = await ethers.provider.getBlock('latest');
+    const now = block.timestamp;
+
+    const { left, right } = await prepare2Orders()
+    left.start = now + 1000
+
+    await expect(exchangeV2Proxy.matchOrders(left, await EIP712.sign(right, wallet1.address, exchangeV2Proxy.address), right, await EIP712.sign(right, wallet2.address, exchangeV2Proxy.address))).to.be.revertedWith('revert');
+  });
+
+  it("should throw if assets do not match", async () => {
+    const { left, right } = await prepare2Orders()
+    left.takeAsset.assetType.data = enc(wallet1.address);
+
+    const leftSig = await EIP712.sign(left, wallet1.address, exchangeV2Proxy.address);
+    const rightSig = await EIP712.sign(right, wallet2.address, exchangeV2Proxy.address);
+
+    await expect(exchangeV2Proxy.matchOrders(left, leftSig, right, rightSig)).to.be.revertedWith('revert');
+  })
+
   it('should work for ETH orders, rest is returned to taker (other side)', async () => {
     await t1.mint(wallet1.address, 100);
     const t1AsSigner = t1.connect(wallet1);
