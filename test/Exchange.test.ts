@@ -51,7 +51,7 @@ describe('Exchange Test', async function () {
     const TransferProxyTest = await ethers.getContractFactory('TransferProxy');
     const ERC20TransferProxyTest = await ethers.getContractFactory('ERC20TransferProxy');
     const ExchangeV2Test = await ethers.getContractFactory('ExchangeV2');
-    const GhostMarketTransferManagerTest = await ethers.getContractFactory('GhostMarketTransferManagerTest');
+    // const GhostMarketTransferManagerTest = await ethers.getContractFactory('GhostMarketTransferManagerTest');
     const TestERC20 = await ethers.getContractFactory('TestERC20');
     const TestERC721V1 = await ethers.getContractFactory('GhostMarketERC721');
     const TestGhostERC1155 = await ethers.getContractFactory('GhostMarketERC1155');
@@ -76,7 +76,7 @@ describe('Exchange Test', async function () {
         {initializer: '__ExchangeV2_init'}
       )
     );
-    await GhostMarketTransferManagerTest.deploy();
+    // await GhostMarketTransferManagerTest.deploy();
     t1 = await TestERC20.deploy();
     t2 = await TestERC20.deploy();
 
@@ -95,9 +95,9 @@ describe('Exchange Test', async function () {
     );
 
     //fee receiver for ETH transfer is the protocol address
-    await exchangeV2Proxy.setFeeReceiver(ZERO, protocol.address);
+    // await exchangeV2Proxy.setFeeReceiver(ZERO, protocol.address);
     //fee receiver for Token t1 transfer is the protocol address
-    await exchangeV2Proxy.setFeeReceiver(t1.address, protocol.address);
+    // await exchangeV2Proxy.setFeeReceiver(t1.address, protocol.address);
     await transferProxy.addOperator(exchangeV2Proxy.address);
     await erc20TransferProxy.addOperator(exchangeV2Proxy.address);
 
@@ -564,57 +564,6 @@ describe('Exchange Test', async function () {
       expectEqualStringValues(await ghostERC1155.balanceOf(wallet1.address, erc1155TokenId1), 6);
       expectEqualStringValues(await ghostERC1155.balanceOf(wallet2.address, erc1155TokenId1), 4);
     }
-  });
-
-  it('should work for match And Transfer Orders Without Signature', async () => {
-    const matchSigner = exchangeV2Proxy.connect(wallet2);
-    exchangeV2Proxy.setMatchTransferAdminAccount(wallet2.address);
-
-    const {left, right, erc1155TokenId1} = await prepare_ERC_1155V1_Orders();
-
-    if (hre.network.name == 'testnet' || hre.network.name == 'testnet_nodeploy' || hre.network.name == 'hardhat') {
-      const tx = await matchSigner.matchAndTransferWithoutSignature(left, right, {
-        from: wallet2.address,
-        value: 300,
-      });
-      tx.wait();
-    } else {
-      await verifyBalanceChange(wallet2.address, 206, async () =>
-        //200 + 6 buyerFee (72back)
-        verifyBalanceChange(wallet1.address, -170, async () =>
-          //200 seller - 14
-          verifyBalanceChange(wallet3.address, -20, async () =>
-            verifyBalanceChange(wallet4.address, -10, async () =>
-              verifyBalanceChange(protocol.address, -6, () =>
-                matchSigner.matchAndTransferWithoutSignature(left, right, {
-                  from: wallet2.address,
-                  value: 300,
-                  gasPrice: 0,
-                })
-              )
-            )
-          )
-        )
-      );
-      expectEqualStringValues(await ghostERC1155.balanceOf(wallet1.address, erc1155TokenId1), 6);
-      expectEqualStringValues(await ghostERC1155.balanceOf(wallet2.address, erc1155TokenId1), 4);
-    }
-  });
-
-  it('should fail if matchAndTransferAdmin account is not set or does not match', async () => {
-    const matchSigner = exchangeV2Proxy.connect(wallet2);
-
-    const {left, right} = await prepare_ERC_1155V1_Orders();
-    const accountNotSet = matchSigner.matchAndTransferWithoutSignature(left, right, {
-      from: wallet2.address,
-      value: 300,
-    });
-
-    exchangeV2Proxy.setMatchTransferAdminAccount(wallet1.address);
-    const wrongAccount = matchSigner.matchAndTransferWithoutSignature(left, right, {from: wallet2.address, value: 300});
-
-    await expect(accountNotSet).to.be.revertedWith('not allowed to matchAndTransfer without a signature');
-    await expect(wrongAccount).to.be.revertedWith('not allowed to matchAndTransfer without a signature');
   });
 
   async function prepare721sellingWithOptionalOriginRoyalties(

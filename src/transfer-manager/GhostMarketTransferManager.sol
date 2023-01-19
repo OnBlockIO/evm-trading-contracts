@@ -2,22 +2,27 @@
 
 pragma solidity ^0.8.9;
 
-import "../librairies/LibFeeSide.sol";
-import "../interfaces/ITransferManager.sol";
-import "../librairies/LibOrderData.sol";
-import "../interfaces/IRoyaltiesProvider.sol";
-import "../librairies/BpLibrary.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
 import "../librairies/LibERC721LazyMint.sol";
 import "../librairies/LibERC1155LazyMint.sol";
+import "../interfaces/IRoyaltiesProvider.sol";
+import "../librairies/BpLibrary.sol";
+import "../interfaces/ITransferManager.sol";
 
 abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferManager {
     using BpLibrary for uint;
 
-    uint public protocolFee;
+    // @notice protocolFee is deprecated
+    uint private protocolFee;
+
     IRoyaltiesProvider public royaltiesRegistry;
 
-    address public defaultFeeReceiver;
-    mapping(address => address) public feeReceivers;
+    // deprecated: no need without protocolFee
+    address private defaultFeeReceiver;
+
+    // deprecated: no need without protocolFee
+    mapping(address => address) private feeReceivers;
 
     function __GhostMarketTransferManager_init_unchained(
         uint newProtocolFee,
@@ -33,173 +38,150 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         royaltiesRegistry = newRoyaltiesRegistry;
     }
 
-    function setProtocolFee(uint newProtocolFee) external onlyOwner {
-        protocolFee = newProtocolFee;
-    }
-
-    function setDefaultFeeReceiver(address payable newDefaultFeeReceiver) external onlyOwner {
-        defaultFeeReceiver = newDefaultFeeReceiver;
-    }
-
     /**
-     * set fee for different tokens types
-     *
-     * @param token token contract address
-     * @param wallet fee receiver address
-     */
-    function setFeeReceiver(address token, address wallet) external onlyOwner {
-        feeReceivers[token] = wallet;
-    }
-
-    /**
-     * fee and their receiver can be set for different tokens types
-     * if the wallet address is empty the defaultFeeReceiver address gets the fees
-     *
-     * @param token token contract address
-     */
-    function getFeeReceiver(address token) internal view returns (address) {
-        address wallet = feeReceivers[token];
-        if (wallet != address(0)) {
-            return wallet;
-        }
-        return defaultFeeReceiver;
-    }
-
-    /**
-     * LibFill [1, 100] makeValue: 1 takeValue: 100
-     */
+        @notice executes transfers for 2 matched orders
+        @param left DealSide from the left order (see LibDeal.sol)
+        @param right DealSide from the right order (see LibDeal.sol)
+        @param dealData DealData of the match (see LibDeal.sol)
+        @return totalLeftValue - total amount for the left order
+        @return totalRightValue - total amout for the right order
+    */
     function doTransfers(
-        LibAsset.AssetType memory makeMatch,
-        LibAsset.AssetType memory takeMatch,
-        LibFill.FillResult memory fill,
-        LibOrder.Order memory leftOrder,
-        LibOrder.Order memory rightOrder,
-        LibOrderDataV2.DataV2 memory leftOrderData,
-        LibOrderDataV2.DataV2 memory rightOrderData
-    ) internal override returns (uint totalMakeValue, uint totalTakeValue) {
-        LibFeeSide.FeeSide feeSide = LibFeeSide.getFeeSide(makeMatch.assetClass, takeMatch.assetClass);
-        totalMakeValue = fill.leftValue;
-        totalTakeValue = fill.rightValue;
-        if (feeSide == LibFeeSide.FeeSide.MAKE) {
-            totalMakeValue = doTransfersWithFees(
-                fill.leftValue,
-                leftOrder.maker,
-                leftOrderData,
-                rightOrderData,
-                makeMatch,
-                takeMatch,
-                TO_TAKER
-            );
-            transferPayouts(takeMatch, fill.rightValue, rightOrder.maker, leftOrderData.payouts, TO_MAKER);
-        } else if (feeSide == LibFeeSide.FeeSide.TAKE) {
-            totalTakeValue = doTransfersWithFees(
-                fill.rightValue,
-                rightOrder.maker,
-                rightOrderData,
-                leftOrderData,
-                takeMatch,
-                makeMatch,
-                TO_MAKER
-            );
-            transferPayouts(makeMatch, fill.leftValue, leftOrder.maker, rightOrderData.payouts, TO_TAKER);
-        } else {
-            transferPayouts(makeMatch, fill.leftValue, leftOrder.maker, rightOrderData.payouts, TO_TAKER);
-            transferPayouts(takeMatch, fill.rightValue, rightOrder.maker, leftOrderData.payouts, TO_MAKER);
-        }
-    }
+        LibDeal.DealSide memory left,
+        LibDeal.DealSide memory right,
+        LibDeal.DealData memory dealData
+    ) internal override returns (uint totalLeftValue, uint totalRightValue) {
+        totalLeftValue = left.asset.value;
+        totalRightValue = right.asset.value;
 
-    function doTransfersWithFees(
-        uint amount,
-        address from,
-        LibOrderDataV2.DataV2 memory dataCalculate,
-        LibOrderDataV2.DataV2 memory dataNft,
-        LibAsset.AssetType memory matchCalculate,
-        LibAsset.AssetType memory matchNft,
-        bytes4 transferDirection
-    ) internal returns (uint totalAmount) {
-        totalAmount = calculateTotalAmount(amount, protocolFee, dataCalculate.originFees);
-        uint rest = transferProtocolFee(totalAmount, amount, from, matchCalculate, transferDirection);
-        rest = transferRoyalties(matchCalculate, matchNft, rest, amount, from, transferDirection);
-        (rest, ) = transferFees(
-            matchCalculate,
-            rest,
-            amount,
-            dataCalculate.originFees,
-            from,
-            transferDirection,
-            ORIGIN
-        );
-        (rest, ) = transferFees(matchCalculate, rest, amount, dataNft.originFees, from, transferDirection, ORIGIN);
-        transferPayouts(matchCalculate, rest, from, dataNft.payouts, transferDirection);
+        if (dealData.feeSide == LibFeeSide.FeeSide.LEFT) {
+            totalLeftValue = doTransfersWithFees(left, right, dealData.maxFeesBasePoint);
+            transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy);
+        } else if (dealData.feeSide == LibFeeSide.FeeSide.RIGHT) {
+            totalRightValue = doTransfersWithFees(right, left, dealData.maxFeesBasePoint);
+            transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy);
+        } else {
+            transferPayouts(left.asset.assetType, left.asset.value, left.from, right.payouts, left.proxy);
+            transferPayouts(right.asset.assetType, right.asset.value, right.from, left.payouts, right.proxy);
+        }
     }
 
     /**
-     * @dev if the assetClass is ERC20_ASSET_CLASS or ERC1155_ASSET_CLASS
-     * fees are transfered
-     */
-    function transferProtocolFee(
-        uint totalAmount,
-        uint amount,
-        address from,
-        LibAsset.AssetType memory matchCalculate,
-        bytes4 transferDirection
-    ) internal returns (uint) {
-        (uint rest, uint fee) = subFeeInBp(totalAmount, amount, protocolFee);
-        if (fee > 0) {
-            address tokenAddress = address(0);
-            if (matchCalculate.assetClass == LibAsset.ERC20_ASSET_CLASS) {
-                tokenAddress = abi.decode(matchCalculate.data, (address));
-            } else if (matchCalculate.assetClass == LibAsset.ERC1155_ASSET_CLASS) {
-                uint tokenId;
-                (tokenAddress, tokenId) = abi.decode(matchCalculate.data, (address, uint));
-            }
-            transfer(
-                LibAsset.Asset(matchCalculate, fee),
-                from,
-                getFeeReceiver(tokenAddress),
-                transferDirection,
-                PROTOCOL
+        @notice executes the fee-side transfers (payment + fees)
+        @param paymentSide DealSide of the fee-side order
+        @param nftSide  DealSide of the nft-side order
+        @param maxFeesBasePoint max fee for the sell-order (used and is > 0 for V3 orders only)
+        @return totalAmount of fee-side asset
+    */
+    function doTransfersWithFees(
+        LibDeal.DealSide memory paymentSide,
+        LibDeal.DealSide memory nftSide,
+        uint maxFeesBasePoint
+    ) internal returns (uint totalAmount) {
+        totalAmount = calculateTotalAmount(paymentSide.asset.value, paymentSide.originFees, maxFeesBasePoint);
+        uint rest = totalAmount;
+
+        rest = transferRoyalties(
+            paymentSide.asset.assetType,
+            nftSide.asset.assetType,
+            nftSide.payouts,
+            rest,
+            paymentSide.asset.value,
+            paymentSide.from,
+            paymentSide.proxy
+        );
+        if (
+            paymentSide.originFees.length == 1 &&
+            nftSide.originFees.length == 1 &&
+            nftSide.originFees[0].account == paymentSide.originFees[0].account
+        ) {
+            require(
+                nftSide.originFees[0].value < 10000 && paymentSide.originFees[0].value < 10000,
+                "wrong origin fees"
+            );
+            LibPart.Part[] memory origin = new LibPart.Part[](1);
+            origin[0].account = nftSide.originFees[0].account;
+            origin[0].value = nftSide.originFees[0].value + paymentSide.originFees[0].value;
+            (rest, ) = transferFees(
+                paymentSide.asset.assetType,
+                rest,
+                paymentSide.asset.value,
+                origin,
+                paymentSide.from,
+                paymentSide.proxy
+            );
+        } else {
+            (rest, ) = transferFees(
+                paymentSide.asset.assetType,
+                rest,
+                paymentSide.asset.value,
+                paymentSide.originFees,
+                paymentSide.from,
+                paymentSide.proxy
+            );
+            (rest, ) = transferFees(
+                paymentSide.asset.assetType,
+                rest,
+                paymentSide.asset.value,
+                nftSide.originFees,
+                paymentSide.from,
+                paymentSide.proxy
             );
         }
-        return rest;
+        transferPayouts(paymentSide.asset.assetType, rest, paymentSide.from, nftSide.payouts, paymentSide.proxy);
     }
 
+    /**
+        @notice Transfer royalties. If there is only one royalties receiver and one address in payouts and they match,
+           nothing is transferred in this function
+        @param paymentAssetType Asset Type which represents payment
+        @param nftAssetType Asset Type which represents NFT to pay royalties for
+        @param payouts Payouts to be made
+        @param rest How much of the amount left after previous transfers
+        @param from owner of the Asset to transfer
+        @param proxy Transfer proxy to use
+        @return How much left after transferring royalties
+    */
     function transferRoyalties(
-        LibAsset.AssetType memory matchCalculate,
-        LibAsset.AssetType memory matchNft,
+        LibAsset.AssetType memory paymentAssetType,
+        LibAsset.AssetType memory nftAssetType,
+        LibPart.Part[] memory payouts,
         uint rest,
         uint amount,
         address from,
-        bytes4 transferDirection
+        address proxy
     ) internal returns (uint) {
-        LibPart.Part[] memory fees = getRoyaltiesByAssetType(matchNft);
-
-        (uint result, uint totalRoyalties) = transferFees(
-            matchCalculate,
-            rest,
-            amount,
-            fees,
-            from,
-            transferDirection,
-            ROYALTY
-        );
+        LibPart.Part[] memory royalties = getRoyaltiesByAssetType(nftAssetType);
+        if (royalties.length == 1 && payouts.length == 1 && royalties[0].account == payouts[0].account) {
+            require(royalties[0].value <= 5000, "Royalties are too high (>50%)");
+            return rest;
+        }
+        (uint result, uint totalRoyalties) = transferFees(paymentAssetType, rest, amount, royalties, from, proxy);
         require(totalRoyalties <= 5000, "Royalties are too high (>50%)");
         return result;
     }
 
-    function getRoyaltiesByAssetType(LibAsset.AssetType memory matchNft) internal returns (LibPart.Part[] memory) {
-        if (matchNft.assetClass == LibAsset.ERC1155_ASSET_CLASS || matchNft.assetClass == LibAsset.ERC721_ASSET_CLASS) {
-            (address token, uint tokenId) = abi.decode(matchNft.data, (address, uint));
+    /**
+        @notice calculates royalties by asset type. If it's a lazy NFT, then royalties are extracted from asset. otherwise using royaltiesRegistry
+        @param nftAssetType NFT Asset Type to calculate royalties for
+        @return calculated royalties (Array of LibPart.Part)
+    */
+    function getRoyaltiesByAssetType(LibAsset.AssetType memory nftAssetType) internal returns (LibPart.Part[] memory) {
+        if (
+            nftAssetType.assetClass == LibAsset.ERC1155_ASSET_CLASS ||
+            nftAssetType.assetClass == LibAsset.ERC721_ASSET_CLASS
+        ) {
+            (address token, uint tokenId) = abi.decode(nftAssetType.data, (address, uint));
             return royaltiesRegistry.getRoyalties(token, tokenId);
-        } else if (matchNft.assetClass == LibERC1155LazyMint.ERC1155_LAZY_ASSET_CLASS) {
+        } else if (nftAssetType.assetClass == LibERC1155LazyMint.ERC1155_LAZY_ASSET_CLASS) {
             (, LibERC1155LazyMint.Mint1155Data memory data) = abi.decode(
-                matchNft.data,
+                nftAssetType.data,
                 (address, LibERC1155LazyMint.Mint1155Data)
             );
             return data.royalties;
-        } else if (matchNft.assetClass == LibERC721LazyMint.ERC721_LAZY_ASSET_CLASS) {
+        } else if (nftAssetType.assetClass == LibERC721LazyMint.ERC721_LAZY_ASSET_CLASS) {
             (, LibERC721LazyMint.Mint721Data memory data) = abi.decode(
-                matchNft.data,
+                nftAssetType.data,
                 (address, LibERC721LazyMint.Mint721Data)
             );
             return data.royalties;
@@ -208,80 +190,99 @@ abstract contract GhostMarketTransferManager is OwnableUpgradeable, ITransferMan
         return empty;
     }
 
+    /**
+        @notice Transfer fees
+        @param assetType Asset Type to transfer
+        @param rest How much of the amount left after previous transfers
+        @param amount Total amount of the Asset. Used as a base to calculate part from (100%)
+        @param fees Array of LibPart.Part which represents fees to pay
+        @param from owner of the Asset to transfer
+        @param proxy Transfer proxy to use
+        @return newRest how much left after transferring fees
+        @return totalFees total number of fees in bp
+    */
     function transferFees(
-        LibAsset.AssetType memory matchCalculate,
+        LibAsset.AssetType memory assetType,
         uint rest,
         uint amount,
         LibPart.Part[] memory fees,
         address from,
-        bytes4 transferDirection,
-        bytes4 transferType
-    ) internal returns (uint restValue, uint totalFees) {
+        address proxy
+    ) internal returns (uint newRest, uint totalFees) {
         totalFees = 0;
-        restValue = rest;
-        uint256 length = fees.length;
-        for (uint256 i; i < length; ++i) {
+        newRest = rest;
+        for (uint256 i = 0; i < fees.length; ++i) {
             totalFees = totalFees + (fees[i].value);
-            (uint newRestValue, uint feeValue) = subFeeInBp(restValue, amount, fees[i].value);
-            restValue = newRestValue;
+            uint feeValue;
+            (newRest, feeValue) = subFeeInBp(newRest, amount, fees[i].value);
             if (feeValue > 0) {
-                transfer(
-                    LibAsset.Asset(matchCalculate, feeValue),
-                    from,
-                    fees[i].account,
-                    transferDirection,
-                    transferType
-                );
+                transfer(LibAsset.Asset(assetType, feeValue), from, fees[i].account, proxy);
             }
         }
     }
 
+    /**
+        @notice transfers main part of the asset (payout)
+        @param assetType Asset Type to transfer
+        @param amount Amount of the asset to transfer
+        @param from Current owner of the asset
+        @param payouts List of payouts - receivers of the Asset
+        @param proxy Transfer Proxy to use
+    */
     function transferPayouts(
-        LibAsset.AssetType memory matchCalculate,
-        uint256 amount,
+        LibAsset.AssetType memory assetType,
+        uint amount,
         address from,
         LibPart.Part[] memory payouts,
-        bytes4 transferDirection
+        address proxy
     ) internal {
-        uint256 sumBps = 0;
-        uint256 length = payouts.length;
-        for (uint256 i; i < length; ++i) {
-            uint256 currentAmount = amount.bp(payouts[i].value);
+        require(payouts.length > 0, "transferPayouts: nothing to transfer");
+        uint sumBps = 0;
+        uint rest = amount;
+        for (uint256 i = 0; i < payouts.length - 1; ++i) {
+            uint currentAmount = amount.bp(payouts[i].value);
             sumBps = sumBps + (payouts[i].value);
             if (currentAmount > 0) {
-                transfer(
-                    LibAsset.Asset(matchCalculate, currentAmount),
-                    from,
-                    payouts[i].account,
-                    transferDirection,
-                    PAYOUT
-                );
+                rest = rest - (currentAmount);
+                transfer(LibAsset.Asset(assetType, currentAmount), from, payouts[i].account, proxy);
             }
         }
+        LibPart.Part memory lastPayout = payouts[payouts.length - 1];
+        sumBps = sumBps + (lastPayout.value);
         require(sumBps == 10000, "Sum payouts Bps not equal 100%");
-    }
-
-    function calculateTotalAmount(
-        uint256 amount,
-        uint256 feeOnTopBp,
-        LibPart.Part[] memory orderOriginFees
-    ) internal pure returns (uint256 total) {
-        total = amount + (amount.bp(feeOnTopBp));
-        uint256 length = orderOriginFees.length;
-        for (uint256 i; i < length; ++i) {
-            total = total + (amount.bp(orderOriginFees[i].value));
+        if (rest > 0) {
+            transfer(LibAsset.Asset(assetType, rest), from, lastPayout.account, proxy);
         }
     }
 
-    function subFeeInBp(
-        uint256 value,
-        uint256 total,
-        uint256 feeInBp
-    ) internal pure returns (uint256 newValue, uint256 realFee) {
+    /**
+        @notice calculates total amount of fee-side asset that is going to be used in match
+        @param amount fee-side order value
+        @param orderOriginFees fee-side order's origin fee (it adds on top of the amount)
+        @param maxFeesBasePoint max fee for the sell-order (used and is > 0 for V3 orders only)
+        @return total amount of fee-side asset
+    */
+    function calculateTotalAmount(
+        uint amount,
+        LibPart.Part[] memory orderOriginFees,
+        uint maxFeesBasePoint
+    ) internal pure returns (uint) {
+        if (maxFeesBasePoint > 0) {
+            return amount;
+        }
+        uint fees = 0;
+        for (uint256 i = 0; i < orderOriginFees.length; ++i) {
+            // require(orderOriginFees[i].value <= 10000, "origin fee is too big");
+            fees = fees + orderOriginFees[i].value;
+        }
+        return amount + (amount.bp(fees));
+    }
+
+    function subFeeInBp(uint value, uint total, uint feeInBp) internal pure returns (uint newValue, uint realFee) {
         return subFee(value, total.bp(feeInBp));
     }
 
-    function subFee(uint256 value, uint256 fee) internal pure returns (uint256 newValue, uint256 realFee) {
+    function subFee(uint value, uint fee) internal pure returns (uint newValue, uint realFee) {
         if (value > fee) {
             newValue = value - (fee);
             realFee = fee;

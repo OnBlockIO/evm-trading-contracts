@@ -7,8 +7,6 @@ library LibAsset {
     bytes4 public constant ERC20_ASSET_CLASS = bytes4(keccak256("ERC20"));
     bytes4 public constant ERC721_ASSET_CLASS = bytes4(keccak256("ERC721"));
     bytes4 public constant ERC1155_ASSET_CLASS = bytes4(keccak256("ERC1155"));
-    bytes4 public constant ERC721_LAZY_ASSET_CLASS = bytes4(keccak256("ERC721_LAZY"));
-    bytes4 public constant ERC1155_LAZY_ASSET_CLASS = bytes4(keccak256("ERC1155_LAZY"));
     bytes4 public constant COLLECTION = bytes4(keccak256("COLLECTION"));
     bytes4 public constant CRYPTO_PUNKS = bytes4(keccak256("CRYPTO_PUNKS"));
 

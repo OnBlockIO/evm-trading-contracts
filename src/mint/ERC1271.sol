@@ -19,5 +19,7 @@ abstract contract ERC1271 {
      */
     function isValidSignature(bytes32 _hash, bytes memory _signature) public view virtual returns (bytes4);
 
-    uint256[50] private __gap;
+    function returnIsValidSignatureMagicNumber(bool isValid) internal pure returns (bytes4) {
+        return isValid ? ERC1271_RETURN_VALID_SIGNATURE : ERC1271_RETURN_INVALID_SIGNATURE;
+    }
 }

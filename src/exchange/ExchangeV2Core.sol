@@ -2,11 +2,15 @@
 
 pragma solidity ^0.8.9;
 
+import "../librairies/LibFill.sol";
+import "../librairies/LibOrderData.sol";
+import "../librairies/LibDirectTransfer.sol";
 import "./OrderValidator.sol";
 import "../custom-matcher/AssetMatcher.sol";
-import "../librairies/LibOrderData.sol";
+
+import "../transfer-manager/TransferExecutor.sol";
 import "../interfaces/ITransferManager.sol";
-import "../librairies/LibTransfer.sol";
+import "../librairies/LibDeal.sol";
 
 abstract contract ExchangeV2Core is
     Initializable,
@@ -18,9 +22,9 @@ abstract contract ExchangeV2Core is
 {
     using LibTransfer for address;
 
-    uint256 private constant UINT256_MAX = 2 ** 256 - 1;
-
-    address public matchAndTransferAdmin;
+    //dev @deprecated
+    address private matchAndTransferAdmin;
+    uint256 private constant UINT256_MAX = type(uint256).max;
 
     //state of the orders
     mapping(bytes32 => uint256) public fills;
@@ -43,9 +47,6 @@ abstract contract ExchangeV2Core is
         LibAsset.AssetType rightAsset
     );
 
-    /**
-     * @dev cancel the the given order by adding the biggest possible number to fills mapping
-     */
     function cancel(LibOrder.Order memory order) external {
         require(_msgSender() == order.maker, "not a maker");
         require(order.salt != 0, "0 salt can't be used");
@@ -54,9 +55,6 @@ abstract contract ExchangeV2Core is
         emit OrderCancelled(orderKeyHash, order.maker, order.makeAsset.assetType, order.takeAsset.assetType);
     }
 
-    /**
-     * @dev call the cancel fucntion in a loop canceling multiple orders
-     */
     function bulkCancelOrders(LibOrder.Order[] memory orders) external {
         uint256 length = orders.length;
         for (uint256 i; i < length; ++i) {
@@ -75,80 +73,173 @@ abstract contract ExchangeV2Core is
         }
     }
 
+    /**
+     * @dev function, generate sellOrder and buyOrder from parameters and call validateAndMatch() for purchase transaction
+     * @param direct struct with parameters for purchase operation
+    */
+    function directPurchase(LibDirectTransfer.Purchase calldata direct) external payable {
+        LibAsset.AssetType memory paymentAssetType = getPaymentAssetType(direct.paymentToken);
+
+        LibOrder.Order memory sellOrder = LibOrder.Order(
+            direct.sellOrderMaker,
+            LibAsset.Asset(LibAsset.AssetType(direct.nftAssetClass, direct.nftData), direct.sellOrderNftAmount),
+            address(0),
+            LibAsset.Asset(paymentAssetType, direct.sellOrderPaymentAmount),
+            direct.sellOrderSalt,
+            direct.sellOrderStart,
+            direct.sellOrderEnd,
+            direct.sellOrderDataType,
+            direct.sellOrderData
+        );
+
+        LibOrder.Order memory buyOrder = LibOrder.Order(
+            address(0),
+            LibAsset.Asset(paymentAssetType, direct.buyOrderPaymentAmount),
+            address(0),
+            LibAsset.Asset(LibAsset.AssetType(direct.nftAssetClass, direct.nftData), direct.buyOrderNftAmount),
+            0,
+            0,
+            0,
+            getOtherOrderType(direct.sellOrderDataType),
+            direct.buyOrderData
+        );
+
+        validateFull(sellOrder, direct.sellOrderSignature);
+
+        matchAndTransfer(sellOrder, buyOrder);
+    }
+
+    /**
+     * @dev function, generate sellOrder and buyOrder from parameters and call validateAndMatch() for accept bid transaction
+     * @param direct struct with parameters for accept bid operation
+     */
+    function directAcceptBid(LibDirectTransfer.AcceptBid calldata direct) external payable {
+        LibAsset.AssetType memory paymentAssetType = getPaymentAssetType(direct.paymentToken);
+
+        LibOrder.Order memory buyOrder = LibOrder.Order(
+            direct.bidMaker,
+            LibAsset.Asset(paymentAssetType, direct.bidPaymentAmount),
+            address(0),
+            LibAsset.Asset(LibAsset.AssetType(direct.nftAssetClass, direct.nftData), direct.bidNftAmount),
+            direct.bidSalt,
+            direct.bidStart,
+            direct.bidEnd,
+            direct.bidDataType,
+            direct.bidData
+        );
+
+        LibOrder.Order memory sellOrder = LibOrder.Order(
+            address(0),
+            LibAsset.Asset(LibAsset.AssetType(direct.nftAssetClass, direct.nftData), direct.sellOrderNftAmount),
+            address(0),
+            LibAsset.Asset(paymentAssetType, direct.sellOrderPaymentAmount),
+            0,
+            0,
+            0,
+            getOtherOrderType(direct.bidDataType),
+            direct.sellOrderData
+        );
+
+        validateFull(buyOrder, direct.bidSignature);
+
+        matchAndTransfer(sellOrder, buyOrder);
+    }
+
+    /**
+     * @dev function, match orders
+     * @param orderLeft left order
+     * @param signatureLeft order left signature
+     * @param orderRight right order
+     * @param signatureRight order right signature
+     */
     function matchOrders(
         LibOrder.Order memory orderLeft,
         bytes memory signatureLeft,
         LibOrder.Order memory orderRight,
         bytes memory signatureRight
     ) external payable {
+        validateOrders(orderLeft, signatureLeft, orderRight, signatureRight);
+        matchAndTransfer(orderLeft, orderRight);
+    }
+
+    /**
+     * @dev function, validate orders
+     * @param orderLeft left order
+     * @param signatureLeft order left signature
+     * @param orderRight right order
+     * @param signatureRight order right signature
+     */
+    function validateOrders(
+        LibOrder.Order memory orderLeft,
+        bytes memory signatureLeft,
+        LibOrder.Order memory orderRight,
+        bytes memory signatureRight
+    ) internal view {
         validateFull(orderLeft, signatureLeft);
         validateFull(orderRight, signatureRight);
         if (orderLeft.taker != address(0)) {
-            require(orderRight.maker == orderLeft.taker, "leftOrder.taker verification failed");
+            if (orderRight.maker != address(0))
+                require(orderRight.maker == orderLeft.taker, "leftOrder.taker verification failed");
         }
         if (orderRight.taker != address(0)) {
-            require(orderRight.taker == orderLeft.maker, "rightOrder.taker verification failed");
+            if (orderLeft.maker != address(0))
+                require(orderRight.taker == orderLeft.maker, "rightOrder.taker verification failed");
         }
-
-        matchAndTransfer(orderLeft, orderRight);
     }
 
     /**
-     * @dev set admin address that can use the matchAndTransferWithoutSignature function
-     */
-    function setMatchTransferAdminAccount(address mata) external onlyOwner {
-        matchAndTransferAdmin = mata;
-    }
-
-    /**
-     * @dev match orders without a signature, only admin
-     */
-    function matchAndTransferWithoutSignature(
-        LibOrder.Order memory orderLeft,
-        LibOrder.Order memory orderRight
-    ) external payable {
-        require(msg.sender == matchAndTransferAdmin, "not allowed to matchAndTransfer without a signature");
-        matchAndTransfer(orderLeft, orderRight);
-    }
-
+        @notice matches valid orders and transfers their assets
+        @param orderLeft the left order of the match
+        @param orderRight the right order of the match
+    */
     function matchAndTransfer(LibOrder.Order memory orderLeft, LibOrder.Order memory orderRight) internal {
         (LibAsset.AssetType memory makeMatch, LibAsset.AssetType memory takeMatch) = matchAssets(orderLeft, orderRight);
-        bytes32 leftOrderKeyHash = LibOrder.hashKey(orderLeft);
-        bytes32 rightOrderKeyHash = LibOrder.hashKey(orderRight);
 
-        LibOrderDataV2.DataV2 memory leftOrderData = LibOrderData.parse(orderLeft);
-        LibOrderDataV2.DataV2 memory rightOrderData = LibOrderData.parse(orderRight);
-
-        LibFill.FillResult memory newFill = getFillSetNew(
-            orderLeft,
-            orderRight,
-            leftOrderKeyHash,
-            rightOrderKeyHash,
-            leftOrderData,
-            rightOrderData
-        );
+        (
+            LibOrderData.GenericOrderData memory leftOrderData,
+            LibOrderData.GenericOrderData memory rightOrderData,
+            LibFill.FillResult memory newFill
+        ) = parseOrdersSetFillEmitMatch(orderLeft, orderRight);
 
         (uint totalMakeValue, uint totalTakeValue) = doTransfers(
-            makeMatch,
-            takeMatch,
-            newFill,
-            orderLeft,
-            orderRight,
-            leftOrderData,
-            rightOrderData
+            LibDeal.DealSide({
+                asset: LibAsset.Asset({assetType: makeMatch, value: newFill.leftValue}),
+                payouts: leftOrderData.payouts,
+                originFees: leftOrderData.originFees,
+                proxy: proxies[makeMatch.assetClass],
+                from: orderLeft.maker
+            }),
+            LibDeal.DealSide({
+                asset: LibAsset.Asset(takeMatch, newFill.rightValue),
+                payouts: rightOrderData.payouts,
+                originFees: rightOrderData.originFees,
+                proxy: proxies[takeMatch.assetClass],
+                from: orderRight.maker
+            }),
+            getDealData(
+                makeMatch.assetClass,
+                takeMatch.assetClass,
+                orderLeft.dataType,
+                orderRight.dataType,
+                leftOrderData,
+                rightOrderData
+            )
         );
         if (makeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
-            require(takeMatch.assetClass != LibAsset.ETH_ASSET_CLASS, "wrong takeMatch");
-            require(msg.value >= totalMakeValue, "not enough BaseCurrency");
+            require(takeMatch.assetClass != LibAsset.ETH_ASSET_CLASS, "wrong takeMatch.assetClass");
+            require(msg.value >= totalMakeValue, "not enough eth");
             if (msg.value > totalMakeValue) {
                 address(msg.sender).transferEth(msg.value - (totalMakeValue));
             }
         } else if (takeMatch.assetClass == LibAsset.ETH_ASSET_CLASS) {
-            require(msg.value >= totalTakeValue, "not enough BaseCurrency");
+            require(msg.value >= totalTakeValue, "not enough eth");
             if (msg.value > totalTakeValue) {
                 address(msg.sender).transferEth(msg.value - (totalTakeValue));
             }
         }
+
+        bytes32 leftOrderKeyHash = LibOrder.hashKey(orderLeft);
+        bytes32 rightOrderKeyHash = LibOrder.hashKey(orderRight);
         emit OrderFilled(
             leftOrderKeyHash,
             rightOrderKeyHash,
@@ -161,29 +252,156 @@ abstract contract ExchangeV2Core is
         );
     }
 
-    function getFillSetNew(
+    function parseOrdersSetFillEmitMatch(
+        LibOrder.Order memory orderLeft,
+        LibOrder.Order memory orderRight
+    )
+        internal
+        returns (
+            LibOrderData.GenericOrderData memory leftOrderData,
+            LibOrderData.GenericOrderData memory rightOrderData,
+            LibFill.FillResult memory newFill
+        )
+    {
+        bytes32 leftOrderKeyHash = LibOrder.hashKey(orderLeft);
+        bytes32 rightOrderKeyHash = LibOrder.hashKey(orderRight);
+
+        address msgSender = _msgSender();
+        if (orderLeft.maker == address(0)) {
+            orderLeft.maker = msgSender;
+        }
+        if (orderRight.maker == address(0)) {
+            orderRight.maker = msgSender;
+        }
+
+        leftOrderData = LibOrderData.parse(orderLeft);
+        rightOrderData = LibOrderData.parse(orderRight);
+
+        newFill = setFillEmitMatch(
+            orderLeft,
+            orderRight,
+            leftOrderKeyHash,
+            rightOrderKeyHash,
+            leftOrderData.isMakeFill,
+            rightOrderData.isMakeFill
+        );
+    }
+
+    function getDealData(
+        bytes4 makeMatchAssetClass,
+        bytes4 takeMatchAssetClass,
+        bytes4 leftDataType,
+        bytes4 rightDataType,
+        LibOrderData.GenericOrderData memory leftOrderData,
+        LibOrderData.GenericOrderData memory rightOrderData
+    ) internal pure returns (LibDeal.DealData memory dealData) {
+        dealData.feeSide = LibFeeSide.getFeeSide(makeMatchAssetClass, takeMatchAssetClass);
+        dealData.maxFeesBasePoint = getMaxFee(
+            leftDataType,
+            rightDataType,
+            leftOrderData,
+            rightOrderData,
+            dealData.feeSide
+        );
+    }
+
+    /**
+        @notice determines the max amount of fees for the match
+        @param dataTypeLeft data type of the left order
+        @param dataTypeRight data type of the right order
+        @param leftOrderData data of the left order
+        @param rightOrderData data of the right order
+        @param feeSide fee side of the match
+        @return max fee amount in base points
+    */
+    function getMaxFee(
+        bytes4 dataTypeLeft,
+        bytes4 dataTypeRight,
+        LibOrderData.GenericOrderData memory leftOrderData,
+        LibOrderData.GenericOrderData memory rightOrderData,
+        LibFeeSide.FeeSide feeSide
+    ) internal pure returns (uint) {
+        if (
+            dataTypeLeft != LibOrderDataV3.V3_SELL &&
+            dataTypeRight != LibOrderDataV3.V3_SELL &&
+            dataTypeLeft != LibOrderDataV3.V3_BUY &&
+            dataTypeRight != LibOrderDataV3.V3_BUY
+        ) {
+            return 0;
+        }
+
+        uint matchFees = getSumFees(leftOrderData.originFees, rightOrderData.originFees);
+        uint maxFee;
+        if (feeSide == LibFeeSide.FeeSide.LEFT) {
+            maxFee = rightOrderData.maxFeesBasePoint;
+            require(dataTypeLeft == LibOrderDataV3.V3_BUY && dataTypeRight == LibOrderDataV3.V3_SELL, "wrong V3 type1");
+        } else if (feeSide == LibFeeSide.FeeSide.RIGHT) {
+            maxFee = leftOrderData.maxFeesBasePoint;
+            require(dataTypeRight == LibOrderDataV3.V3_BUY && dataTypeLeft == LibOrderDataV3.V3_SELL, "wrong V3 type2");
+        } else {
+            return 0;
+        }
+        require(maxFee > 0 && maxFee >= matchFees && maxFee <= 1000, "wrong maxFee");
+
+        return maxFee;
+    }
+
+    /**
+        @notice calculates amount of fees for the match
+        @param originLeft origin fees of the left order
+        @param originRight origin fees of the right order
+        @return sum of all fees for the match (protcolFee + leftOrder.originFees + rightOrder.originFees)
+     */
+    function getSumFees(
+        LibPart.Part[] memory originLeft,
+        LibPart.Part[] memory originRight
+    ) internal pure returns (uint) {
+        uint result = 0;
+
+        //adding left origin fees
+        for (uint i; i < originLeft.length; i++) {
+            result = result + originLeft[i].value;
+        }
+
+        //adding right origin fees
+        for (uint i; i < originRight.length; i++) {
+            result = result + originRight[i].value;
+        }
+
+        return result;
+    }
+
+    /**
+        @notice calculates fills for the matched orders and set them in "fills" mapping
+        @param orderLeft left order of the match
+        @param orderRight right order of the match
+        @param leftMakeFill true if the left orders uses make-side fills, false otherwise
+        @param rightMakeFill true if the right orders uses make-side fills, false otherwise
+        @return returns change in orders' fills by the match 
+    */
+    function setFillEmitMatch(
         LibOrder.Order memory orderLeft,
         LibOrder.Order memory orderRight,
         bytes32 leftOrderKeyHash,
         bytes32 rightOrderKeyHash,
-        LibOrderDataV2.DataV2 memory leftOrderData,
-        LibOrderDataV2.DataV2 memory rightOrderData
+        bool leftMakeFill,
+        bool rightMakeFill
     ) internal returns (LibFill.FillResult memory) {
-        uint leftOrderFill = getOrderFill(orderLeft, leftOrderKeyHash);
-        uint rightOrderFill = getOrderFill(orderRight, rightOrderKeyHash);
+        uint leftOrderFill = getOrderFill(orderLeft.salt, leftOrderKeyHash);
+        uint rightOrderFill = getOrderFill(orderRight.salt, rightOrderKeyHash);
         LibFill.FillResult memory newFill = LibFill.fillOrder(
             orderLeft,
             orderRight,
             leftOrderFill,
             rightOrderFill,
-            leftOrderData.isMakeFill,
-            rightOrderData.isMakeFill
+            leftMakeFill,
+            rightMakeFill
         );
 
         require(newFill.rightValue > 0 && newFill.leftValue > 0, "nothing to fill");
 
         if (orderLeft.salt != 0) {
-            if (leftOrderData.isMakeFill) {
+            if (leftMakeFill) {
                 fills[leftOrderKeyHash] = leftOrderFill + (newFill.leftValue);
             } else {
                 fills[leftOrderKeyHash] = leftOrderFill + (newFill.rightValue);
@@ -191,17 +409,18 @@ abstract contract ExchangeV2Core is
         }
 
         if (orderRight.salt != 0) {
-            if (rightOrderData.isMakeFill) {
+            if (rightMakeFill) {
                 fills[rightOrderKeyHash] = rightOrderFill + (newFill.rightValue);
             } else {
                 fills[rightOrderKeyHash] = rightOrderFill + (newFill.leftValue);
             }
         }
+
         return newFill;
     }
 
-    function getOrderFill(LibOrder.Order memory order, bytes32 hash) internal view returns (uint fill) {
-        if (order.salt == 0) {
+    function getOrderFill(uint salt, bytes32 hash) internal view returns (uint fill) {
+        if (salt == 0) {
             fill = 0;
         } else {
             fill = fills[hash];
@@ -219,8 +438,29 @@ abstract contract ExchangeV2Core is
     }
 
     function validateFull(LibOrder.Order memory order, bytes memory signature) internal view {
-        LibOrder.validate(order);
+        LibOrder.validateOrderTime(order);
         validate(order, signature);
+    }
+
+    function getPaymentAssetType(address token) internal pure returns (LibAsset.AssetType memory) {
+        LibAsset.AssetType memory result;
+        if (token == address(0)) {
+            result.assetClass = LibAsset.ETH_ASSET_CLASS;
+        } else {
+            result.assetClass = LibAsset.ERC20_ASSET_CLASS;
+            result.data = abi.encode(token);
+        }
+        return result;
+    }
+
+    function getOtherOrderType(bytes4 dataType) internal pure returns (bytes4) {
+        if (dataType == LibOrderDataV3.V3_SELL) {
+            return LibOrderDataV3.V3_BUY;
+        }
+        if (dataType == LibOrderDataV3.V3_BUY) {
+            return LibOrderDataV3.V3_SELL;
+        }
+        return dataType;
     }
 
     uint256[49] private __gap;

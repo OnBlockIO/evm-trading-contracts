@@ -14,7 +14,7 @@ contract RoyaltiesProviderArtBlocks is IRoyaltiesProvider, Ownable {
 
     event ArtblocksPercentageChanged(address _who, uint96 _old, uint96 _new);
 
-    function getRoyalties(address token, uint256 tokenId) external view override returns (LibPart.Part[] memory) {
+    function getRoyalties(address token, uint tokenId) external view override returns (LibPart.Part[] memory) {
         RoyaltyArtBlocks artBlocks = RoyaltyArtBlocks(token);
 
         //gettign artist and additionalPayee royalty part

@@ -2,16 +2,21 @@
 
 pragma solidity ^0.8.9;
 
-import "./LibMath.sol";
 import "./LibAsset.sol";
+import "./LibMath.sol";
+import "./LibOrderDataV3.sol";
 import "./LibOrderDataV2.sol";
 import "./LibOrderDataV1.sol";
 
 library LibOrder {
+    using SafeMathUpgradeable for uint;
+
     bytes32 public constant ORDER_TYPEHASH =
         keccak256(
             "Order(address maker,Asset makeAsset,address taker,Asset takeAsset,uint256 salt,uint256 start,uint256 end,bytes4 dataType,bytes data)Asset(AssetType assetType,uint256 value)AssetType(bytes4 assetClass,bytes data)"
         );
+
+    bytes4 public constant DEFAULT_ORDER_TYPE = 0xffffffff;
 
     struct Order {
         address maker;
@@ -31,17 +36,27 @@ library LibOrder {
         bool isMakeFill
     ) internal pure returns (uint makeValue, uint takeValue) {
         if (isMakeFill) {
-            makeValue = order.makeAsset.value - (fill);
+            makeValue = order.makeAsset.value.sub(fill);
             takeValue = LibMath.safeGetPartialAmountFloor(order.takeAsset.value, order.makeAsset.value, makeValue);
         } else {
-            takeValue = order.takeAsset.value - (fill);
+            takeValue = order.takeAsset.value.sub(fill);
             makeValue = LibMath.safeGetPartialAmountFloor(order.makeAsset.value, order.takeAsset.value, takeValue);
         }
     }
 
     function hashKey(Order memory order) internal pure returns (bytes32) {
-        //order.data is in hash for V2 orders
-        if (order.dataType == LibOrderDataV2.V2) {
+        if (order.dataType == LibOrderDataV1.V1 || order.dataType == DEFAULT_ORDER_TYPE) {
+            return
+                keccak256(
+                    abi.encode(
+                        order.maker,
+                        LibAsset.hash(order.makeAsset.assetType),
+                        LibAsset.hash(order.takeAsset.assetType),
+                        order.salt
+                    )
+                );
+        } else {
+            //order.data is in hash for V2, V3 and all new order
             return
                 keccak256(
                     abi.encode(
@@ -50,16 +65,6 @@ library LibOrder {
                         LibAsset.hash(order.takeAsset.assetType),
                         order.salt,
                         order.data
-                    )
-                );
-        } else {
-            return
-                keccak256(
-                    abi.encode(
-                        order.maker,
-                        LibAsset.hash(order.makeAsset.assetType),
-                        LibAsset.hash(order.takeAsset.assetType),
-                        order.salt
                     )
                 );
         }
@@ -83,7 +88,7 @@ library LibOrder {
             );
     }
 
-    function validate(LibOrder.Order memory order) internal view {
+    function validateOrderTime(LibOrder.Order memory order) internal view {
         require(order.start == 0 || order.start < block.timestamp, "Order start validation failed");
         require(order.end == 0 || order.end > block.timestamp, "Order end validation failed");
     }

@@ -5,7 +5,6 @@ import {
   TransferProxy,
   ExchangeV2,
   RoyaltiesRegistry,
-  TestERC20,
   GhostMarketERC721,
 } from '../typechain';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
@@ -23,7 +22,6 @@ describe('OriginFeeValidator Test', async function () {
   let erc20TransferProxy: ERC20TransferProxy;
   let ghostERC721: GhostMarketERC721;
   let royaltiesRegistryProxy: RoyaltiesRegistry;
-  let t1: TestERC20;
   let wallet0: SignerWithAddress;
   let wallet1: SignerWithAddress;
   let wallet2: SignerWithAddress;
@@ -44,7 +42,7 @@ describe('OriginFeeValidator Test', async function () {
     const TransferProxyTest = await ethers.getContractFactory('TransferProxy');
     const ERC20TransferProxyTest = await ethers.getContractFactory('ERC20TransferProxy');
     const ExchangeV2Test = await ethers.getContractFactory('ExchangeV2');
-    const GhostMarketTransferManagerTest = await ethers.getContractFactory('GhostMarketTransferManagerTest');
+    // const GhostMarketTransferManagerTest = await ethers.getContractFactory('GhostMarketTransferManagerTest');
     const TestERC20 = await ethers.getContractFactory('TestERC20');
     const TestGhostERC721 = await ethers.getContractFactory('GhostMarketERC721');
     const TestRoyaltiesRegistry = await ethers.getContractFactory('RoyaltiesRegistry');
@@ -68,18 +66,15 @@ describe('OriginFeeValidator Test', async function () {
       }
     );
 
-    await GhostMarketTransferManagerTest.deploy();
-    t1 = await TestERC20.deploy();
+    // await GhostMarketTransferManagerTest.deploy();
+    await TestERC20.deploy();
 
     ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(TestGhostERC721, [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI], {
       initializer: 'initialize',
       unsafeAllowCustomTypes: true,
     });
 
-    //fee receiver for ETH transfer is the protocol address
-    await exchangeV2Proxy.setDefaultFeeReceiver(protocol.address);
     //fee receiver for Token t1 transfer is the protocol address
-    await exchangeV2Proxy.setFeeReceiver(t1.address, protocol.address);
     await transferProxy.addOperator(exchangeV2Proxy.address);
     await erc20TransferProxy.addOperator(exchangeV2Proxy.address);
 
@@ -348,7 +343,7 @@ describe('OriginFeeValidator Test', async function () {
 
   it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol fee, 1 Origin fee address, 1 Royalties address', async () => {
     //set protocol fee to 2%
-    exchangeV2Proxy.setProtocolFee(200);
+    // exchangeV2Proxy.setProtocolFee(200);
 
     await ghostERC721.mintGhost(wallet1.address, [{recipient: wallet6.address, value: 1000}], 'ext_uri', '');
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();

@@ -11,8 +11,4 @@ library LibOrderDataV1 {
         LibPart.Part[] payouts;
         LibPart.Part[] originFees;
     }
-
-    function decodeOrderDataV1(bytes memory data) internal pure returns (DataV1 memory orderData) {
-        orderData = abi.decode(data, (DataV1));
-    }
 }

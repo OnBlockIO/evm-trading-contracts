@@ -155,6 +155,7 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
 
         address royaltiesProvider = address(uint160(royaltiesProviderData));
         uint256 royaltiesType = _getRoyaltiesType(royaltiesProviderData);
+
         // case when royaltiesType is not set
         if (royaltiesType == 0) {
             // calculating royalties type for token

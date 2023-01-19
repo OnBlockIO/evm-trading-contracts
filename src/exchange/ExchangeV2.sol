@@ -6,20 +6,10 @@ import "./ExchangeV2Core.sol";
 import "../transfer-manager/GhostMarketTransferManager.sol";
 
 contract ExchangeV2 is ExchangeV2Core, GhostMarketTransferManager {
-    using LibTransfer for address;
-
-    /**
-     * @dev initialize ExchangeV2
-     *
-     * @param _transferProxy address for proxy transfer contract that handles ERC721 & ERC1155 contracts
-     * @param _erc20TransferProxy address for proxy transfer contract that handles ERC20 contracts
-     * @param newProtocolFee address for protocol fee
-     * @param newDefaultFeeReceiver address for protocol fee if fee by token type is not set (GhostMarketTransferManager.sol => function getFeeReceiver)
-     */
     function __ExchangeV2_init(
-        INftTransferProxy _transferProxy,
-        IERC20TransferProxy _erc20TransferProxy,
-        uint256 newProtocolFee,
+        address _transferProxy,
+        address _erc20TransferProxy,
+        uint newProtocolFee,
         address newDefaultFeeReceiver,
         IRoyaltiesProvider newRoyaltiesProvider
     ) external initializer {
@@ -29,6 +19,4 @@ contract ExchangeV2 is ExchangeV2Core, GhostMarketTransferManager {
         __GhostMarketTransferManager_init_unchained(newProtocolFee, newDefaultFeeReceiver, newRoyaltiesProvider);
         __OrderValidator_init_unchained();
     }
-
-    uint256[50] private __gap;
 }

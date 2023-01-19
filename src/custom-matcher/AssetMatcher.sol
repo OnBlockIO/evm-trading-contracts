@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 abstract contract AssetMatcher is Initializable, OwnableUpgradeable {
     bytes public constant EMPTY = "";
-    mapping(bytes4 => address) public matchers;
+    mapping(bytes4 => address) internal matchers;
 
     event MatcherChange(bytes4 indexed assetType, address matcher);
 
