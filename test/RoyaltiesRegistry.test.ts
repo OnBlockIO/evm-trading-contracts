@@ -66,10 +66,14 @@ describe('RoyaltiesRegistry Test', () => {
     royaltiesProviderV2Legacy = await RoyaltiesProviderV2Legacy.deploy();
     testERC721ArtBlocks = await TestERC721ArtBlocks.deploy();
     royaltiesProviderArtBlocks = await RoyaltiesProviderArtBlocks.deploy();
-    ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(GhostMarketERC721, [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI], {
-      initializer: 'initialize',
-      unsafeAllowCustomTypes: true,
-    });
+    ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(
+      GhostMarketERC721,
+      [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI],
+      {
+        initializer: 'initialize',
+        unsafeAllowCustomTypes: true,
+      }
+    );
   });
 
   describe('RoyaltiesRegistry token supports IERC2981', () => {
@@ -144,11 +148,7 @@ describe('RoyaltiesRegistry Test', () => {
       );
       const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
       const part = await (
-        await royaltiesRegistryTest._getRoyalties(
-          royaltiesRegistry.address,
-          ghostERC721.address,
-          erc721TokenId1
-        )
+        await royaltiesRegistryTest._getRoyalties(royaltiesRegistry.address, ghostERC721.address, erc721TokenId1)
       ).wait();
       inReceipt(
         part,

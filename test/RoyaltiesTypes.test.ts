@@ -54,10 +54,14 @@ describe('RoyaltiesType Test', () => {
       wallet7
     ).deploy();
     testRoyaltiesProvider = await TestRoyaltiesProvider.deploy();
-    ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(GhostMarketERC721, [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI], {
-      initializer: 'initialize',
-      unsafeAllowCustomTypes: true,
-    });
+    ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(
+      GhostMarketERC721,
+      [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI],
+      {
+        initializer: 'initialize',
+        unsafeAllowCustomTypes: true,
+      }
+    );
     defaultRoyalties = [
       [wallet5.address, 1000],
       [wallet6.address, 500],
@@ -136,26 +140,14 @@ describe('RoyaltiesType Test', () => {
       );
       const erc721TokenId2 = (await ghostERC721.getLastTokenID()).toString();
 
-      const tx1 = await royaltiesRegistry['getRoyalties(address,uint256)'](
-        ghostERC721.address,
-        erc721TokenId1
-      );
+      const tx1 = await royaltiesRegistry['getRoyalties(address,uint256)'](ghostERC721.address, erc721TokenId1);
       await tx1.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(ghostERC721.address)).to.be.equal(
-        3,
-        'correct royalties type'
-      );
+      expect(await royaltiesRegistry.getRoyaltiesType(ghostERC721.address)).to.be.equal(3, 'correct royalties type');
       // console.log('royalties ghostmarket gas used first request', (await tx1.wait()).gasUsed.toString());
 
-      const tx2 = await royaltiesRegistry['getRoyalties(address,uint256)'](
-        ghostERC721.address,
-        erc721TokenId2
-      );
+      const tx2 = await royaltiesRegistry['getRoyalties(address,uint256)'](ghostERC721.address, erc721TokenId2);
       await tx2.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(ghostERC721.address)).to.be.equal(
-        3,
-        'correct royalties type'
-      );
+      expect(await royaltiesRegistry.getRoyaltiesType(ghostERC721.address)).to.be.equal(3, 'correct royalties type');
       // console.log('royalties ghostmarket gas used second request', (await tx2.wait()).gasUsed.toString());
     });
 

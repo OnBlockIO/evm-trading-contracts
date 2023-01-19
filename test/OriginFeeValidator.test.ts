@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {expect} from './utils/chai-setup';
-import {
-  ERC20TransferProxy,
-  TransferProxy,
-  ExchangeV2,
-  RoyaltiesRegistry,
-  GhostMarketERC721,
-} from '../typechain';
+import {ERC20TransferProxy, TransferProxy, ExchangeV2, RoyaltiesRegistry, GhostMarketERC721} from '../typechain';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {Asset, Order} from './utils/order';
 import EIP712 from './utils/EIP712';

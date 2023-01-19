@@ -124,4 +124,25 @@ describe('OrderValidator Test', async function () {
     await erc1271.setReturnSuccessfulValidSignature(true);
     await orderValidator.validateOrderTest(testOrder, '0x');
   });
+
+  it('should validate correct ERC1271 AND incorrect ECDSA signature', async () => {
+    const testOrder = Order(
+      erc1271.address,
+      Asset('0xffffffff', '0x', '100'),
+      ZERO,
+      Asset('0xffffffff', '0x', '200'),
+      '1',
+      0,
+      0,
+      '0xffffffff',
+      '0x'
+    );
+
+    await erc1271.setReturnSuccessfulValidSignature(true);
+
+    // signature len = 65, but v = 1
+    const signature =
+      '0xae9f79f54ab16651972eb2f815e5c901cf39209d692e12261c91747324b81ec05aabe86556e1a9dc8786f4ebb8b0e547320aef8db1d0d8ac86ef837557829d7a01';
+    await orderValidator.validateOrderTest(testOrder, signature);
+  });
 });

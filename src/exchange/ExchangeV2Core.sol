@@ -76,7 +76,7 @@ abstract contract ExchangeV2Core is
     /**
      * @dev function, generate sellOrder and buyOrder from parameters and call validateAndMatch() for purchase transaction
      * @param direct struct with parameters for purchase operation
-    */
+     */
     function directPurchase(LibDirectTransfer.Purchase calldata direct) external payable {
         LibAsset.AssetType memory paymentAssetType = getPaymentAssetType(direct.paymentToken);
 
