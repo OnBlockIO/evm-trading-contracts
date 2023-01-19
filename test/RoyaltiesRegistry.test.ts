@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {expect} from './utils/chai-setup';
-import {ethers} from 'hardhat';
+import {ethers, upgrades} from 'hardhat';
 import {
   RoyaltiesRegistry,
   RoyaltiesRegistryTest,
@@ -10,9 +10,11 @@ import {
   TestERC721ArtBlocks,
   RoyaltiesProviderArtBlocks,
   TestERC721WithRoyaltyV2981,
+  GhostMarketERC721,
 } from '../typechain';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {inReceipt} from './utils/expectEvent';
+import {BASE_URI, TOKEN_NAME, TOKEN_SYMBOL} from './utils/constants';
 
 describe('RoyaltiesRegistry Test', () => {
   const erc721TokenId1 = 51;
@@ -24,6 +26,7 @@ describe('RoyaltiesRegistry Test', () => {
   let testERC721ArtBlocks: TestERC721ArtBlocks;
   let royaltiesProviderArtBlocks: RoyaltiesProviderArtBlocks;
   let testERC721WithRoyaltiesV2981: TestERC721WithRoyaltyV2981;
+  let ghostERC721: GhostMarketERC721;
   let deployer: SignerWithAddress;
   let wallet1: SignerWithAddress;
   let wallet2: SignerWithAddress;
@@ -53,6 +56,7 @@ describe('RoyaltiesRegistry Test', () => {
     const TestERC721ArtBlocks = await ethers.getContractFactory('TestERC721ArtBlocks');
     const RoyaltiesProviderArtBlocks = await ethers.getContractFactory('RoyaltiesProviderArtBlocks');
     const TestERC721WithRoyaltiesV2981 = await ethers.getContractFactory('TestERC721WithRoyaltyV2981');
+    const GhostMarketERC721 = await ethers.getContractFactory('GhostMarketERC721');
     royaltiesRegistry = await RoyaltiesRegistry.deploy();
     await royaltiesRegistry.__RoyaltiesRegistry_init();
     royaltiesRegistryTest = await RoyaltiesRegistryTest.deploy();
@@ -62,6 +66,10 @@ describe('RoyaltiesRegistry Test', () => {
     royaltiesProviderV2Legacy = await RoyaltiesProviderV2Legacy.deploy();
     testERC721ArtBlocks = await TestERC721ArtBlocks.deploy();
     royaltiesProviderArtBlocks = await RoyaltiesProviderArtBlocks.deploy();
+    ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(GhostMarketERC721, [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI], {
+      initializer: 'initialize',
+      unsafeAllowCustomTypes: true,
+    });
   });
 
   describe('RoyaltiesRegistry token supports IERC2981', () => {
@@ -120,6 +128,34 @@ describe('RoyaltiesRegistry Test', () => {
           [wallet6.address, ethers.BigNumber.from(800)],
           [wallet7.address, ethers.BigNumber.from(900)],
           [wallet8.address, ethers.BigNumber.from(1000)],
+        ])
+      );
+    });
+
+    it('should test ghostmarket royalties', async () => {
+      await ghostERC721.mintGhost(
+        wallet1.address,
+        [
+          {recipient: wallet2.address, value: 300},
+          {recipient: wallet3.address, value: 400},
+        ],
+        'ext_uri',
+        ''
+      );
+      const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
+      const part = await (
+        await royaltiesRegistryTest._getRoyalties(
+          royaltiesRegistry.address,
+          ghostERC721.address,
+          erc721TokenId1
+        )
+      ).wait();
+      inReceipt(
+        part,
+        'GetRoyaltiesTest',
+        Array([
+          [wallet2.address, ethers.BigNumber.from(300)],
+          [wallet3.address, ethers.BigNumber.from(400)],
         ])
       );
     });

@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {expect} from './utils/chai-setup';
-import {ethers} from 'hardhat';
+import {ethers, upgrades} from 'hardhat';
 import {
   RoyaltiesRegistry,
   TestERC721WithRoyaltiesV2OwnableUpgradeable,
   RoyaltiesProviderTest,
   TestERC721WithRoyaltyV2981,
+  GhostMarketERC721,
 } from './../typechain';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {BASE_URI, TOKEN_NAME, TOKEN_SYMBOL} from './utils/constants';
 
 describe('RoyaltiesType Test', () => {
   const ADDRESS_ZERO = ethers.constants.AddressZero;
@@ -15,6 +17,7 @@ describe('RoyaltiesType Test', () => {
   let testERC721WithRoyaltiesV2981: TestERC721WithRoyaltyV2981;
   let testRoyaltiesProvider: RoyaltiesProviderTest;
   let testERC721WithRoyaltiesV2OwnableUpgradeable: TestERC721WithRoyaltiesV2OwnableUpgradeable;
+  let ghostERC721: GhostMarketERC721;
   let wallet1: SignerWithAddress;
   let wallet2: SignerWithAddress;
   let wallet3: SignerWithAddress;
@@ -41,6 +44,7 @@ describe('RoyaltiesType Test', () => {
     const TestERC721WithRoyaltiesV2OwnableUpgradeable = await ethers.getContractFactory(
       'TestERC721WithRoyaltiesV2OwnableUpgradeable'
     );
+    const GhostMarketERC721 = await ethers.getContractFactory('GhostMarketERC721');
     royaltiesRegistry = await RoyaltiesRegistry.deploy();
     await royaltiesRegistry.__RoyaltiesRegistry_init();
     testERC721WithRoyaltiesV2981 = await TestERC721WithRoyaltiesV2981.connect(wallet7).deploy();
@@ -49,7 +53,11 @@ describe('RoyaltiesType Test', () => {
     testERC721WithRoyaltiesV2OwnableUpgradeable = await TestERC721WithRoyaltiesV2OwnableUpgradeable.connect(
       wallet7
     ).deploy();
-    await testERC721WithRoyaltiesV2OwnableUpgradeable.connect(wallet7).initialize();
+    testRoyaltiesProvider = await TestRoyaltiesProvider.deploy();
+    ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(GhostMarketERC721, [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI], {
+      initializer: 'initialize',
+      unsafeAllowCustomTypes: true,
+    });
     defaultRoyalties = [
       [wallet5.address, 1000],
       [wallet6.address, 500],
@@ -104,6 +112,51 @@ describe('RoyaltiesType Test', () => {
         'correct royalties type'
       );
       // console.log('royalties v2 gas used second request', (await tx2.wait()).gasUsed.toString());
+    });
+
+    it('should test royalties type = 3, royalties ghostmarket', async () => {
+      await ghostERC721.mintGhost(
+        wallet1.address,
+        [
+          {recipient: wallet2.address, value: 300},
+          {recipient: wallet3.address, value: 400},
+        ],
+        'ext_uri',
+        ''
+      );
+      const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
+      await ghostERC721.mintGhost(
+        wallet1.address,
+        [
+          {recipient: wallet2.address, value: 300},
+          {recipient: wallet3.address, value: 400},
+        ],
+        'ext_uri',
+        ''
+      );
+      const erc721TokenId2 = (await ghostERC721.getLastTokenID()).toString();
+
+      const tx1 = await royaltiesRegistry['getRoyalties(address,uint256)'](
+        ghostERC721.address,
+        erc721TokenId1
+      );
+      await tx1.wait();
+      expect(await royaltiesRegistry.getRoyaltiesType(ghostERC721.address)).to.be.equal(
+        3,
+        'correct royalties type'
+      );
+      // console.log('royalties ghostmarket gas used first request', (await tx1.wait()).gasUsed.toString());
+
+      const tx2 = await royaltiesRegistry['getRoyalties(address,uint256)'](
+        ghostERC721.address,
+        erc721TokenId2
+      );
+      await tx2.wait();
+      expect(await royaltiesRegistry.getRoyaltiesType(ghostERC721.address)).to.be.equal(
+        3,
+        'correct royalties type'
+      );
+      // console.log('royalties ghostmarket gas used second request', (await tx2.wait()).gasUsed.toString());
     });
 
     it('should test royalties type = 4, royalties from external provider', async () => {

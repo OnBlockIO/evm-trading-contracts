@@ -208,14 +208,16 @@ contract RoyaltiesRegistry is IRoyaltiesProvider, OwnableUpgradeable, GhostMarke
 
     /// @dev tries to get royalties ghostmarket for token and tokenId
     function getRoyaltiesGhostmarket(address token, uint256 tokenId) internal view returns (LibPart.Part[] memory) {
-        GhostMarketRoyalties royalties = GhostMarketRoyalties(token);
-        Royalty[] memory values = royalties.getRoyalties(tokenId);
-        LibPart.Part[] memory result = new LibPart.Part[](values.length);
-        for (uint256 i; i < values.length; ++i) {
-            result[i].value = uint96(values[i].value);
-            result[i].account = values[i].recipient;
+        try GhostMarketRoyalties(token).getRoyalties(tokenId) returns (Royalty[] memory values) {
+            LibPart.Part[] memory result = new LibPart.Part[](values.length);
+            for (uint256 i; i < values.length; ++i) {
+                result[i].value = uint96(values[i].value);
+                result[i].account = values[i].recipient;
+            }
+            return result;
+        } catch {
+            return new LibPart.Part[](0);
         }
-        return result;
     }
 
     /// @dev tries to get royalties EIP-2981 for token and tokenId
