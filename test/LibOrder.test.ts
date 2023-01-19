@@ -133,40 +133,39 @@ describe('LibOrder Test', async function () {
   });
 
   describe('hashKey', () => {
-    const maker = wallet1.address;
     const makeAsset = Asset('0x00000000', '0x', '100');
     const takeAsset = Asset('0x00000000', '0x', '100');
     const salt = '1';
     const data = '0x12';
 
     it('should calculate correct hash key for no type order', async () => {
-      const test_order = Order(maker, makeAsset, ZERO, takeAsset, salt, 0, 0, '0xffffffff', data);
+      const test_order = Order(wallet1.address, makeAsset, ZERO, takeAsset, salt, 0, 0, '0xffffffff', data);
 
       const hash = await lib.hashKey(test_order);
-      const test_hash = await lib.hashV1(maker, makeAsset, takeAsset, salt);
-      const test_wrong_hash = await lib.hashV2(maker, makeAsset, takeAsset, salt, data);
+      const test_hash = await lib.hashV1(wallet1.address, makeAsset, takeAsset, salt);
+      const test_wrong_hash = await lib.hashV2(wallet1.address, makeAsset, takeAsset, salt, data);
 
       expect(hash).to.not.equal(test_wrong_hash);
       expect(hash).to.equal(test_hash);
     });
 
     it('should calculate correct hash key for V1 order', async () => {
-      const test_order = Order(maker, makeAsset, ZERO, takeAsset, salt, 0, 0, ORDER_DATA_V1, data);
+      const test_order = Order(wallet1.address, makeAsset, ZERO, takeAsset, salt, 0, 0, ORDER_DATA_V1, data);
 
       const hash = await lib.hashKey(test_order);
-      const test_hash = await lib.hashV1(maker, makeAsset, takeAsset, salt);
-      const test_wrong_hash = await lib.hashV2(maker, makeAsset, takeAsset, salt, data);
+      const test_hash = await lib.hashV1(wallet1.address, makeAsset, takeAsset, salt);
+      const test_wrong_hash = await lib.hashV2(wallet1.address, makeAsset, takeAsset, salt, data);
 
       expect(hash).to.not.equal(test_wrong_hash);
       expect(hash).to.equal(test_hash);
     });
 
     it('should calculate correct hash key for V2 order', async () => {
-      const test_order = Order(maker, makeAsset, ZERO, takeAsset, salt, 0, 0, ORDER_DATA_V2, data);
+      const test_order = Order(wallet1.address, makeAsset, ZERO, takeAsset, salt, 0, 0, ORDER_DATA_V2, data);
 
       const hash = await lib.hashKey(test_order);
-      const test_hash = await lib.hashV2(maker, makeAsset, takeAsset, salt, data);
-      const test_wrong_hash = await lib.hashV1(maker, makeAsset, takeAsset, salt);
+      const test_hash = await lib.hashV2(wallet1.address, makeAsset, takeAsset, salt, data);
+      const test_wrong_hash = await lib.hashV1(wallet1.address, makeAsset, takeAsset, salt);
 
       expect(hash).to.not.equal(test_wrong_hash);
       expect(hash).to.equal(test_hash);
