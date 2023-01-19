@@ -7,4 +7,3 @@ node_modules/
 typechain/
 src/mint/
 src/legacy/
-src/transfer-proxy/tests/CryptoPunkMarket.sol

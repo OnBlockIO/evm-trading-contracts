@@ -1,7 +1,7 @@
 import {getSettings} from '../.config';
 import hre, {deployments, getNamedAccounts} from 'hardhat';
 import {ethers} from 'hardhat';
-import {ERC721_LAZY, ERC1155_LAZY, COLLECTION, CRYPTO_PUNK} from '../test/utils/assets.js';
+import {ERC721_LAZY, ERC1155_LAZY, COLLECTION} from '../test/utils/assets.js';
 
 async function main() {
   const {deploy} = deployments;
@@ -15,7 +15,6 @@ async function main() {
   const ERC1155_LAZY_MINT_PROXY = getSettings(CHAIN).erc1155LazyMintTransferProxy;
   const ROYALTIES_PROXY = getSettings(CHAIN).royalties_proxy;
   const CUSTOM_MATCHER = getSettings(CHAIN).customMatcher;
-  const PUNK_TRANSFER_PROXY = getSettings(CHAIN).punk_transfer_proxy;
   if (!FEES || !TRANSFER_PROXY || !ERC20_TRANSFER_PROXY || !ROYALTIES_PROXY) return;
 
   console.log(`ExchangeV2 deployment on ${CHAIN} start`);
@@ -51,13 +50,6 @@ async function main() {
   if (CUSTOM_MATCHER) {
     const exchangeV2Contract = await ethers.getContractAt('ExchangeV2', exchange_proxy.address);
     await exchangeV2Contract.setAssetMatcher(COLLECTION, CUSTOM_MATCHER.address);
-  }
-
-  // if required, set punk transfer proxy
-  if (PUNK_TRANSFER_PROXY) {
-    const punkTransferProxyContract = await ethers.getContractAt('PunkTransferProxy', PUNK_TRANSFER_PROXY.address);
-    const exchangeV2Contract = await ethers.getContractAt('ExchangeV2', exchange_proxy.address);
-    await exchangeV2Contract.setTransferProxy(CRYPTO_PUNK, punkTransferProxyContract.address);
   }
 }
 
