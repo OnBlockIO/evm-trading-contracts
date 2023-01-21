@@ -5,7 +5,7 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {Asset, Order} from './utils/order';
 import EIP712 from './utils/EIP712';
 import {ZERO, ORDER_DATA_V1, ERC721, ETH, enc} from './utils/assets';
-import hre, {ethers, upgrades} from 'hardhat';
+import {ethers, upgrades} from 'hardhat';
 import {BASE_URI, TOKEN_NAME, TOKEN_SYMBOL} from './utils/constants';
 import {encDataV1JS, verifyBalanceChange} from './utils/helpers';
 
@@ -36,7 +36,6 @@ describe('OriginFeeValidator Test', async function () {
     const TransferProxyTest = await ethers.getContractFactory('TransferProxy');
     const ERC20TransferProxyTest = await ethers.getContractFactory('ERC20TransferProxy');
     const ExchangeV2Test = await ethers.getContractFactory('ExchangeV2');
-    // const GhostMarketTransferManagerTest = await ethers.getContractFactory('GhostMarketTransferManagerTest');
     const TestERC20 = await ethers.getContractFactory('TestERC20');
     const TestGhostERC721 = await ethers.getContractFactory('GhostMarketERC721');
     const TestRoyaltiesRegistry = await ethers.getContractFactory('RoyaltiesRegistry');
@@ -60,7 +59,6 @@ describe('OriginFeeValidator Test', async function () {
       }
     );
 
-    // await GhostMarketTransferManagerTest.deploy();
     await TestERC20.deploy();
 
     ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(TestGhostERC721, [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI], {
@@ -68,7 +66,6 @@ describe('OriginFeeValidator Test', async function () {
       unsafeAllowCustomTypes: true,
     });
 
-    //fee receiver for Token t1 transfer is the protocol address
     await transferProxy.addOperator(exchangeV2Proxy.address);
     await erc20TransferProxy.addOperator(exchangeV2Proxy.address);
 
@@ -78,7 +75,7 @@ describe('OriginFeeValidator Test', async function () {
     }
   });
 
-  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol, Origin fees only left, no Royalties', async () => {
+  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Origin fees only left, no Royalties', async () => {
     await ghostERC721.mintGhost(wallet1.address, [], 'ext_uri', '');
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
     const ghostERC721AsSigner = ghostERC721.connect(wallet1);
@@ -125,47 +122,35 @@ describe('OriginFeeValidator Test', async function () {
     );
     const signatureRight = await EIP712.sign(right, wallet1.address, exchangeV2Proxy.address);
 
-    if (hre.network.name == 'testnet' || hre.network.name == 'testnet_nodeploy' || hre.network.name == 'hardhat') {
-      const tx = await matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
-        from: wallet0.address,
-        value: 300,
-      });
-      tx.wait();
-    } else {
-      await verifyBalanceChange(wallet0.address, 228, async () =>
-        //200 + 6 buyerFee + (10+12 origin left) - (72 back payment)
-        verifyBalanceChange(wallet1.address, -200, async () =>
-          //200 (-14 +14 origin fee from right => origin fee acount = seller/minter account )
-          verifyBalanceChange(protocol.address, -6, () =>
-            verifyBalanceChange(wallet6.address, -12, () =>
-              verifyBalanceChange(
-                wallet5.address,
-                -10,
-                () =>
-                  matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
-                    from: wallet0.address,
-                    value: 300,
-                    gasPrice: 0,
-                  })
-                //matchOrdersSigner.matchOrders(left, "0x", right, signatureRight, { from: wallet0.address, value: 300 })
-              )
-            )
+    await verifyBalanceChange(wallet0.address, 222, async () =>
+    //300 + (10+12 origin left) - (100 back payment)
+    verifyBalanceChange(wallet1.address, -200, async () =>
+      //200 (-14 +14 origin fee from right => origin fee acount = seller/minter account )
+        verifyBalanceChange(wallet6.address, -12, () =>
+          verifyBalanceChange(
+            wallet5.address,
+            -10,
+            () =>
+              matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
+                from: wallet0.address,
+                value: 300,
+                gasPrice: 0,
+              })
           )
         )
-      );
+    )
+  );
 
-      expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
-      expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
-    }
+  expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
+  expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
   });
 
-  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol, Origin fees from left and right, no Royalties,', async () => {
+  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Origin fees from left and right, no Royalties,', async () => {
     await ghostERC721.mintGhost(wallet1.address, [], 'ext_uri', '');
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
     const ghostERC721AsSigner = ghostERC721.connect(wallet1);
 
     const result = ghostERC721AsSigner.setApprovalForAll(transferProxy.address, true, {from: wallet1.address});
-    //test token approval status
     await expect(result)
       .to.emit(ghostERC721AsSigner, 'ApprovalForAll')
       .withArgs(wallet1.address, transferProxy.address, true);
@@ -206,18 +191,10 @@ describe('OriginFeeValidator Test', async function () {
     );
     const signatureRight = await EIP712.sign(right, wallet1.address, exchangeV2Proxy.address);
 
-    if (hre.network.name == 'testnet' || hre.network.name == 'testnet_nodeploy' || hre.network.name == 'hardhat') {
-      const tx = await matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
-        from: wallet0.address,
-        value: 300,
-      });
-      tx.wait();
-    } else {
-      await verifyBalanceChange(wallet0.address, 228, async () =>
-        //200 + 6 buyerFee + (10+12 origin left) - (72 back payment)
+    await verifyBalanceChange(wallet0.address, 222, async () =>
+        //300 + (10+12 origin left) - (100 back payment)
         verifyBalanceChange(wallet1.address, -186, async () =>
           //200 (- 14 origin fee right)
-          verifyBalanceChange(protocol.address, -6, () =>
             verifyBalanceChange(wallet6.address, -12, () =>
               verifyBalanceChange(wallet5.address, -10, () =>
                 verifyBalanceChange(
@@ -229,20 +206,17 @@ describe('OriginFeeValidator Test', async function () {
                       value: 300,
                       gasPrice: 0,
                     })
-                  //matchOrdersSigner.matchOrders(left, "0x", right, signatureRight, { from: wallet0.address, value: 300 })
                 )
               )
-            )
           )
         )
       );
 
       expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
       expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
-    }
   });
 
-  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol, Origin fees, with Royalties,', async () => {
+  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Origin fees, with Royalties,', async () => {
     await ghostERC721.mintGhost(
       wallet1.address,
       [
@@ -256,7 +230,6 @@ describe('OriginFeeValidator Test', async function () {
     const ghostERC721AsSigner = ghostERC721.connect(wallet1);
 
     const result = ghostERC721AsSigner.setApprovalForAll(transferProxy.address, true, {from: wallet1.address});
-    //test token approval status
     await expect(result)
       .to.emit(ghostERC721AsSigner, 'ApprovalForAll')
       .withArgs(wallet1.address, transferProxy.address, true);
@@ -297,18 +270,10 @@ describe('OriginFeeValidator Test', async function () {
     );
     const signatureRight = await EIP712.sign(right, wallet1.address, exchangeV2Proxy.address);
 
-    if (hre.network.name == 'testnet' || hre.network.name == 'testnet_nodeploy' || hre.network.name == 'hardhat') {
-      const tx = await matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
-        from: wallet0.address,
-        value: 300,
-      });
-      tx.wait();
-    } else {
-      await verifyBalanceChange(wallet0.address, 228, async () =>
-        //200 + 6 buyerFee + (10+12 origin left) - (72 back payment)
+    await verifyBalanceChange(wallet0.address, 222, async () =>
+        //300 + (10+12 origin left) - (100 back payment)
         verifyBalanceChange(wallet1.address, -186, async () =>
-          //200 - (10+12 royalties
-          verifyBalanceChange(protocol.address, -6, () =>
+          //200 - (6+8 royalties)
             verifyBalanceChange(wallet6.address, -12, () =>
               verifyBalanceChange(wallet5.address, -10, () =>
                 verifyBalanceChange(wallet2.address, -6, () =>
@@ -321,30 +286,24 @@ describe('OriginFeeValidator Test', async function () {
                         value: 300,
                         gasPrice: 0,
                       })
-                    //matchOrdersSigner.matchOrders(left, "0x", right, signatureRight, { from: wallet0.address, value: 300 })
                   )
                 )
               )
             )
-          )
         )
       );
 
       expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
       expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
-    }
   });
 
-  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Protocol fee, 1 Origin fee address, 1 Royalties address', async () => {
-    //set protocol fee to 2%
-    // exchangeV2Proxy.setProtocolFee(200);
+  it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Origin fee, with Royalties', async () => {
 
     await ghostERC721.mintGhost(wallet1.address, [{recipient: wallet6.address, value: 1000}], 'ext_uri', '');
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
     const ghostERC721AsSigner = ghostERC721.connect(wallet1);
 
     const result = ghostERC721AsSigner.setApprovalForAll(transferProxy.address, true, {from: wallet1.address});
-    //test token approval status
     await expect(result)
       .to.emit(ghostERC721AsSigner, 'ApprovalForAll')
       .withArgs(wallet1.address, transferProxy.address, true);
@@ -382,18 +341,10 @@ describe('OriginFeeValidator Test', async function () {
     );
     const signatureRight = await EIP712.sign(right, wallet1.address, exchangeV2Proxy.address);
 
-    if (hre.network.name == 'testnet' || hre.network.name == 'testnet_nodeploy' || hre.network.name == 'hardhat') {
-      const tx = await matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
-        from: wallet0.address,
-        value: 300,
-      });
-      tx.wait();
-    } else {
-      await verifyBalanceChange(wallet0.address, 105, async () =>
-        // 100 + (2 protocol fee) + (3 origin fee)
+    await verifyBalanceChange(wallet0.address, 103, async () =>
+        // 100 + (3 origin fee)
         verifyBalanceChange(wallet1.address, -90, async () =>
           // 100 - (10 royalties)
-          verifyBalanceChange(protocol.address, -2, () =>
             verifyBalanceChange(wallet6.address, -10, () =>
               verifyBalanceChange(wallet5.address, -3, () =>
                 matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
@@ -402,12 +353,10 @@ describe('OriginFeeValidator Test', async function () {
                   gasPrice: 0,
                 })
               )
-            )
           )
         )
       );
       expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
       expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
-    }
   });
 });
