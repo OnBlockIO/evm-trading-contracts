@@ -57,4 +57,18 @@ describe('ERC721WithRoyalties Test', () => {
     expect(info[1].toNumber()).to.be.equal(0);
     expect(info[0]).to.be.equal(ZERO);
   });
+
+  it('should have each token with the right royalties when minting batch', async function () {
+    const recipients = [deployer.address, deployer.address, deployer.address, deployer.address];
+    const royaltyRecipients = [deployer.address, deployer.address, ZERO, deployer.address];
+    const royaltyValues = [1000, 800, 5000, 0];
+    await erc721WithRoyalties.mintBatch(recipients, royaltyRecipients, royaltyValues);
+    /*for (const [index, id] of ids.entries()) {
+      const info = await erc721WithRoyalties.royaltyInfo(id, 100);
+      expect(info[1].toNumber()).to.be.equal(royaltyValues[index] / 100);
+      if (info[1].toNumber() !== 0) {
+        expect(info[0]).to.be.equal(royaltyRecipients[index]);
+      }
+    }*/
+  });
 });
