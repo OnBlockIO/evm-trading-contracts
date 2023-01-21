@@ -16,7 +16,7 @@ import {
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {Asset, Order} from './utils/order';
 import {ZERO, ORDER_DATA_V1, ERC721, ERC1155, ERC20, ETH, enc, id} from './utils/assets';
-import hre, {ethers, upgrades} from 'hardhat';
+import {ethers, upgrades} from 'hardhat';
 import {verifyBalanceChange} from './utils/helpers';
 
 describe('GhostMarketTransferManager Test', async function () {
@@ -1052,7 +1052,13 @@ describe('GhostMarketTransferManager Test', async function () {
     it('should work for transfer from ETH to ERC1155V2, 15% royalties', async () => {
       const snapshot = await ethers.provider.send('evm_snapshot', []);
       try {
-        const erc1155V2 = await prepareERC1155(wallet1, '10');
+        const erc1155V2 = await prepareERC1155(wallet1, '10', undefined, [
+          [wallet2.address, 1000],
+        ] as any);
+
+        const info = await erc1155V2.royaltyInfo(erc1155TokenId1, '1000');
+        expect(info[1].toNumber()).to.be.equal(100);
+        expect(info[0]).to.be.equal(wallet2.address);
 
         await royaltiesRegistryProxy.setRoyaltiesByToken(erc1155V2.address, [
           [wallet2.address, 1000],

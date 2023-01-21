@@ -57,6 +57,22 @@ describe('OrderValidator Test', async function () {
     await expect(orderValidator.validateOrderTest(testOrder, signature)).to.be.reverted;
   });
 
+  it('should fail validate if signer is bogus', async () => {
+    const testOrder = Order(
+      wallet1.address,
+      Asset('0xffffffff', '0x', '100'),
+      ZERO,
+      Asset('0xffffffff', '0x', '200'),
+      '1',
+      0,
+      0,
+      '0xffffffff',
+      '0x'
+    );
+    const t1AsSigner = orderValidator.connect(wallet1);
+    await expect(t1AsSigner.validateOrderTest(testOrder, '0xae9f79f54ab16651972eb2f815e5c901cf39209d692e12261c91747324b81ec05aabe86556e1a9dc8786f4ebb8b0e547320aef8db1d0d8ac86ef837557829d7a0')).to.be.reverted;
+  });
+
   it('should bypass signature if maker is msg.sender', async () => {
     const testOrder = Order(
       wallet3.address,
