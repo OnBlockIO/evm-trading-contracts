@@ -1052,9 +1052,7 @@ describe('GhostMarketTransferManager Test', async function () {
     it('should work for transfer from ETH to ERC1155V2, 15% royalties', async () => {
       const snapshot = await ethers.provider.send('evm_snapshot', []);
       try {
-        const erc1155V2 = await prepareERC1155(wallet1, '10', undefined, [
-          [wallet2.address, 1000],
-        ] as any);
+        const erc1155V2 = await prepareERC1155(wallet1, '10', undefined, [[wallet2.address, 1000]] as any);
 
         const info = await erc1155V2.royaltyInfo(erc1155TokenId1, '1000');
         expect(info[1].toNumber()).to.be.equal(100);
