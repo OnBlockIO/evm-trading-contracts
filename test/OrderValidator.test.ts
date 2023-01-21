@@ -70,7 +70,12 @@ describe('OrderValidator Test', async function () {
       '0x'
     );
     const t1AsSigner = orderValidator.connect(wallet1);
-    await expect(t1AsSigner.validateOrderTest(testOrder, '0xae9f79f54ab16651972eb2f815e5c901cf39209d692e12261c91747324b81ec05aabe86556e1a9dc8786f4ebb8b0e547320aef8db1d0d8ac86ef837557829d7a0')).to.be.reverted;
+    await expect(
+      t1AsSigner.validateOrderTest(
+        testOrder,
+        '0xae9f79f54ab16651972eb2f815e5c901cf39209d692e12261c91747324b81ec05aabe86556e1a9dc8786f4ebb8b0e547320aef8db1d0d8ac86ef837557829d7a0'
+      )
+    ).to.be.reverted;
   });
 
   it('should bypass signature if maker is msg.sender', async () => {
