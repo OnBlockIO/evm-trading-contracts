@@ -1131,8 +1131,4 @@ describe('GhostMarketTransferManager Test', async function () {
     await asSigner.setApprovalForAll(transferProxy.address, true, {from: user.address});
     return asSigner;
   }
-
-  function revertReason(reason: string) {
-    return `VM Exception while processing transaction: reverted with reason string '${reason}'`;
-  }
 });
