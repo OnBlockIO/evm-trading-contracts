@@ -32,13 +32,13 @@ describe('AssetMatcher Test', function () {
     expect(result[1]).to.be.equal(encodedNFT);
   });
 
-  it("should work COLLECTION <-> ERC1155_LAZY matches!", async () => {
+  it('should work COLLECTION <-> ERC1155_LAZY matches!', async () => {
     const tokenId = '3000';
     const encoded = enc(wallet2.address);
     const encodedNFT = enc(wallet2.address, tokenId);
     const result = await assetMatcherCollection
-    .connect(wallet1)
-    .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC1155_LAZY, encodedNFT));
+      .connect(wallet1)
+      .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC1155_LAZY, encodedNFT));
     expect(result[0]).to.be.equal(ERC1155_LAZY);
     expect(result[1]).to.be.equal(encodedNFT);
   });
@@ -54,13 +54,13 @@ describe('AssetMatcher Test', function () {
     expect(result[1]).to.be.equal(encodedNFT);
   });
 
-  it("should work COLLECTION <-> ERC721_LAZY matches!", async () => {
+  it('should work COLLECTION <-> ERC721_LAZY matches!', async () => {
     const tokenId = '3000';
     const encoded = enc(wallet2.address);
     const encodedNFT = enc(wallet2.address, tokenId);
     const result = await assetMatcherCollection
-    .connect(wallet1)
-    .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC721_LAZY, encodedNFT));
+      .connect(wallet1)
+      .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC721_LAZY, encodedNFT));
     expect(result[0]).to.be.equal(ERC721_LAZY);
     expect(result[1]).to.be.equal(encodedNFT);
   });
