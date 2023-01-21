@@ -123,26 +123,23 @@ describe('OriginFeeValidator Test', async function () {
     const signatureRight = await EIP712.sign(right, wallet1.address, exchangeV2Proxy.address);
 
     await verifyBalanceChange(wallet0.address, 222, async () =>
-    //300 + (10+12 origin left) - (100 back payment)
-    verifyBalanceChange(wallet1.address, -200, async () =>
-      //200 (-14 +14 origin fee from right => origin fee acount = seller/minter account )
+      //300 + (10+12 origin left) - (100 back payment)
+      verifyBalanceChange(wallet1.address, -200, async () =>
+        //200 (-14 +14 origin fee from right => origin fee acount = seller/minter account )
         verifyBalanceChange(wallet6.address, -12, () =>
-          verifyBalanceChange(
-            wallet5.address,
-            -10,
-            () =>
-              matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
-                from: wallet0.address,
-                value: 300,
-                gasPrice: 0,
-              })
+          verifyBalanceChange(wallet5.address, -10, () =>
+            matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
+              from: wallet0.address,
+              value: 300,
+              gasPrice: 0,
+            })
           )
         )
-    )
-  );
+      )
+    );
 
-  expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
-  expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
+    expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
+    expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
   });
 
   it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Origin fees from left and right, no Royalties,', async () => {
@@ -192,28 +189,25 @@ describe('OriginFeeValidator Test', async function () {
     const signatureRight = await EIP712.sign(right, wallet1.address, exchangeV2Proxy.address);
 
     await verifyBalanceChange(wallet0.address, 222, async () =>
-        //300 + (10+12 origin left) - (100 back payment)
-        verifyBalanceChange(wallet1.address, -186, async () =>
-          //200 (- 14 origin fee right)
-            verifyBalanceChange(wallet6.address, -12, () =>
-              verifyBalanceChange(wallet5.address, -10, () =>
-                verifyBalanceChange(
-                  wallet2.address,
-                  -14,
-                  () =>
-                    matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
-                      from: wallet0.address,
-                      value: 300,
-                      gasPrice: 0,
-                    })
-                )
-              )
+      //300 + (10+12 origin left) - (100 back payment)
+      verifyBalanceChange(wallet1.address, -186, async () =>
+        //200 (- 14 origin fee right)
+        verifyBalanceChange(wallet6.address, -12, () =>
+          verifyBalanceChange(wallet5.address, -10, () =>
+            verifyBalanceChange(wallet2.address, -14, () =>
+              matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
+                from: wallet0.address,
+                value: 300,
+                gasPrice: 0,
+              })
+            )
           )
         )
-      );
+      )
+    );
 
-      expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
-      expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
+    expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
+    expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
   });
 
   it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Origin fees, with Royalties,', async () => {
@@ -271,34 +265,30 @@ describe('OriginFeeValidator Test', async function () {
     const signatureRight = await EIP712.sign(right, wallet1.address, exchangeV2Proxy.address);
 
     await verifyBalanceChange(wallet0.address, 222, async () =>
-        //300 + (10+12 origin left) - (100 back payment)
-        verifyBalanceChange(wallet1.address, -186, async () =>
-          //200 - (6+8 royalties)
-            verifyBalanceChange(wallet6.address, -12, () =>
-              verifyBalanceChange(wallet5.address, -10, () =>
-                verifyBalanceChange(wallet2.address, -6, () =>
-                  verifyBalanceChange(
-                    wallet3.address,
-                    -8,
-                    () =>
-                      matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
-                        from: wallet0.address,
-                        value: 300,
-                        gasPrice: 0,
-                      })
-                  )
-                )
+      //300 + (10+12 origin left) - (100 back payment)
+      verifyBalanceChange(wallet1.address, -186, async () =>
+        //200 - (6+8 royalties)
+        verifyBalanceChange(wallet6.address, -12, () =>
+          verifyBalanceChange(wallet5.address, -10, () =>
+            verifyBalanceChange(wallet2.address, -6, () =>
+              verifyBalanceChange(wallet3.address, -8, () =>
+                matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
+                  from: wallet0.address,
+                  value: 300,
+                  gasPrice: 0,
+                })
               )
             )
+          )
         )
-      );
+      )
+    );
 
-      expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
-      expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
+    expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
+    expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
   });
 
   it('should work from ETH(DataV1) to ERC721(RoyaltiesV1, DataV1) Origin fee, with Royalties', async () => {
-
     await ghostERC721.mintGhost(wallet1.address, [{recipient: wallet6.address, value: 1000}], 'ext_uri', '');
     const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
     const ghostERC721AsSigner = ghostERC721.connect(wallet1);
@@ -342,21 +332,21 @@ describe('OriginFeeValidator Test', async function () {
     const signatureRight = await EIP712.sign(right, wallet1.address, exchangeV2Proxy.address);
 
     await verifyBalanceChange(wallet0.address, 103, async () =>
-        // 100 + (3 origin fee)
-        verifyBalanceChange(wallet1.address, -90, async () =>
-          // 100 - (10 royalties)
-            verifyBalanceChange(wallet6.address, -10, () =>
-              verifyBalanceChange(wallet5.address, -3, () =>
-                matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
-                  from: wallet0.address,
-                  value: 105,
-                  gasPrice: 0,
-                })
-              )
+      // 100 + (3 origin fee)
+      verifyBalanceChange(wallet1.address, -90, async () =>
+        // 100 - (10 royalties)
+        verifyBalanceChange(wallet6.address, -10, () =>
+          verifyBalanceChange(wallet5.address, -3, () =>
+            matchOrdersSigner.matchOrders(left, '0x', right, signatureRight, {
+              from: wallet0.address,
+              value: 105,
+              gasPrice: 0,
+            })
           )
         )
-      );
-      expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
-      expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
+      )
+    );
+    expect((await ghostERC721.balanceOf(wallet1.address)).toString()).to.equal('0');
+    expect((await ghostERC721.balanceOf(wallet0.address)).toString()).to.equal('1');
   });
 });
