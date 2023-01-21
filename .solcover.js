@@ -12,5 +12,7 @@ module.exports = {
     'transfer-proxy/tests/',
     'mint/',
     'legacy/',
+    'librairies/LibERC721LazyMint.sol', // tested in other repo
+    'librairies/LibERC1155LazyMint.sol', // tested in other repo
   ],
 };
