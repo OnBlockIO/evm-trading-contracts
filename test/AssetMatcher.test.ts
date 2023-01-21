@@ -2,7 +2,7 @@ import {expect} from './utils/chai-setup';
 import {ethers} from 'hardhat';
 import {AssetMatcherCollection} from '../typechain';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
-import {enc, ETH, ERC20, ERC721, ERC1155, COLLECTION} from './utils/assets';
+import {enc, ETH, ERC20, ERC721, ERC1155, ERC721_LAZY, ERC1155_LAZY, COLLECTION} from './utils/assets';
 import {AssetType} from './utils/order';
 
 describe('AssetMatcher Test', function () {
@@ -32,6 +32,17 @@ describe('AssetMatcher Test', function () {
     expect(result[1]).to.be.equal(encodedNFT);
   });
 
+  it("should work COLLECTION <-> ERC1155_LAZY matches!", async () => {
+    const tokenId = '3000';
+    const encoded = enc(wallet2.address);
+    const encodedNFT = enc(wallet2.address, tokenId);
+    const result = await assetMatcherCollection
+    .connect(wallet1)
+    .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC1155_LAZY, encodedNFT));
+    expect(result[0]).to.be.equal(ERC1155_LAZY);
+    expect(result[1]).to.be.equal(encodedNFT);
+  });
+
   it('should work COLLECTION <-> ERC721 matches!', async () => {
     const tokenId = '3000';
     const encoded = enc(wallet2.address);
@@ -40,6 +51,17 @@ describe('AssetMatcher Test', function () {
       .connect(wallet1)
       .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC721, encodedNFT));
     expect(result[0]).to.be.equal(ERC721);
+    expect(result[1]).to.be.equal(encodedNFT);
+  });
+
+  it("should work COLLECTION <-> ERC721_LAZY matches!", async () => {
+    const tokenId = '3000';
+    const encoded = enc(wallet2.address);
+    const encodedNFT = enc(wallet2.address, tokenId);
+    const result = await assetMatcherCollection
+    .connect(wallet1)
+    .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC721_LAZY, encodedNFT));
+    expect(result[0]).to.be.equal(ERC721_LAZY);
     expect(result[1]).to.be.equal(encodedNFT);
   });
 
