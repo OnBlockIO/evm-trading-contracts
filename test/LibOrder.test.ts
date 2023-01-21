@@ -58,7 +58,7 @@ describe('LibOrder Test', async function () {
       const take = Asset('0x00000000', '0x', '200');
       await expect(
         lib.calculateRemaining(Order(ZERO, make, ZERO, take, '1', 0, 0, '0xffffffff', '0x'), 220, false)
-      ).to.be.revertedWith('');
+      ).to.be.revertedWith('panic code 17');
     });
 
     it('should throw if fill is more than in the order', async () => {
@@ -66,7 +66,7 @@ describe('LibOrder Test', async function () {
       const take = Asset('0x00000000', '0x', '200');
       await expect(
         lib.calculateRemaining(Order(ZERO, make, ZERO, take, '1', 0, 0, '0xffffffff', '0x'), 220, false)
-      ).to.be.revertedWith('');
+      ).to.be.revertedWith('panic code 17');
     });
 
     it('should return correct reaming value for makeFill = true', async () => {
@@ -112,7 +112,7 @@ describe('LibOrder Test', async function () {
       const now = block.timestamp;
       await expect(
         lib.validate(Order(ZERO, testAsset, ZERO, testAsset, '0', now + 100, 0, '0xffffffff', '0x'))
-      ).to.be.revertedWith('');
+      ).to.be.revertedWith('Order start validation failed');
     });
 
     it('should throw if end date error', async () => {
@@ -120,7 +120,7 @@ describe('LibOrder Test', async function () {
       const now = block.timestamp;
       await expect(
         lib.validate(Order(ZERO, testAsset, ZERO, testAsset, '0', 0, now - 100, '0xffffffff', '0x'))
-      ).to.be.revertedWith('');
+      ).to.be.revertedWith('Order end validation failed');
     });
 
     it('should throw if both dates error', async () => {
@@ -128,7 +128,7 @@ describe('LibOrder Test', async function () {
       const now = block.timestamp;
       await expect(
         lib.validate(Order(ZERO, testAsset, ZERO, testAsset, '0', now + 100, now - 100, '0xffffffff', '0x'))
-      ).to.be.revertedWith('');
+      ).to.be.revertedWith('Order start validation failed');
     });
   });
 

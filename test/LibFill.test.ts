@@ -66,7 +66,7 @@ describe('LibFill Test', async function () {
         '0x'
       );
 
-      await expect(lib.fillOrder(left, right, 0, 0, false, false)).to.be.revertedWith('');
+      await expect(lib.fillOrder(left, right, 0, 0, false, false)).to.be.revertedWith('fillRight: unable to fill');
     });
 
     it('should fill right order and return profit if more than needed', async () => {
@@ -182,7 +182,7 @@ describe('LibFill Test', async function () {
         '0x'
       );
 
-      await expect(lib.fillOrder(left, right, 0, 0, false, false)).to.be.revertedWith('');
+      await expect(lib.fillOrder(left, right, 0, 0, false, false)).to.be.revertedWith('fillLeft: unable to fill');
     });
   });
 
@@ -298,7 +298,7 @@ describe('LibFill Test', async function () {
         '0x'
       );
 
-      await expect(lib.fillOrder(left, right, 0, 0, false, false)).to.be.revertedWith('');
+      await expect(lib.fillOrder(left, right, 0, 0, false, false)).to.be.revertedWith('fillRight: unable to fill');
     });
   });
 });
