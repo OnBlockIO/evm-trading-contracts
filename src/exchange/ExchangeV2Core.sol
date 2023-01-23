@@ -24,6 +24,7 @@ abstract contract ExchangeV2Core is
 
     //dev @deprecated
     address private matchAndTransferAdmin;
+
     uint256 private constant UINT256_MAX = type(uint256).max;
 
     //state of the orders
@@ -105,7 +106,6 @@ abstract contract ExchangeV2Core is
         );
 
         validateFull(sellOrder, direct.sellOrderSignature);
-
         matchAndTransfer(sellOrder, buyOrder);
     }
 
@@ -141,7 +141,6 @@ abstract contract ExchangeV2Core is
         );
 
         validateFull(buyOrder, direct.bidSignature);
-
         matchAndTransfer(sellOrder, buyOrder);
     }
 

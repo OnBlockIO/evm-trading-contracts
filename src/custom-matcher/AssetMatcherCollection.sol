@@ -6,16 +6,13 @@ import "../interfaces/IAssetMatcher.sol";
 import "../librairies/LibERC721LazyMint.sol";
 import "../librairies/LibERC1155LazyMint.sol";
 
-/*
- * Custom matcher for collection (assetClass, that need any/all elements from collection)
- */
 contract AssetMatcherCollection is IAssetMatcher {
     bytes public constant EMPTY = "";
 
     function matchAssets(
         LibAsset.AssetType memory leftAssetType,
         LibAsset.AssetType memory rightAssetType
-    ) external view override returns (LibAsset.AssetType memory) {
+    ) external pure override returns (LibAsset.AssetType memory) {
         if (
             (rightAssetType.assetClass == LibAsset.ERC721_ASSET_CLASS) ||
             (rightAssetType.assetClass == LibAsset.ERC1155_ASSET_CLASS) ||
