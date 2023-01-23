@@ -119,23 +119,20 @@ describe('Exchange Test', async function () {
     );
 
     //upgrade
-    const exchangeV2CoreV2 = await upgrades.upgradeProxy(
-      exchangeV2Core.address,
-      ExchangeV10_ContractFactory
-    );
+    const exchangeV2CoreV2 = await upgrades.upgradeProxy(exchangeV2Core.address, ExchangeV10_ContractFactory);
 
     //test new function
     expect(await exchangeV2CoreV2.getSomething()).to.equal(10);
   });
 
-  it("should work only allow owner to change transfer proxy", async () => {
+  it('should work only allow owner to change transfer proxy', async () => {
     const t1AsSigner = exchangeV2Proxy.connect(wallet1);
     const t2AsSigner = exchangeV2Proxy.connect(wallet2);
     await expect(
-      t1AsSigner.setTransferProxy("0x00112233", wallet2.address, { from: wallet1.address })
+      t1AsSigner.setTransferProxy('0x00112233', wallet2.address, {from: wallet1.address})
     ).to.be.revertedWith('Ownable: caller is not the owner');
-    t2AsSigner.setTransferProxy("0x00112233", wallet2.address, { from: wallet0.address });
-  })
+    t2AsSigner.setTransferProxy('0x00112233', wallet2.address, {from: wallet0.address});
+  });
 
   it('should work for cancel ERC20 order', async () => {
     const {left, right} = await prepare2Orders();

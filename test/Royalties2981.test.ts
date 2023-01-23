@@ -14,13 +14,13 @@ describe('Royalties2981 Test', async function () {
     royalties2981TestImpl = await Royalties2981TestImpl.deploy();
   });
 
-  it("simple impl works", async () => {
+  it('simple impl works', async () => {
     const amount = '100';
     const getRoyalties = wallet1.address;
-    const tokenId = getRoyalties + "b00000000000000000000001";
+    const tokenId = getRoyalties + 'b00000000000000000000001';
 
     const result = await royalties2981TestImpl.royaltyInfo(tokenId, amount);
     expect(result[0]).to.equal(getRoyalties);
     expect(result[1]).to.equal(10);
-  })
-})
+  });
+});
