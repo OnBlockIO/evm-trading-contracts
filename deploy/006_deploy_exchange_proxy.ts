@@ -20,7 +20,7 @@ async function main() {
   console.log(`ExchangeV2 deployment on ${CHAIN} start`);
 
   const exchange_proxy = await deploy('ExchangeV2', {
-    contract: 'RoyaltiesRegistry',
+    contract: 'ExchangeV2',
     from: deployer,
     proxy: {
       owner: deployer,
