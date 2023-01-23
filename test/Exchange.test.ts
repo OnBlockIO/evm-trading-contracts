@@ -92,10 +92,6 @@ describe('Exchange Test', async function () {
       }
     );
 
-    //fee receiver for ETH transfer is the protocol address
-    // await exchangeV2Proxy.setFeeReceiver(ZERO, protocol.address);
-    //fee receiver for Token t1 transfer is the protocol address
-    // await exchangeV2Proxy.setFeeReceiver(t1.address, protocol.address);
     await transferProxy.addOperator(exchangeV2Proxy.address);
     await erc20TransferProxy.addOperator(exchangeV2Proxy.address);
 
@@ -106,6 +102,40 @@ describe('Exchange Test', async function () {
       await erc20TransferProxy.addOperator(exchangeV2Proxy.address);
     }
   });
+
+  it('should be able to transfer ownership of contract', async function () {
+    await exchangeV2Proxy.transferOwnership(wallet1.address);
+    expect(await exchangeV2Proxy.owner()).to.equal(wallet1.address);
+  });
+
+  it('should be able to upgrade from new contract to another new one', async function () {
+    const ExchangeV2_ContractFactory = await ethers.getContractFactory('ExchangeV2');
+    const ExchangeV10_ContractFactory = await ethers.getContractFactory('ExchangeV10');
+
+    const exchangeV2Core = await upgrades.deployProxy(
+      ExchangeV2_ContractFactory,
+      [wallet0.address, wallet0.address, 0, wallet0.address, wallet0.address],
+      {initializer: '__ExchangeV2_init', unsafeAllowCustomTypes: true}
+    );
+
+    //upgrade
+    const exchangeV2CoreV2 = await upgrades.upgradeProxy(
+      exchangeV2Core.address,
+      ExchangeV10_ContractFactory
+    );
+
+    //test new function
+    expect(await exchangeV2CoreV2.getSomething()).to.equal(10);
+  });
+
+  it("should work only allow owner to change transfer proxy", async () => {
+    const t1AsSigner = exchangeV2Proxy.connect(wallet1);
+    const t2AsSigner = exchangeV2Proxy.connect(wallet2);
+    await expect(
+      t1AsSigner.setTransferProxy("0x00112233", wallet2.address, { from: wallet1.address })
+    ).to.be.revertedWith('Ownable: caller is not the owner');
+    t2AsSigner.setTransferProxy("0x00112233", wallet2.address, { from: wallet0.address });
+  })
 
   it('should work for cancel ERC20 order', async () => {
     const {left, right} = await prepare2Orders();
