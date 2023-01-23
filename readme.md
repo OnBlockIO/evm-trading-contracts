@@ -101,7 +101,7 @@ N/A
 Using OpenZeppelin contracts.
 - ERC20 transfer proxy smart contracts.
 - ERC721/1155 transfer proxy smart contracts.
-- ERC721/1155 Lazy Mint transfer proxy smart contracts.
+- ERC721/1155 lazy mint transfer proxy smart contracts.
 - Upgradable royalties registry smart contracts.
 - Upgradable asset matcher collection smart contracts.
 - Upgradable exchange smart contracts.
@@ -117,11 +117,11 @@ Using hardhat to deploy proxy contracts
 #### locally
 ```
 hardhat run deploy/001_deploy_transferProxy.ts
-hardhat run deploy/001_deploy_erc20_transferProxy.ts
-hardhat run deploy/001_deploy_lazyMint_transferProxies.ts
-hardhat run deploy/001_deploy_royalties_registry.ts
-hardhat run deploy/001_deploy_custom_matcher.ts
-hardhat run deploy/001_deploy_exchange_proxy.ts
+hardhat run deploy/002_deploy_erc20_transferProxy.ts
+hardhat run deploy/003_deploy_lazyMint_transferProxies.ts
+hardhat run deploy/004_deploy_royalties_registry.ts
+hardhat run deploy/005_deploy_custom_matcher.ts
+hardhat run deploy/006_deploy_exchange_proxy.ts
 ```
 
 #### to network
