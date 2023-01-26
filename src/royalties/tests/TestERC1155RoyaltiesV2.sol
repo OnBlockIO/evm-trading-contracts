@@ -15,4 +15,9 @@ contract TestERC1155RoyaltiesV2 is RoyaltiesV2Impl, ERC1155Upgradeable {
         _mint(to, tokenId, amount, "");
         _saveRoyalties(tokenId, _fees);
     }
+
+    /// @inheritdoc	ERC165Upgradeable
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable) returns (bool) {
+        return interfaceId == LibRoyaltiesV2._INTERFACE_ID_ROYALTIES || super.supportsInterface(interfaceId);
+    }
 }

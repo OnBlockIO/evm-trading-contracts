@@ -17,7 +17,7 @@ library LibMath {
         if (isRoundingErrorFloor(numerator, denominator, target)) {
             revert("rounding error");
         }
-        partialAmount = numerator * (target) / (denominator);
+        partialAmount = (numerator * (target)) / (denominator);
     }
 
     /// @dev Checks if rounding error >= 0.1% when rounding down.
@@ -98,7 +98,7 @@ library LibMath {
         }
         // Compute remainder as before
         uint256 remainder = mulmod(target, numerator, denominator);
-        remainder = denominator - (remainder) % denominator;
+        remainder = denominator - ((remainder) % denominator);
         isError = remainder * (1000) >= numerator * (target);
         return isError;
     }
