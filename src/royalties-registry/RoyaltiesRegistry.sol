@@ -3,12 +3,12 @@
 pragma solidity ^0.8.9;
 
 import "../interfaces/IRoyaltiesProvider.sol";
+import "../interfaces/IERC2981.sol";
 import "../royalties/LibRoyaltiesV2.sol";
 import "../royalties/LibRoyalties2981.sol";
-import "../royalties/RoyaltiesV2.sol";
-import "../interfaces/IERC2981.sol";
 import "../royalties/LibRoyaltiesGhostMarketV2.sol";
-import "./GhostMarketRoyalties.sol";
+import "../royalties/RoyaltiesV2.sol";
+import "../royalties/GhostMarketRoyalties.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.9;
 
-import "./providers/RoyaltyV2Legacy.sol";
+import "../../royalties-registry/providers/RoyaltyV2Legacy.sol";
 
 contract RoyaltiesV2LegacyImpl is RoyaltyV2Legacy {
     mapping(uint256 => LibPart.Part[]) internal royalties;
