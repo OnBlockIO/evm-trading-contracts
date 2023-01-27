@@ -6,7 +6,7 @@ const eth_mainnet = {
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0x3dA0bD10dfD98E96E04fbAa8e0512b2c413b096A',
   exchange_proxy: '0xfB2F452639cBB0850B46b20D24DE7b0a9cCb665f',
-  exchange_wrapper_proxy: '',
+  ghostmarket: '',
   customMatcher: '0x88F166Ac7462D1745A690f51cBe04AB5f73D406D',
   rarible: '0x7f19564C35c681099c0c857a7141836Cf7EDaa53',
   looksRare: '0x59728544B08AB483533076417FbBB2fD0B17CE3a',
@@ -24,7 +24,7 @@ const eth_testnet = {
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0xca1284B5EEb97c31cc693c4b182C8E1075Dc57f9',
   exchange_proxy: '0xfB2F452639cBB0850B46b20D24DE7b0a9cCb665f',
-  exchange_wrapper_proxy: '',
+  ghostmarket: '',
   customMatcher: '',
 };
 
@@ -36,7 +36,7 @@ const avalanche_mainnet = {
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0x913FbdC42a77edb0aEFFCEEAe00240C368d9B6b1',
   exchange_proxy: '0xEb4ABA7aeba732Fc2FC92a673585d950cCFC1de0',
-  exchange_wrapper_proxy: '',
+  ghostmarket: '',
   customMatcher: '0x265ac81F659F1DA2F64c2620D826c6f3E63B8C43',
 };
 
@@ -48,7 +48,7 @@ const avalanche_testnet = {
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0x92bf637c4FadEC1b698002cbA1583850e6EC97d3',
   exchange_proxy: '0x32fD06f88AFc3ce26bbD1cD9FA97dd27BD0826Cd',
-  exchange_wrapper_proxy: '',
+  ghostmarket: '',
   customMatcher: '',
 };
 
@@ -71,7 +71,7 @@ const polygon_testnet = {
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0x7E20461EcC3B27586EFEa0e3dB9E80bfbE55B9eB',
   exchange_proxy: '0x5B2e6bEE51bC4Cc389503DD186bA66d98405320F',
-  exchange_wrapper_proxy: '',
+  ghostmarket: '',
   customMatcher: '',
 };
 
@@ -94,7 +94,7 @@ const bsc_testnet = {
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0x5EC6bFE900C140323C66FC9Fc53619631B46Cb69',
   exchange_proxy: '0x00FCf5E8FF15D8b4753c94DdE10fB5a244af74CC',
-  exchange_wrapper_proxy: '',
+  ghostmarket: '',
   customMatcher: '',
 };
 
