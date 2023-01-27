@@ -1,6 +1,7 @@
 export/
 deployments/
 artifacts/
+!src/exchange-wrapper/artifacts
 cache/
 coverage/
 node_modules/

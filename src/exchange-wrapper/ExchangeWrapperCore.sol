@@ -17,7 +17,13 @@ import "./interfaces/ISeaPort.sol";
 import "./interfaces/Ix2y2.sol";
 import "./interfaces/ILooksRare.sol";
 
-abstract contract ExchangeWrapperCore is Initializable, OwnableUpgradeable, PausableUpgradeable, ERC721Holder, ERC1155Holder {
+abstract contract ExchangeWrapperCore is
+    Initializable,
+    OwnableUpgradeable,
+    PausableUpgradeable,
+    ERC721Holder,
+    ERC1155Holder
+{
     using LibTransfer for address;
     using BpLibrary for uint;
 
@@ -73,7 +79,15 @@ abstract contract ExchangeWrapperCore is Initializable, OwnableUpgradeable, Paus
         uint[] additionalRoyalties;
     }
 
-    function __ExchangeWrapper_init_unchained(address _exchangeV2, address _rarible, address _wyvernExchange, address _seaPort, address _x2y2, address _looksRare, address _sudoswap) internal {
+    function __ExchangeWrapper_init_unchained(
+        address _exchangeV2,
+        address _rarible,
+        address _wyvernExchange,
+        address _seaPort,
+        address _x2y2,
+        address _looksRare,
+        address _sudoswap
+    ) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
         wyvernExchange = _wyvernExchange;
