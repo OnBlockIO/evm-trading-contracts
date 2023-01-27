@@ -415,9 +415,10 @@ abstract contract ExchangeWrapperCore is
         now royalties support only for marketId = sudoswap
     */
     function supportsRoyalties(Markets marketId) internal pure returns (bool) {
-        if (marketId == Markets.SudoSwap) {
-            return true;
-        }
+        if (
+            marketId == Markets.SudoSwap ||
+            marketId == Markets.LooksRareOrders
+        ) {
 
         return false;
     }
