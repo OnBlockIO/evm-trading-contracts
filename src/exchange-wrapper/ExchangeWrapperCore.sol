@@ -419,6 +419,8 @@ abstract contract ExchangeWrapperCore is
             marketId == Markets.SudoSwap ||
             marketId == Markets.LooksRareOrders
         ) {
+            return true;
+        }
 
         return false;
     }
