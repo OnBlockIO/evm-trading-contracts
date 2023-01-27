@@ -6,7 +6,7 @@ async function main() {
   const {deployer} = await getNamedAccounts();
 
   const CHAIN = hre.network.name;
-  const GHOSTMARKET = getSettings(CHAIN).ghostmarket;
+  const GHOSTMARKET = getSettings(CHAIN).exchange_proxy;
   const RARIBLE = getSettings(CHAIN).rarible;
   const WYVERN = getSettings(CHAIN).wyvernExchange;
   const SEAPORT = getSettings(CHAIN).seaport;

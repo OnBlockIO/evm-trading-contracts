@@ -93,6 +93,10 @@ https://etherscan.io/address/0x49CaC1f0564Ed70a30C2454F653a3A1058D6A9bA#code
 
 https://etherscan.io/address/0xfB2F452639cBB0850B46b20D24DE7b0a9cCb665f#code
 
+#### GhostMarketExchangeWrapper Proxy
+
+https://etherscan.io/address/
+
 
 ## Audit
 N/A
@@ -105,6 +109,7 @@ Using OpenZeppelin contracts.
 - Upgradable royalties registry smart contracts.
 - Upgradable asset matcher collection smart contracts.
 - Upgradable exchange smart contracts.
+- Upgradable wrapper exchange smart contracts.
 
 ### Compiling contracts
 ```
@@ -122,6 +127,7 @@ hardhat run deploy/003_deploy_lazyMint_transferProxies.ts
 hardhat run deploy/004_deploy_royalties_registry.ts
 hardhat run deploy/005_deploy_custom_matcher.ts
 hardhat run deploy/006_deploy_exchange_proxy.ts
+hardhat run deploy/007_deploy_exchange_wrapper_proxy.ts
 ```
 
 #### to network
