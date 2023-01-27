@@ -21,27 +21,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: '0.7.6',
-        settings: {
-          // See the solidity docs for advice about optimization and evmVersion
-          optimizer: {
-            enabled: true,
-            runs: 100,
-          },
-        },
-      },
-      {
-        version: '0.8.4',
-        settings: {
-          // See the solidity docs for advice about optimization and evmVersion
-          optimizer: {
-            enabled: true,
-            runs: 100,
-          },
-        },
-      },
-      {
-        version: '0.4.11',
+        version: '0.8.9',
         settings: {
           // See the solidity docs for advice about optimization and evmVersion
           optimizer: {
@@ -61,6 +41,7 @@ const config: HardhatUserConfig = {
       port: 8545,            // Ganache CLI port
     }, */
     hardhat: {
+      initialBaseFeePerGas: 0,
       // process.env.HARDHAT_FORK will specify the network that the fork is made from.
       // this line ensure the use of the corresponding accounts
       accounts: accounts(process.env.HARDHAT_FORK),

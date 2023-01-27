@@ -93,18 +93,15 @@ https://etherscan.io/address/0x49CaC1f0564Ed70a30C2454F653a3A1058D6A9bA#code
 
 https://etherscan.io/address/0xfB2F452639cBB0850B46b20D24DE7b0a9cCb665f#code
 
-#### PunkTransferProxy
-
-https://etherscan.io/address/0x99AEECF3717ec6B369d847e3D62d14e14251e4d4#code
-
 
 ## Audit
 N/A
 
 ## Technical Information
 Using OpenZeppelin contracts.
-- Upgradable ERC20 transfer proxy smart contracts.
-- Upgradable ERC721/1155 transfer proxy smart contracts.
+- ERC20 transfer proxy smart contracts.
+- ERC721/1155 transfer proxy smart contracts.
+- ERC721/1155 lazy mint transfer proxy smart contracts.
 - Upgradable royalties registry smart contracts.
 - Upgradable asset matcher collection smart contracts.
 - Upgradable exchange smart contracts.
@@ -119,7 +116,12 @@ Using hardhat to deploy proxy contracts
 
 #### locally
 ```
-hardhat run deploy/001_deploy_ERC20Incentive.ts
+hardhat run deploy/001_deploy_transferProxy.ts
+hardhat run deploy/002_deploy_erc20_transferProxy.ts
+hardhat run deploy/003_deploy_lazyMint_transferProxies.ts
+hardhat run deploy/004_deploy_royalties_registry.ts
+hardhat run deploy/005_deploy_custom_matcher.ts
+hardhat run deploy/006_deploy_exchange_proxy.ts
 ```
 
 #### to network
@@ -169,81 +171,3 @@ hardhat coverage <network_name>
 ```
 hardhat verify --network <network_name> <0x_contract_address>
 ```
-
-
-## Algorithms
-
-Main function in the Exchange is matchOrders. It takes two orders (left and right), tries to match them and then fills if there is a match.
-
-Logically, whole process can be divided into stages:
-
-- order validation (check order parameters are valid and caller is authorized to execute the order)
-- asset matching (check if assets from left and right order match, extract matching assets)
-- calculating fill (finding out what exact values should be filled. orders can be matched partly if one of the sides doesn't want to fill other order fully)
-- order execution (execute transfers, save fill of the orders if needed)
-
-### Domain model
-
-#### Order:
-
-- `address` maker
-- `Asset` leftAsset
-- `address` taker (can be zero address)
-- `Asset` rightAsset
-- `uint` salt - random number to distinguish different maker orders
-- `uint` start - Order can't be matched before this date (optional)
-- `uint` end - Order can't be matched after this date (optional)
-- `bytes4` dataType - type of data, usually hash of some string, e.g.: "0xffffffff"
-- `bytes` data - generic data, can be anything, extendable part of the order
-
-#### Order validation
-
-- check start/end date of the orders
-- check if taker of the order is blank or taker = order.taker
-- check if order is signed by its maker or maker of the order is executing the transaction
-- if maker of the order is a contract, then ERC-1271 check is performed
-
-Only off-chain orders are supported
-
-#### Asset matching
-
-Purpose of this is to validate that **make asset** of the **left** order matches **take asset** from the **right** order and vice versa.
-New types of assets can be added without smart contract upgrade. This is done using custom IAssetMatcher.
-
-#### Order execution
-
-Order execution is done by TransferManager
-
-#### Royalties
-
-Royalties percentage and receiver is extracted from the RoyaltiesRegistry and can be of many forms, GhostMarketRoyalties, RaribleRoyalties, EIP2981, or others.
-
-#### Fees
-
-`protocolFee` set currently to 2%
-
-##### Fees calculation, fee side
-
-To take a fee we need to calculate, what side of the deal can be used as money.
-There is a simple algorithm to do it:
-
-- if Base Currency is from any side of the deal, it's used
-- if not, then if ERC-20 is in the deal, it's used
-- if not, then if ERC-1155 is in the deal, it's used
-- otherwise, fee is not taken (for example, two ERC-721 are involved in the deal)
-
-When we established, what part of the deal can be treated as money, then we can establish, that
-
-- buyer is side of the deal who owns money
-- seller is other side of the deal
-
-Then total amount of the asset (money side) should be calculated
-
-- protocol fee is added on top of the filled amount
-- origin fee of the buyer's order is added on top too
-
-If buyer is using ERC-20 token for payment, then he must approve at least this calculated amount of tokens.
-
-If buyer is using Base Currency, then he must send this calculated amount of Base Currency with the tx.
-
-More on fee calculation can be found here src/GhostMarketTransferManager.sol

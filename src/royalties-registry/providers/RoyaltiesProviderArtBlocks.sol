@@ -1,22 +1,20 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.6.2 <0.8.0;
-pragma abicoder v2;
+pragma solidity ^0.8.9;
 
-import "../../royalties/IRoyaltiesProvider.sol";
+import "../../interfaces/IRoyaltiesProvider.sol";
 import "./RoyaltyArtBlocks.sol";
-import "../../lib/BpLibrary.sol";
+import "../../librairies/BpLibrary.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract RoyaltiesProviderArtBlocks is IRoyaltiesProvider, Ownable {
-    using SafeMathUpgradeable for uint256;
     using BpLibrary for uint256;
 
     uint96 public artblocksPercentage = 250;
 
     event ArtblocksPercentageChanged(address _who, uint96 _old, uint96 _new);
 
-    function getRoyalties(address token, uint256 tokenId) external view override returns (LibPart.Part[] memory) {
+    function getRoyalties(address token, uint tokenId) external view override returns (LibPart.Part[] memory) {
         RoyaltyArtBlocks artBlocks = RoyaltyArtBlocks(token);
 
         //gettign artist and additionalPayee royalty part
@@ -57,11 +55,11 @@ contract RoyaltiesProviderArtBlocks is IRoyaltiesProvider, Ownable {
             result[0].value = artblocksPercentage;
 
             // additional payee percentage * 100
-            uint96 additionalPart = uint96(royaltyFeeByID.mul(100).bp(additionalPayeePercentage.mul(100)));
+            uint96 additionalPart = uint96((royaltyFeeByID * (100)).bp(additionalPayeePercentage * (100)));
 
             //artist part
             result[1].account = payable(artistAddress);
-            result[1].value = uint96(royaltyFeeByID.mul(100).sub(additionalPart));
+            result[1].value = uint96((royaltyFeeByID * (100)) - (additionalPart));
 
             result[2].account = payable(additionalPayee);
             result[2].value = additionalPart;
@@ -75,12 +73,12 @@ contract RoyaltiesProviderArtBlocks is IRoyaltiesProvider, Ownable {
             result[0].value = artblocksPercentage;
 
             // additional payee percentage * 100
-            uint96 additionalPart = uint96(royaltyFeeByID.mul(100).bp(additionalPayeePercentage.mul(100)));
+            uint96 additionalPart = uint96((royaltyFeeByID * (100)).bp(additionalPayeePercentage * (100)));
 
             //artist part
             if (additionalPayeePercentage == 0) {
                 result[1].account = payable(artistAddress);
-                result[1].value = uint96(royaltyFeeByID.mul(100).sub(additionalPart));
+                result[1].value = uint96((royaltyFeeByID * (100)) - (additionalPart));
             }
 
             //additional payee part

@@ -7,3 +7,4 @@ export const DATA = '0x';
 export const INTERFACE_ID_ERC165 = '0x01ffc9a7';
 export const INTERFACE_ID_ROYALTIES_EIP2981 = '0x2a55205a';
 export const INTERFACE_ID_ERC721 = '0x80ac58cd';
+export const INTERFACE_ID_GHOSTMARKET = '0xe42093a6';

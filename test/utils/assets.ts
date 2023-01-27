@@ -32,7 +32,9 @@ export const ERC1155_LAZY = id('ERC1155_LAZY');
 export const COLLECTION = id('COLLECTION');
 export const CRYPTO_PUNK = id('CRYPTO_PUNK');
 export const ORDER_DATA_V1 = id('V1');
-export const ORDER_DATA_V2 = id('V@');
+export const ORDER_DATA_V2 = id('V2');
+export const ORDER_DATA_V3_BUY = id('V3_BUY');
+export const ORDER_DATA_V3_SELL = id('V3_SELL');
 export const TO_MAKER = id('TO_MAKER');
 export const TO_TAKER = id('TO_TAKER');
 export const PROTOCOL = id('PROTOCOL');
@@ -51,6 +53,8 @@ export default {
   CRYPTO_PUNK,
   ORDER_DATA_V1,
   ORDER_DATA_V2,
+  ORDER_DATA_V3_BUY,
+  ORDER_DATA_V3_SELL,
   TO_MAKER,
   TO_TAKER,
   PROTOCOL,
