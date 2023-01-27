@@ -5,7 +5,7 @@ import {
   ERC20TransferProxy,
   TransferProxy,
   ExchangeV2,
-  GhostMarketExchangeWrapper,
+  ExchangeWrapper,
   RoyaltiesRegistry,
   TestDummyERC721,
   TestDummyERC1155,
@@ -31,8 +31,9 @@ import {ethers, upgrades} from 'hardhat';
 import {verifyBalanceChange} from './utils/helpers';
 
 describe('ExchangeWrapper Test', async function () {
+  let rarible: ExchangeV2;
   let exchangeV2Proxy: ExchangeV2;
-  let bulkExchange: GhostMarketExchangeWrapper;
+  let bulkExchange: ExchangeWrapper;
   let transferProxy: TransferProxy;
   let erc20TransferProxy: ERC20TransferProxy;
   let erc721: TestDummyERC721;
@@ -78,7 +79,7 @@ describe('ExchangeWrapper Test', async function () {
     const TransferProxyTest = await ethers.getContractFactory('TransferProxy');
     const ERC20TransferProxyTest = await ethers.getContractFactory('ERC20TransferProxy');
     const ExchangeV2Test = await ethers.getContractFactory('ExchangeV2');
-    const BulkExchange = await ethers.getContractFactory('GhostMarketExchangeWrapper');
+    const BulkExchange = await ethers.getContractFactory('ExchangeWrapper');
     const TestERC721 = await ethers.getContractFactory('TestDummyERC721');
     const TestERC1155 = await ethers.getContractFactory('TestDummyERC1155');
     const RoyaltiesRegistry = await ethers.getContractFactory('RoyaltiesRegistry');
@@ -102,8 +103,18 @@ describe('ExchangeWrapper Test', async function () {
       )
     );
 
+    rarible = <ExchangeV2>(
+      await upgrades.deployProxy(
+        ExchangeV2Test,
+        [transferProxy.address, erc20TransferProxy.address, 300, ZERO, royaltiesRegistryProxy.address],
+        {initializer: '__ExchangeV2_init'}
+      )
+    );
+
     await transferProxy.addOperator(exchangeV2Proxy.address);
     await erc20TransferProxy.addOperator(exchangeV2Proxy.address);
+    await transferProxy.addOperator(rarible.address);
+    await erc20TransferProxy.addOperator(rarible.address);
 
     testHelper = await TestHelper.deploy();
     wrapperHelper = await WrapperHelper.deploy();
@@ -111,10 +122,18 @@ describe('ExchangeWrapper Test', async function () {
     erc721 = await TestERC721.deploy();
     erc1155 = await TestERC1155.deploy();
 
-    bulkExchange = await BulkExchange.deploy(exchangeV2Proxy.address, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO);
+    bulkExchange = await BulkExchange.deploy();
+
+    bulkExchange = <ExchangeWrapper>(
+      await upgrades.deployProxy(
+        BulkExchange,
+        [exchangeV2Proxy.address, rarible.address, ZERO, ZERO, ZERO, ZERO, ZERO],
+        {initializer: '__ExchangeWrapper_init'}
+      )
+    );
   });
 
-  describe('librairies', () => {
+  describe('basic', () => {
     it('is pausable', async () => {
       const buyer = wallet2;
       const seller1 = wallet1;
@@ -161,24 +180,20 @@ describe('ExchangeWrapper Test', async function () {
       const tradeData1 = PurchaseData(0, '100', await encodeFees(0, 1500), dataForExchCall1); //0 is Exch orders, 100 is amount + 0 protocolFee
 
       //error when called not from owner
-      await expect(bulkExchange.connect(wallet5).pause(true, {from: wallet5.address})).to.be.revertedWith(
+      await expect(bulkExchange.connect(wallet5).pause({from: wallet5.address})).to.be.revertedWith(
         'Ownable: caller is not the owner'
       );
 
-      const txPaused = bulkExchange.pause(true);
-      await expect(txPaused).to.emit(bulkExchange, 'Paused').withArgs(true);
-
-      expect(await bulkExchange.paused()).to.equal(true);
+      await bulkExchange.pause();
 
       //contract is paused
       await expect(
         bulkExchange
           .connect(buyer)
           .singlePurchase(tradeData1, ZERO, feeRecipienterUP.address, {from: buyer.address, value: 400, gasPrice: 0})
-      ).to.be.revertedWith('contract is paused');
+      ).to.be.revertedWith('Pausable: paused');
 
-      const txUnPause = bulkExchange.pause(false);
-      await expect(txUnPause).to.emit(bulkExchange, 'Paused').withArgs(false);
+      await bulkExchange.unpause();
 
       expect(await bulkExchange.paused()).to.equal(false);
 
@@ -445,6 +460,373 @@ describe('ExchangeWrapper Test', async function () {
       expect(await erc1155.balanceOf(wallet2.address, erc1155TokenId3)).to.equal(10);
     });
   });
+
+  describe('Rarible orders', () => {
+    it('Test singlePurchase Rarible - V2 order', async () => {
+      const buyer = wallet2;
+      const seller1 = wallet1;
+
+      await erc721.mint(seller1.address, erc721TokenId1);
+      await erc721.connect(seller1).setApprovalForAll(transferProxy.address, true, {from: seller1.address});
+
+      const encDataLeft = await encDataV2([[], [], false]);
+      const encDataRight = await encDataV2([[[buyer.address, 10000]], [], false]);
+
+      const left1 = Order(
+        seller1.address,
+        Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+        ZERO,
+        Asset(ETH, '0x', '100'),
+        '1',
+        0,
+        0,
+        ORDER_DATA_V2,
+        encDataLeft
+      );
+
+      const signatureLeft1 = await getSignature(left1, seller1.address, rarible.address);
+
+      const directPurchaseParams = {
+        sellOrderMaker: seller1.address,
+        sellOrderNftAmount: 1,
+        nftAssetClass: ERC721,
+        nftData: enc(erc721.address, erc721TokenId1),
+        sellOrderPaymentAmount: 100,
+        paymentToken: ZERO,
+        sellOrderSalt: 1,
+        sellOrderStart: 0,
+        sellOrderEnd: 0,
+        sellOrderDataType: ORDER_DATA_V2,
+        sellOrderData: encDataLeft,
+        sellOrderSignature: signatureLeft1,
+        buyOrderPaymentAmount: 100,
+        buyOrderNftAmount: 1,
+        buyOrderData: encDataRight,
+      };
+
+      const dataForExchCall1 = await wrapperHelper.getDataDirectPurchase(directPurchaseParams);
+      const tradeData1 = PurchaseData(1, '100', await encodeFees(0, 1500), dataForExchCall1); //1 is Rarible orders, 100 is amount + 0 protocolFee
+
+      const tx = await bulkExchange
+        .connect(buyer)
+        .singlePurchase(tradeData1, ZERO, feeRecipienterUP.address, {from: buyer.address, value: 400, gasPrice: 0});
+      const receipt = await tx.wait();
+      // console.log('V2 721 1 order 1:', receipt.gasUsed.toString());
+      expect(await erc721.balanceOf(seller1.address)).to.equal(0);
+      expect(await erc721.balanceOf(buyer.address)).to.equal(1);
+    });
+
+    it('Test singlePurchase Rarible - V3 order', async () => {
+      const buyer = wallet2;
+      const seller1 = wallet1;
+
+      await erc721.mint(seller1.address, erc721TokenId1);
+      await erc721.connect(seller1).setApprovalForAll(transferProxy.address, true, {from: seller1.address});
+
+      const encDataLeft = await encDataV3_SELL([0, 0, 0, 1000, MARKET_MARKER_SELL]);
+      const encDataRight = await encDataV3_BUY([await LibPartToUint(buyer.address, 10000), 0, 0, MARKET_MARKER_SELL]);
+
+      const left1 = Order(
+        seller1.address,
+        Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+        ZERO,
+        Asset(ETH, '0x', '100'),
+        '1',
+        0,
+        0,
+        ORDER_DATA_V3_SELL,
+        encDataLeft
+      );
+
+      const signatureLeft1 = await getSignature(left1, seller1.address, rarible.address);
+
+      const directPurchaseParams = {
+        sellOrderMaker: seller1.address,
+        sellOrderNftAmount: 1,
+        nftAssetClass: ERC721,
+        nftData: enc(erc721.address, erc721TokenId1),
+        sellOrderPaymentAmount: 100,
+        paymentToken: ZERO,
+        sellOrderSalt: 1,
+        sellOrderStart: 0,
+        sellOrderEnd: 0,
+        sellOrderDataType: ORDER_DATA_V3_SELL,
+        sellOrderData: encDataLeft,
+        sellOrderSignature: signatureLeft1,
+        buyOrderPaymentAmount: 100,
+        buyOrderNftAmount: 1,
+        buyOrderData: encDataRight,
+      };
+
+      const dataForExchCall1 = await wrapperHelper.getDataDirectPurchase(directPurchaseParams);
+      const tradeData1 = PurchaseData(1, '100', await encodeFees(0, 1500), dataForExchCall1); //1 is Rarible orders, 100 is amount + 0 protocolFee
+
+      const tx = await bulkExchange
+        .connect(buyer)
+        .singlePurchase(tradeData1, ZERO, feeRecipienterUP.address, {from: buyer.address, value: 400, gasPrice: 0});
+      const receipt = await tx.wait();
+      // console.log('V3 721 1 order 1 commission:', receipt.gasUsed.toString());
+      expect(await erc721.balanceOf(seller1.address)).to.equal(0);
+      expect(await erc721.balanceOf(buyer.address)).to.equal(1);
+    });
+
+    it('Test bulkPurchase Rarible (num orders = 3, type = V2/V1) orders are ready, ERC1155<->ETH', async () => {
+      const buyer = wallet2;
+      const seller1 = wallet1;
+      const seller2 = wallet3;
+      const seller3 = wallet4;
+
+      await erc1155.mint(seller1.address, erc1155TokenId1, 10);
+      await erc1155.connect(seller1).setApprovalForAll(transferProxy.address, true, {from: seller1.address});
+      await erc1155.mint(seller2.address, erc1155TokenId2, 10);
+      await erc1155.connect(seller2).setApprovalForAll(transferProxy.address, true, {from: seller2.address});
+      await erc1155.mint(seller3.address, erc1155TokenId3, 10);
+      await erc1155.connect(seller3).setApprovalForAll(transferProxy.address, true, {from: seller3.address});
+
+      //NB!!! set buyer in payouts
+      const encDataLeft = await encDataV2([[], [], false]);
+      const encDataLeftV1 = await encDataV1([[], []]);
+      const encDataRight = await encDataV2([[[buyer.address, 10000]], [], false]);
+      const encDataRightV1 = await encDataV1([[[buyer.address, 10000]], []]);
+
+      const left1 = Order(
+        seller1.address,
+        Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '10'),
+        ZERO,
+        Asset(ETH, '0x', '100'),
+        '1',
+        0,
+        0,
+        ORDER_DATA_V2,
+        encDataLeft
+      );
+      const left2 = Order(
+        seller2.address,
+        Asset(ERC1155, enc(erc1155.address, erc1155TokenId2), '10'),
+        ZERO,
+        Asset(ETH, '0x', '100'),
+        '1',
+        0,
+        0,
+        ORDER_DATA_V2,
+        encDataLeft
+      );
+      const left3 = Order(
+        seller3.address,
+        Asset(ERC1155, enc(erc1155.address, erc1155TokenId3), '10'),
+        ZERO,
+        Asset(ETH, '0x', '100'),
+        '1',
+        0,
+        0,
+        ORDER_DATA_V1,
+        encDataLeftV1
+      );
+
+      const signatureLeft1 = await getSignature(left1, seller1.address, rarible.address);
+      const signatureLeft2 = await getSignature(left2, seller2.address, rarible.address);
+      const signatureLeft3 = await getSignature(left3, seller3.address, rarible.address);
+      //NB!!! DONT Need to signature buy orders, because ExchangeBulkV2 is  msg.sender == buyOrder.maker
+
+      const directPurchaseParams1 = {
+        sellOrderMaker: seller1.address,
+        sellOrderNftAmount: 10,
+        nftAssetClass: ERC1155,
+        nftData: enc(erc1155.address, erc721TokenId1),
+        sellOrderPaymentAmount: 100,
+        paymentToken: ZERO,
+        sellOrderSalt: 1,
+        sellOrderStart: 0,
+        sellOrderEnd: 0,
+        sellOrderDataType: ORDER_DATA_V2,
+        sellOrderData: encDataLeft,
+        sellOrderSignature: signatureLeft1,
+        buyOrderPaymentAmount: 100,
+        buyOrderNftAmount: 6,
+        buyOrderData: encDataRight,
+      };
+
+      const dataForExchCall1 = await wrapperHelper.getDataDirectPurchase(directPurchaseParams1);
+      const tradeData1 = PurchaseData(1, '60', await encodeFees(1500), dataForExchCall1); //1 is Rarible orders, 100 is amount + 0 protocolFee
+
+      const directPurchaseParams2 = {
+        sellOrderMaker: seller2.address,
+        sellOrderNftAmount: 10,
+        nftAssetClass: ERC1155,
+        nftData: enc(erc1155.address, erc1155TokenId2),
+        sellOrderPaymentAmount: 100,
+        paymentToken: ZERO,
+        sellOrderSalt: 1,
+        sellOrderStart: 0,
+        sellOrderEnd: 0,
+        sellOrderDataType: ORDER_DATA_V2,
+        sellOrderData: encDataLeft,
+        sellOrderSignature: signatureLeft2,
+        buyOrderPaymentAmount: 100,
+        buyOrderNftAmount: 8,
+        buyOrderData: encDataRight,
+      };
+
+      const dataForExchCall2 = await wrapperHelper.getDataDirectPurchase(directPurchaseParams2);
+      const tradeData2 = PurchaseData(1, '80', await encodeFees(1500), dataForExchCall2); //1 is Rarible orders, 100 is amount + 0 protocolFee
+
+      const directPurchaseParams3 = {
+        sellOrderMaker: seller3.address,
+        sellOrderNftAmount: 10,
+        nftAssetClass: ERC1155,
+        nftData: enc(erc1155.address, erc1155TokenId3),
+        sellOrderPaymentAmount: 100,
+        paymentToken: ZERO,
+        sellOrderSalt: 1,
+        sellOrderStart: 0,
+        sellOrderEnd: 0,
+        sellOrderDataType: ORDER_DATA_V1,
+        sellOrderData: encDataLeftV1,
+        sellOrderSignature: signatureLeft3,
+        buyOrderPaymentAmount: 100,
+        buyOrderNftAmount: 10,
+        buyOrderData: encDataRightV1,
+      };
+
+      const dataForExchCall3 = await wrapperHelper.getDataDirectPurchase(directPurchaseParams3);
+      const tradeData3 = PurchaseData(1, '100', await encodeFees(1500), dataForExchCall3); //1 is Rarible orders, 100 is amount + 0 protocolFee
+
+      await verifyBalanceChange(buyer.address, 276, async () =>
+        verifyBalanceChange(seller1.address, -60, async () =>
+          verifyBalanceChange(seller2.address, -80, async () =>
+            verifyBalanceChange(seller3.address, -100, async () =>
+              verifyBalanceChange(feeRecipienterUP.address, -36, () =>
+                bulkExchange
+                  .connect(buyer)
+                  .bulkPurchase([tradeData1, tradeData2, tradeData3], feeRecipienterUP.address, ZERO, false, {
+                    from: buyer.address,
+                    value: 400,
+                    gasPrice: 0,
+                  })
+              )
+            )
+          )
+        )
+      );
+      expect(await erc1155.balanceOf(seller1.address, erc1155TokenId1)).to.equal(4);
+      expect(await erc1155.balanceOf(seller2.address, erc1155TokenId2)).to.equal(2);
+      expect(await erc1155.balanceOf(seller3.address, erc1155TokenId3)).to.equal(0);
+      expect(await erc1155.balanceOf(wallet2.address, erc1155TokenId1)).to.equal(6);
+      expect(await erc1155.balanceOf(wallet2.address, erc1155TokenId2)).to.equal(8);
+      expect(await erc1155.balanceOf(wallet2.address, erc1155TokenId3)).to.equal(10);
+    });
+  });
+
+  /* describe('Combined orders', () => {
+    it('Test bulkPurchase GhostMarket & Rarible (num orders = 2, type = V2/V1) orders are ready, ERC721<->ETH', async () => {
+      const buyer = wallet2;
+      const seller1 = wallet1;
+      const seller2 = wallet3;
+      const seller3 = wallet4;
+
+      await erc721.mint(seller1.address, erc721TokenId1);
+      await erc721.connect(seller1).setApprovalForAll(transferProxy.address, true, {from: seller1.address});
+      await erc721.mint(seller2.address, erc721TokenId2);
+      await erc721.connect(seller2).setApprovalForAll(transferProxy.address, true, {from: seller2.address});
+
+      //NB!!! set buyer in payouts
+      const encDataLeft = await encDataV2([[], [], false]);
+      const encDataLeftV1 = await encDataV1([[], []]);
+      const encDataRight = await encDataV2([[[buyer.address, 10000]], [], false]);
+      const encDataRightV1 = await encDataV1([[[buyer.address, 10000]], []]);
+
+      const left1 = Order(
+        seller1.address,
+        Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+        ZERO,
+        Asset(ETH, '0x', '100'),
+        '1',
+        0,
+        0,
+        ORDER_DATA_V2,
+        encDataLeft
+      );
+      const left2 = Order(
+        seller2.address,
+        Asset(ERC721, enc(erc721.address, erc721TokenId2), '1'),
+        ZERO,
+        Asset(ETH, '0x', '100'),
+        '1',
+        0,
+        0,
+        ORDER_DATA_V2,
+        encDataLeft
+      );
+
+      const signatureLeft1 = await getSignature(left1, seller1.address, exchangeV2Proxy.address);
+      const signatureLeft2 = await getSignature(left2, seller2.address, rarible.address);
+      //NB!!! DONT Need to signature buy orders, because ExchangeBulkV2 is  msg.sender == buyOrder.maker
+
+      const directPurchaseParams1 = {
+        sellOrderMaker: seller1.address,
+        sellOrderNftAmount: 1,
+        nftAssetClass: ERC721,
+        nftData: enc(erc721.address, erc721TokenId1),
+        sellOrderPaymentAmount: 100,
+        paymentToken: ZERO,
+        sellOrderSalt: 1,
+        sellOrderStart: 0,
+        sellOrderEnd: 0,
+        sellOrderDataType: ORDER_DATA_V2,
+        sellOrderData: encDataLeft,
+        sellOrderSignature: signatureLeft1,
+        buyOrderPaymentAmount: 100,
+        buyOrderNftAmount: 1,
+        buyOrderData: encDataRight,
+      };
+
+      const dataForExchCall1 = await wrapperHelper.getDataDirectPurchase(directPurchaseParams1);
+      const tradeData1 = PurchaseData(0, '60', '0', dataForExchCall1); //0 is Exch orders, 100 is amount + 0 protocolFee
+
+      const directPurchaseParams2 = {
+        sellOrderMaker: seller2.address,
+        sellOrderNftAmount: 1,
+        nftAssetClass: ERC721,
+        nftData: enc(erc721.address, erc721TokenId2),
+        sellOrderPaymentAmount: 100,
+        paymentToken: ZERO,
+        sellOrderSalt: 1,
+        sellOrderStart: 0,
+        sellOrderEnd: 0,
+        sellOrderDataType: ORDER_DATA_V2,
+        sellOrderData: encDataLeft,
+        sellOrderSignature: signatureLeft2,
+        buyOrderPaymentAmount: 100,
+        buyOrderNftAmount: 1,
+        buyOrderData: encDataRight,
+      };
+
+      const dataForExchCall2 = await wrapperHelper.getDataDirectPurchase(directPurchaseParams2);
+      const tradeData2 = PurchaseData(1, '80', await encodeFees(1500), dataForExchCall2); //0 is Exch orders, 1 is Rarible orders, 100 is amount + 0 protocolFee
+
+      await verifyBalanceChange(buyer.address, 276, async () =>
+        verifyBalanceChange(seller1.address, -60, async () =>
+          verifyBalanceChange(seller2.address, -80, async () =>
+            verifyBalanceChange(seller3.address, -100, async () =>
+              verifyBalanceChange(feeRecipienterUP.address, -36, () =>
+                bulkExchange
+                  .connect(buyer)
+                  .bulkPurchase([tradeData1], feeRecipienterUP.address, ZERO, false, {
+                    from: buyer.address,
+                    value: 400,
+                    gasPrice: 0,
+                  })
+              )
+            )
+          )
+        )
+      );
+      expect(await erc721.ownerOf(erc1155TokenId1)).to.equal(seller1.address);
+      expect(await erc721.ownerOf(erc1155TokenId2)).to.equal(seller2.address);
+      expect(await erc721.ownerOf(erc1155TokenId3)).to.equal(seller3.address);
+      expect(await erc721.ownerOf(erc1155TokenId1)).to.equal(wallet2.address);
+    });
+  }); */
 
   function encDataV1(tuple: any) {
     return testHelper.encode(tuple);

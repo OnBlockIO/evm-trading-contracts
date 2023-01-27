@@ -8,6 +8,8 @@ import "../librairies/LibPart.sol";
 
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import "./interfaces/IWyvernExchange.sol";
 import "./interfaces/IExchangeV2.sol";
@@ -15,19 +17,17 @@ import "./interfaces/ISeaPort.sol";
 import "./interfaces/Ix2y2.sol";
 import "./interfaces/ILooksRare.sol";
 
-import "./librairies/IsPausable.sol";
-
-contract GhostMarketExchangeWrapper is Ownable, ERC721Holder, ERC1155Holder, IsPausable {
+abstract contract ExchangeWrapperCore is Initializable, OwnableUpgradeable, PausableUpgradeable, ERC721Holder, ERC1155Holder {
     using LibTransfer for address;
     using BpLibrary for uint;
 
-    address public immutable exchangeV2;
-    address public immutable rarible;
-    address public immutable wyvernExchange;
-    address public immutable seaPort;
-    address public immutable x2y2;
-    address public immutable looksRare;
-    address public immutable sudoswap;
+    address public exchangeV2;
+    address public rarible;
+    address public wyvernExchange;
+    address public seaPort;
+    address public x2y2;
+    address public looksRare;
+    address public sudoswap;
 
     event Execution(bool result);
 
@@ -73,15 +73,7 @@ contract GhostMarketExchangeWrapper is Ownable, ERC721Holder, ERC1155Holder, IsP
         uint[] additionalRoyalties;
     }
 
-    constructor(
-        address _exchangeV2,
-        address _rarible,
-        address _wyvernExchange,
-        address _seaPort,
-        address _x2y2,
-        address _looksRare,
-        address _sudoswap
-    ) {
+    function __ExchangeWrapper_init_unchained(address _exchangeV2, address _rarible, address _wyvernExchange, address _seaPort, address _x2y2, address _looksRare, address _sudoswap) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
         wyvernExchange = _wyvernExchange;
@@ -89,6 +81,16 @@ contract GhostMarketExchangeWrapper is Ownable, ERC721Holder, ERC1155Holder, IsP
         x2y2 = _x2y2;
         looksRare = _looksRare;
         sudoswap = _sudoswap;
+    }
+
+    /// @notice Pause the contract
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    /// @notice Unpause the contract
+    function unpause() public onlyOwner {
+        _unpause();
     }
 
     /**
@@ -101,9 +103,7 @@ contract GhostMarketExchangeWrapper is Ownable, ERC721Holder, ERC1155Holder, IsP
         PurchaseDetails memory purchaseDetails,
         address feeRecipientFirst,
         address feeRecipientSecond
-    ) external payable {
-        requireNotPaused();
-
+    ) external payable whenNotPaused {
         (bool success, uint feeAmountFirst, uint feeAmountSecond) = purchase(purchaseDetails, false);
         emit Execution(success);
 
@@ -126,9 +126,7 @@ contract GhostMarketExchangeWrapper is Ownable, ERC721Holder, ERC1155Holder, IsP
         address feeRecipientFirst,
         address feeRecipientSecond,
         bool allowFail
-    ) external payable {
-        requireNotPaused();
-
+    ) external payable whenNotPaused {
         uint sumFirstFees = 0;
         uint sumSecondFees = 0;
         bool result = false;

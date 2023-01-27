@@ -7,8 +7,8 @@ import {IERC1155Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC
 
 import {IWyvernExchange} from "../interfaces/IWyvernExchange.sol";
 import {IExchangeV2} from "../interfaces/IExchangeV2.sol";
-import {LibOrder} from "../GhostMarketExchangeWrapper.sol";
-import {LibDirectTransfer} from "../GhostMarketExchangeWrapper.sol";
+import {LibOrder} from "../ExchangeWrapper.sol";
+import {LibDirectTransfer} from "../ExchangeWrapper.sol";
 
 import {LibSeaPort} from "../librairies/LibSeaPort.sol";
 import {ISeaPort} from "../interfaces/ISeaPort.sol";

@@ -93,7 +93,7 @@ https://etherscan.io/address/0x49CaC1f0564Ed70a30C2454F653a3A1058D6A9bA#code
 
 https://etherscan.io/address/0xfB2F452639cBB0850B46b20D24DE7b0a9cCb665f#code
 
-#### GhostMarketExchangeWrapper Proxy
+#### ExchangeWrapper Proxy
 
 https://etherscan.io/address/
 
