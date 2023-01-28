@@ -11,6 +11,7 @@ import {
   TestDummyERC1155,
   TestHelper,
   WrapperHelper,
+  LooksRareTestHelper
 } from '../typechain';
 // seaport
 import SeaportArtifact from '../src/exchange-wrapper/artifacts/Seaport.json';
@@ -20,6 +21,17 @@ import WyvernExchangeWithBulkCancellationsArtifact from '../src/exchange-wrapper
 import WyvernTokenTransferProxyArtifact from '../src/exchange-wrapper/artifacts/WyvernTokenTransferProxy.json';
 import MerkleValidatorArtifact from '../src/exchange-wrapper/artifacts/MerkleValidator.json';
 import WyvernProxyRegistryArtifact from '../src/exchange-wrapper/artifacts/WyvernProxyRegistry.json';
+// looksrare
+import LooksRareExchangeArtifact from '../src/exchange-wrapper/artifacts/LooksRareExchange.json';
+import CurrencyManagerArtifact from '../src/exchange-wrapper/artifacts/CurrencyManager.json';
+import ExecutionManagerArtifact from '../src/exchange-wrapper/artifacts/ExecutionManager.json';
+import RoyaltyFeeManagerArtifact from '../src/exchange-wrapper/artifacts/RoyaltyFeeManager.json';
+import WETH9Artifact from '../src/exchange-wrapper/artifacts/WETH9.json';
+import RoyaltyFeeRegistryArtifact from '../src/exchange-wrapper/artifacts/RoyaltyFeeRegistry.json';
+import TransferSelectorNFTArtifact from '../src/exchange-wrapper/artifacts/TransferSelectorNFT.json';
+import TransferManagerERC721Artifact from '../src/exchange-wrapper/artifacts/TransferManagerERC721.json';
+import TransferManagerERC1155Artifact from '../src/exchange-wrapper/artifacts/TransferManagerERC1155.json';
+
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {Asset, Order} from './utils/order';
 import EIP712 from './utils/EIP712';
@@ -37,7 +49,7 @@ import {
 } from './utils/assets';
 import {ethers, upgrades} from 'hardhat';
 import {verifyBalanceChange} from './utils/helpers';
-import {MARKET_ID_GHOSTMARKET, MARKET_ID_RARIBLE, MARKET_ID_SEAPORT, MARKET_ID_WYVERN} from './utils/constants';
+import {MARKET_ID_GHOSTMARKET, MARKET_ID_LOOKSRARE, MARKET_ID_RARIBLE, MARKET_ID_SEAPORT, MARKET_ID_WYVERN} from './utils/constants';
 
 describe('ExchangeWrapper Test', async function () {
   let rarible: ExchangeV2;
@@ -56,6 +68,16 @@ describe('ExchangeWrapper Test', async function () {
   let wyvernTokenTransferProxy: any;
   let wyvernExchangeWithBulkCancellations: any;
   let merkleValidator: any;
+  let currencyManager: any;
+  let executionManager: any;
+  let royaltyFeeRegistry: any;
+  let royaltyFeeManager: any;
+  let looksRareExchange: any;
+  let weth: any;
+  let transferManagerERC721: any;
+  let transferManagerERC1155: any;
+  let transferSelectorNFT: any;
+  let strategy: any;
   let wallet0: SignerWithAddress;
   let wallet1: SignerWithAddress;
   let wallet2: SignerWithAddress;
@@ -68,6 +90,7 @@ describe('ExchangeWrapper Test', async function () {
   let wallet9: SignerWithAddress;
   let feeRecipienterUP: SignerWithAddress;
   let wyvernProtocolFeeAddress: SignerWithAddress;
+  let lrProtocolFeeRecipient: SignerWithAddress;
   let makerLeft: SignerWithAddress;
   let makerRight: SignerWithAddress;
   const MARKET_MARKER_SELL = '0x67686f73746d61726b65745f76335f73656c6c00000000000000000000000000'; // ghostmarket_v3_sell
@@ -94,6 +117,7 @@ describe('ExchangeWrapper Test', async function () {
     wallet9 = accounts[9];
     feeRecipienterUP = wallet6;
     wyvernProtocolFeeAddress = wallet9;
+    lrProtocolFeeRecipient = wallet3;
     const TransferProxyTest = await ethers.getContractFactory('TransferProxy');
     const ERC20TransferProxyTest = await ethers.getContractFactory('ERC20TransferProxy');
     const ExchangeV2Test = await ethers.getContractFactory('ExchangeV2');
@@ -103,6 +127,7 @@ describe('ExchangeWrapper Test', async function () {
     const RoyaltiesRegistry = await ethers.getContractFactory('RoyaltiesRegistry');
     const TestHelper = await ethers.getContractFactory('TestHelper');
     const WrapperHelper = await ethers.getContractFactory('WrapperHelper');
+    const LooksRareTestHelper = await ethers.getContractFactory('LooksRareTestHelper');
     const Seaport = await ethers.getContractFactory(SeaportArtifact.abi, SeaportArtifact.bytecode);
     const ConduitController = await ethers.getContractFactory(
       ConduitControllerArtifact.abi,
@@ -123,6 +148,42 @@ describe('ExchangeWrapper Test', async function () {
     const WyvernProxyRegistry = await ethers.getContractFactory(
       WyvernProxyRegistryArtifact.abi,
       WyvernProxyRegistryArtifact.bytecode
+    )
+    const CurrencyManager = await ethers.getContractFactory(
+      CurrencyManagerArtifact.abi,
+      CurrencyManagerArtifact.bytecode
+    );
+    const ExecutionManager = await ethers.getContractFactory(
+      ExecutionManagerArtifact.abi,
+      ExecutionManagerArtifact.bytecode
+    );
+    const RoyaltyFeeRegistry = await ethers.getContractFactory(
+      RoyaltyFeeRegistryArtifact.abi,
+      RoyaltyFeeRegistryArtifact.bytecode
+    );
+    const RoyaltyFeeManager = await ethers.getContractFactory(
+      RoyaltyFeeManagerArtifact.abi,
+      RoyaltyFeeManagerArtifact.bytecode
+    );
+    const LooksRareExchange = await ethers.getContractFactory(
+      LooksRareExchangeArtifact.abi,
+      LooksRareExchangeArtifact.bytecode
+    );
+    const WETH = await ethers.getContractFactory(
+      WETH9Artifact.abi,
+      WETH9Artifact.bytecode
+    );
+    const TransferManagerERC721 = await ethers.getContractFactory(
+      TransferManagerERC721Artifact.abi,
+      TransferManagerERC721Artifact.bytecode
+    );
+    const TransferManagerERC1155 = await ethers.getContractFactory(
+      TransferManagerERC1155Artifact.abi,
+      TransferManagerERC1155Artifact.bytecode
+    );
+    const TransferSelectorNFT = await ethers.getContractFactory(
+      TransferSelectorNFTArtifact.abi,
+      TransferSelectorNFTArtifact.bytecode
     );
 
     transferProxy = await TransferProxyTest.deploy();
@@ -167,6 +228,20 @@ describe('ExchangeWrapper Test', async function () {
     await wyvernProxyRegistry.endGrantAuthentication(wyvernExchangeWithBulkCancellations.address);
     merkleValidator = await MerkleValidator.deploy();
 
+    currencyManager = await CurrencyManager.deploy()
+    executionManager = await ExecutionManager.deploy();
+    royaltyFeeRegistry = await RoyaltyFeeRegistry.deploy(9000);
+    royaltyFeeManager = await RoyaltyFeeManager.deploy(royaltyFeeRegistry.address);
+    weth = await WETH.deploy();
+    looksRareExchange = await LooksRareExchange.deploy(currencyManager.address, executionManager.address, royaltyFeeManager.address, weth.address, lrProtocolFeeRecipient.address);
+    transferManagerERC721 = await TransferManagerERC721.deploy(looksRareExchange.address);
+    transferManagerERC1155 = await TransferManagerERC1155.deploy(looksRareExchange.address);
+    transferSelectorNFT = await TransferSelectorNFT.deploy(transferManagerERC721.address, transferManagerERC1155.address);
+    await looksRareExchange.updateTransferSelectorNFT(transferSelectorNFT.address);
+    await currencyManager.addCurrency(weth.address);
+    strategy = await LooksRareTestHelper.deploy(0);
+    await executionManager.addStrategy(strategy.address);
+
     await transferProxy.addOperator(exchangeV2Proxy.address);
     await erc20TransferProxy.addOperator(exchangeV2Proxy.address);
     await transferProxy.addOperator(rarible.address);
@@ -187,7 +262,7 @@ describe('ExchangeWrapper Test', async function () {
           wyvernExchangeWithBulkCancellations.address,
           seaport.address,
           ZERO,
-          ZERO,
+          looksRareExchange.address,
           ZERO,
         ],
         {initializer: '__ExchangeWrapper_init'}
@@ -1679,6 +1754,72 @@ describe('ExchangeWrapper Test', async function () {
       expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(1);
     });
   });
+
+  describe('Looksrare orders', () => {
+    it('Test singlePurchase Looksrare - matchAskWithTakerBidUsingETHAndWETH, ERC721<->ETH, with royalties', async () => {
+      const seller = wallet1;
+      const buyerLocal1 = wallet2;
+
+      await erc721.mint(seller.address, tokenId);
+      await erc721.connect(seller).setApprovalForAll(transferManagerERC721.address, true, {from: seller.address});
+      await transferSelectorNFT.addCollectionTransferManager(erc721.address, transferManagerERC721.address);
+
+      const takerBid = {
+        isOrderAsk: false,
+        taker: bulkExchange.address,
+        price: 10000,
+        tokenId: '0x3039',
+        minPercentageToAsk: 8000,
+        params: '0x'
+      }
+      const makerAsk = {
+        isOrderAsk: true,
+        signer: seller.address,
+        collection: erc721.address,
+        price: 10000,
+        tokenId: '0x3039',
+        amount: 1,
+        strategy: strategy.address,
+        currency: weth.address,
+        nonce: 16,
+        startTime: 0,
+        endTime: '0xff00000000000000000000000000',
+        minPercentageToAsk: 8000,
+        params: '0x',
+        v: 28,
+        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
+        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3'
+      }
+
+      expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(0);
+      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(takerBid, makerAsk, ERC721);
+      
+      //adding royalties 
+      const royaltyAccount1 = wallet4;
+      const royaltyAccount2 = wallet5;
+      const additionalRoyalties = [await encodeBpPlusAccountTest(1000, royaltyAccount1.address), await encodeBpPlusAccountTest(2000, royaltyAccount2.address)];
+      const dataPlusAdditionalRoyaltiesStruct = {
+        data: dataForLooksRare,
+        additionalRoyalties: additionalRoyalties
+      };
+      const dataPlusAdditionalRoyalties = await wrapperHelper.encodeDataPlusRoyalties(dataPlusAdditionalRoyaltiesStruct);
+      const dataTypePlusFees = await encodeDataTypeAndFees(1);
+
+      const tradeDataSeaPort = PurchaseData(MARKET_ID_LOOKSRARE, '10000', dataTypePlusFees, dataPlusAdditionalRoyalties);
+
+      await verifyBalanceChange(buyerLocal1.address, 13000, () =>
+        verifyBalanceChange(royaltyAccount1.address, -1000, () =>
+          verifyBalanceChange(royaltyAccount2.address, -2000, () =>
+            bulkExchange.connect(buyerLocal1).singlePurchase(tradeDataSeaPort, ZERO, ZERO, {from: buyerLocal1.address, value: 13000, gasPrice: 0})
+          )
+        )
+      );
+      
+      expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(1);
+      expect(await weth.balanceOf(seller.address)).to.equal(10000);
+    })
+
+  })
 
   describe('Combined orders', () => {
     it('Test bulkPurchase GhostMarket & Rarible (num orders = 2, type = V2/V1), ERC721<->ETH', async () => {
