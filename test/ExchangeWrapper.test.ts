@@ -11,7 +11,7 @@ import {
   TestDummyERC1155,
   TestHelper,
   WrapperHelper,
-  LooksRareTestHelper
+  LooksRareTestHelper,
 } from '../typechain';
 // seaport
 import SeaportArtifact from '../src/exchange-wrapper/artifacts/Seaport.json';
@@ -49,7 +49,13 @@ import {
 } from './utils/assets';
 import {ethers, upgrades} from 'hardhat';
 import {verifyBalanceChange} from './utils/helpers';
-import {MARKET_ID_GHOSTMARKET, MARKET_ID_LOOKSRARE, MARKET_ID_RARIBLE, MARKET_ID_SEAPORT, MARKET_ID_WYVERN} from './utils/constants';
+import {
+  MARKET_ID_GHOSTMARKET,
+  MARKET_ID_LOOKSRARE,
+  MARKET_ID_RARIBLE,
+  MARKET_ID_SEAPORT,
+  MARKET_ID_WYVERN,
+} from './utils/constants';
 
 describe('ExchangeWrapper Test', async function () {
   let rarible: ExchangeV2;
@@ -96,6 +102,7 @@ describe('ExchangeWrapper Test', async function () {
   const MARKET_MARKER_SELL = '0x67686f73746d61726b65745f76335f73656c6c00000000000000000000000000'; // ghostmarket_v3_sell
   const MARKET_MARKER_BUY = '0x67686f73746d61726b65745f76335f6275790000000000000000000000000000'; // ghostmarket_v3_buy
   const tokenId = '12345';
+  const tokenId2 = '123456';
   const erc721TokenId1 = '55';
   const erc721TokenId2 = '56';
   const erc721TokenId3 = '57';
@@ -148,7 +155,7 @@ describe('ExchangeWrapper Test', async function () {
     const WyvernProxyRegistry = await ethers.getContractFactory(
       WyvernProxyRegistryArtifact.abi,
       WyvernProxyRegistryArtifact.bytecode
-    )
+    );
     const CurrencyManager = await ethers.getContractFactory(
       CurrencyManagerArtifact.abi,
       CurrencyManagerArtifact.bytecode
@@ -169,10 +176,7 @@ describe('ExchangeWrapper Test', async function () {
       LooksRareExchangeArtifact.abi,
       LooksRareExchangeArtifact.bytecode
     );
-    const WETH = await ethers.getContractFactory(
-      WETH9Artifact.abi,
-      WETH9Artifact.bytecode
-    );
+    const WETH = await ethers.getContractFactory(WETH9Artifact.abi, WETH9Artifact.bytecode);
     const TransferManagerERC721 = await ethers.getContractFactory(
       TransferManagerERC721Artifact.abi,
       TransferManagerERC721Artifact.bytecode
@@ -228,15 +232,24 @@ describe('ExchangeWrapper Test', async function () {
     await wyvernProxyRegistry.endGrantAuthentication(wyvernExchangeWithBulkCancellations.address);
     merkleValidator = await MerkleValidator.deploy();
 
-    currencyManager = await CurrencyManager.deploy()
+    currencyManager = await CurrencyManager.deploy();
     executionManager = await ExecutionManager.deploy();
     royaltyFeeRegistry = await RoyaltyFeeRegistry.deploy(9000);
     royaltyFeeManager = await RoyaltyFeeManager.deploy(royaltyFeeRegistry.address);
     weth = await WETH.deploy();
-    looksRareExchange = await LooksRareExchange.deploy(currencyManager.address, executionManager.address, royaltyFeeManager.address, weth.address, lrProtocolFeeRecipient.address);
+    looksRareExchange = await LooksRareExchange.deploy(
+      currencyManager.address,
+      executionManager.address,
+      royaltyFeeManager.address,
+      weth.address,
+      lrProtocolFeeRecipient.address
+    );
     transferManagerERC721 = await TransferManagerERC721.deploy(looksRareExchange.address);
     transferManagerERC1155 = await TransferManagerERC1155.deploy(looksRareExchange.address);
-    transferSelectorNFT = await TransferSelectorNFT.deploy(transferManagerERC721.address, transferManagerERC1155.address);
+    transferSelectorNFT = await TransferSelectorNFT.deploy(
+      transferManagerERC721.address,
+      transferManagerERC1155.address
+    );
     await looksRareExchange.updateTransferSelectorNFT(transferSelectorNFT.address);
     await currencyManager.addCurrency(weth.address);
     strategy = await LooksRareTestHelper.deploy(0);
@@ -1606,7 +1619,7 @@ describe('ExchangeWrapper Test', async function () {
       const seller = wallet1;
       const buyerLocal1 = wallet2;
       const zoneAddr = wallet2;
-      
+
       await erc721.mint(seller.address, tokenId);
       await erc721.connect(seller).setApprovalForAll(seaport.address, true, {from: seller.address});
 
@@ -1770,8 +1783,8 @@ describe('ExchangeWrapper Test', async function () {
         price: 10000,
         tokenId: '0x3039',
         minPercentageToAsk: 8000,
-        params: '0x'
-      }
+        params: '0x',
+      };
       const makerAsk = {
         isOrderAsk: true,
         signer: seller.address,
@@ -1788,21 +1801,30 @@ describe('ExchangeWrapper Test', async function () {
         params: '0x',
         v: 28,
         r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3'
-      }
+        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+      };
 
       expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(0);
-      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(takerBid, makerAsk, ERC721);
-      
-      //adding royalties 
+      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+        takerBid,
+        makerAsk,
+        ERC721
+      );
+
+      //adding royalties
       const royaltyAccount1 = wallet4;
       const royaltyAccount2 = wallet5;
-      const additionalRoyalties = [await encodeBpPlusAccountTest(1000, royaltyAccount1.address), await encodeBpPlusAccountTest(2000, royaltyAccount2.address)];
+      const additionalRoyalties = [
+        await encodeBpPlusAccountTest(1000, royaltyAccount1.address),
+        await encodeBpPlusAccountTest(2000, royaltyAccount2.address),
+      ];
       const dataPlusAdditionalRoyaltiesStruct = {
         data: dataForLooksRare,
-        additionalRoyalties: additionalRoyalties
+        additionalRoyalties: additionalRoyalties,
       };
-      const dataPlusAdditionalRoyalties = await wrapperHelper.encodeDataPlusRoyalties(dataPlusAdditionalRoyaltiesStruct);
+      const dataPlusAdditionalRoyalties = await wrapperHelper.encodeDataPlusRoyalties(
+        dataPlusAdditionalRoyaltiesStruct
+      );
       const dataTypePlusFees = await encodeDataTypeAndFees(1);
 
       const tradeData = PurchaseData(MARKET_ID_LOOKSRARE, '10000', dataTypePlusFees, dataPlusAdditionalRoyalties);
@@ -1810,14 +1832,16 @@ describe('ExchangeWrapper Test', async function () {
       await verifyBalanceChange(buyerLocal1.address, 13000, () =>
         verifyBalanceChange(royaltyAccount1.address, -1000, () =>
           verifyBalanceChange(royaltyAccount2.address, -2000, () =>
-            bulkExchange.connect(buyerLocal1).singlePurchase(tradeData, ZERO, ZERO, {from: buyerLocal1.address, value: 13000, gasPrice: 0})
+            bulkExchange
+              .connect(buyerLocal1)
+              .singlePurchase(tradeData, ZERO, ZERO, {from: buyerLocal1.address, value: 13000, gasPrice: 0})
           )
         )
       );
-      
+
       expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(1);
       expect(await weth.balanceOf(seller.address)).to.equal(10000);
-    })
+    });
 
     it('Test singlePurchase Looksrare - matchAskWithTakerBidUsingETHAndWETH, ERC1155<->ETH, with royalties', async () => {
       const seller = wallet1;
@@ -1833,8 +1857,8 @@ describe('ExchangeWrapper Test', async function () {
         price: 10000,
         tokenId: '0x3039',
         minPercentageToAsk: 8000,
-        params: '0x'
-      }
+        params: '0x',
+      };
       const makerAsk = {
         isOrderAsk: true,
         signer: seller.address,
@@ -1851,21 +1875,30 @@ describe('ExchangeWrapper Test', async function () {
         params: '0x',
         v: 28,
         r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3'
-      }
+        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+      };
 
       expect(await erc1155.balanceOf(buyerLocal1.address, tokenId)).to.equal(0);
-      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(takerBid, makerAsk, ERC1155);
-      
-      //adding royalties 
+      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+        takerBid,
+        makerAsk,
+        ERC1155
+      );
+
+      //adding royalties
       const royaltyAccount1 = wallet4;
       const royaltyAccount2 = wallet5;
-      const additionalRoyalties = [await encodeBpPlusAccountTest(1000, royaltyAccount1.address), await encodeBpPlusAccountTest(2000, royaltyAccount2.address)];
+      const additionalRoyalties = [
+        await encodeBpPlusAccountTest(1000, royaltyAccount1.address),
+        await encodeBpPlusAccountTest(2000, royaltyAccount2.address),
+      ];
       const dataPlusAdditionalRoyaltiesStruct = {
         data: dataForLooksRare,
-        additionalRoyalties: additionalRoyalties
+        additionalRoyalties: additionalRoyalties,
       };
-      const dataPlusAdditionalRoyalties = await wrapperHelper.encodeDataPlusRoyalties(dataPlusAdditionalRoyaltiesStruct);
+      const dataPlusAdditionalRoyalties = await wrapperHelper.encodeDataPlusRoyalties(
+        dataPlusAdditionalRoyaltiesStruct
+      );
       const dataTypePlusFees = await encodeDataTypeAndFees(1);
 
       const tradeData = PurchaseData(MARKET_ID_LOOKSRARE, '10000', dataTypePlusFees, dataPlusAdditionalRoyalties);
@@ -1873,16 +1906,218 @@ describe('ExchangeWrapper Test', async function () {
       await verifyBalanceChange(buyerLocal1.address, 13000, () =>
         verifyBalanceChange(royaltyAccount1.address, -1000, () =>
           verifyBalanceChange(royaltyAccount2.address, -2000, () =>
-            bulkExchange.connect(buyerLocal1).singlePurchase(tradeData, ZERO, ZERO, {from: buyerLocal1.address, value: 13000, gasPrice: 0})
+            bulkExchange
+              .connect(buyerLocal1)
+              .singlePurchase(tradeData, ZERO, ZERO, {from: buyerLocal1.address, value: 13000, gasPrice: 0})
           )
         )
       );
-      
+
       expect(await erc1155.balanceOf(buyerLocal1.address, tokenId)).to.equal(10);
       expect(await weth.balanceOf(seller.address)).to.equal(10000);
-    })
+    });
 
-  })
+    it('Test bulkPurchase Looksrare (num orders = 2) - matchAskWithTakerBidUsingETHAndWETH, ERC721<->ETH, no royalties', async () => {
+      const seller1 = wallet1;
+      const seller2 = wallet3;
+      const buyerLocal1 = wallet2;
+
+      await erc721.mint(seller1.address, tokenId);
+      await erc721.connect(seller1).setApprovalForAll(transferManagerERC721.address, true, {from: seller1.address});
+      await erc721.mint(seller2.address, tokenId2);
+      await erc721.connect(seller2).setApprovalForAll(transferManagerERC721.address, true, {from: seller2.address});
+      await transferSelectorNFT.addCollectionTransferManager(erc721.address, transferManagerERC721.address);
+
+      const takerBid = {
+        isOrderAsk: false,
+        taker: bulkExchange.address,
+        price: 10000,
+        tokenId: '0x3039', // 12345
+        minPercentageToAsk: 8000,
+        params: '0x',
+      };
+      const makerAsk = {
+        isOrderAsk: true,
+        signer: seller1.address,
+        collection: erc721.address,
+        price: 10000,
+        tokenId: '0x3039', // 12345
+        amount: 1,
+        strategy: strategy.address,
+        currency: weth.address,
+        nonce: 16,
+        startTime: 0,
+        endTime: '0xff00000000000000000000000000',
+        minPercentageToAsk: 8000,
+        params: '0x',
+        v: 28,
+        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
+        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+      };
+
+      expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(0);
+      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+        takerBid,
+        makerAsk,
+        ERC721
+      );
+
+      const tradeData = PurchaseData(MARKET_ID_LOOKSRARE, '10000', '0', dataForLooksRare);
+
+      const takerBid2 = {
+        isOrderAsk: false,
+        taker: bulkExchange.address,
+        price: 10000,
+        tokenId: '0x1E240', // 123456
+        minPercentageToAsk: 8000,
+        params: '0x',
+      };
+      const makerAsk2 = {
+        isOrderAsk: true,
+        signer: seller2.address,
+        collection: erc721.address,
+        price: 10000,
+        tokenId: '0x1E240', // 123456
+        amount: 1,
+        strategy: strategy.address,
+        currency: weth.address,
+        nonce: 16,
+        startTime: 0,
+        endTime: '0xff00000000000000000000000000',
+        minPercentageToAsk: 8000,
+        params: '0x',
+        v: 28,
+        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
+        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+      };
+
+      expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(0);
+      const dataForLooksRare2 = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+        takerBid2,
+        makerAsk2,
+        ERC721
+      );
+
+      const tradeData2 = PurchaseData(MARKET_ID_LOOKSRARE, '10000', '0', dataForLooksRare2);
+
+      await verifyBalanceChange(buyerLocal1.address, 20000, () =>
+        bulkExchange
+          .connect(buyerLocal1)
+          .bulkPurchase([tradeData, tradeData2], ZERO, ZERO, false, {
+            from: buyerLocal1.address,
+            value: 20000,
+            gasPrice: 0,
+          })
+      );
+
+      expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(2);
+      expect(await erc721.balanceOf(seller1.address)).to.equal(0);
+      expect(await erc721.balanceOf(seller2.address)).to.equal(0);
+      expect(await weth.balanceOf(seller1.address)).to.equal(10000);
+      expect(await weth.balanceOf(seller2.address)).to.equal(10000);
+    });
+
+    it('Test bulkPurchase Looksrare (num orders = 2) - matchAskWithTakerBidUsingETHAndWETH, ERC1155<->ETH, no royalties', async () => {
+      const seller1 = wallet1;
+      const seller2 = wallet3;
+      const buyerLocal1 = wallet2;
+
+      await erc1155.mint(seller1.address, tokenId, 10);
+      await erc1155.connect(seller1).setApprovalForAll(transferManagerERC1155.address, true, {from: seller1.address});
+      await erc1155.mint(seller2.address, tokenId2, 10);
+      await erc1155.connect(seller2).setApprovalForAll(transferManagerERC1155.address, true, {from: seller2.address});
+      await transferSelectorNFT.addCollectionTransferManager(erc1155.address, transferManagerERC1155.address);
+
+      const takerBid = {
+        isOrderAsk: false,
+        taker: bulkExchange.address,
+        price: 10000,
+        tokenId: '0x3039', // 12345
+        minPercentageToAsk: 8000,
+        params: '0x',
+      };
+      const makerAsk = {
+        isOrderAsk: true,
+        signer: seller1.address,
+        collection: erc1155.address,
+        price: 10000,
+        tokenId: '0x3039', // 12345
+        amount: 10,
+        strategy: strategy.address,
+        currency: weth.address,
+        nonce: 16,
+        startTime: 0,
+        endTime: '0xff00000000000000000000000000',
+        minPercentageToAsk: 8000,
+        params: '0x',
+        v: 28,
+        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
+        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+      };
+
+      expect(await erc1155.balanceOf(buyerLocal1.address, tokenId)).to.equal(0);
+      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+        takerBid,
+        makerAsk,
+        ERC1155
+      );
+
+      const tradeData = PurchaseData(MARKET_ID_LOOKSRARE, '10000', '0', dataForLooksRare);
+
+      const takerBid2 = {
+        isOrderAsk: false,
+        taker: bulkExchange.address,
+        price: 10000,
+        tokenId: '0x1E240', // 123456
+        minPercentageToAsk: 8000,
+        params: '0x',
+      };
+      const makerAsk2 = {
+        isOrderAsk: true,
+        signer: seller2.address,
+        collection: erc1155.address,
+        price: 10000,
+        tokenId: '0x1E240', // 123456
+        amount: 10,
+        strategy: strategy.address,
+        currency: weth.address,
+        nonce: 16,
+        startTime: 0,
+        endTime: '0xff00000000000000000000000000',
+        minPercentageToAsk: 8000,
+        params: '0x',
+        v: 28,
+        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
+        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+      };
+
+      expect(await erc1155.balanceOf(buyerLocal1.address, tokenId2)).to.equal(0);
+      const dataForLooksRare2 = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+        takerBid2,
+        makerAsk2,
+        ERC1155
+      );
+
+      const tradeData2 = PurchaseData(MARKET_ID_LOOKSRARE, '10000', '0', dataForLooksRare2);
+
+      await verifyBalanceChange(buyerLocal1.address, 20000, () =>
+        bulkExchange
+          .connect(buyerLocal1)
+          .bulkPurchase([tradeData, tradeData2], ZERO, ZERO, false, {
+            from: buyerLocal1.address,
+            value: 20000,
+            gasPrice: 0,
+          })
+      );
+
+      expect(await erc1155.balanceOf(buyerLocal1.address, tokenId)).to.equal(10);
+      expect(await erc1155.balanceOf(buyerLocal1.address, tokenId2)).to.equal(10);
+      expect(await erc1155.balanceOf(seller1.address, tokenId)).to.equal(0);
+      expect(await erc1155.balanceOf(seller2.address, tokenId2)).to.equal(0);
+      expect(await weth.balanceOf(seller1.address)).to.equal(10000);
+      expect(await weth.balanceOf(seller2.address)).to.equal(10000);
+    });
+  });
 
   describe('Combined orders', () => {
     it('Test bulkPurchase GhostMarket & Rarible (num orders = 2, type = V2/V1), ERC721<->ETH', async () => {
@@ -2154,7 +2389,12 @@ describe('ExchangeWrapper Test', async function () {
       };
 
       const dataForExchCallGhostMarket = await wrapperHelper.getDataDirectPurchase(directPurchaseParams);
-      const tradeDataGhostMarket = PurchaseData(MARKET_ID_GHOSTMARKET, '100', await encodeFees(1500), dataForExchCallGhostMarket);
+      const tradeDataGhostMarket = PurchaseData(
+        MARKET_ID_GHOSTMARKET,
+        '100',
+        await encodeFees(1500),
+        dataForExchCallGhostMarket
+      );
 
       const considerationItemLeft = {
         itemType: 0,
@@ -2210,17 +2450,115 @@ describe('ExchangeWrapper Test', async function () {
       );
       const tradeDataSeaPort = PurchaseData(MARKET_ID_SEAPORT, '100', '0', dataForSeaportWithSelector);
 
-      await bulkExchange
-        .connect(buyer)
-        .bulkPurchase([tradeDataGhostMarket, tradeDataSeaPort], ZERO, ZERO, false, {
-          from: buyer.address,
-          value: 400,
-          gasPrice: 0,
-        });
+      await bulkExchange.connect(buyer).bulkPurchase([tradeDataGhostMarket, tradeDataSeaPort], ZERO, ZERO, false, {
+        from: buyer.address,
+        value: 400,
+        gasPrice: 0,
+      });
 
       expect(await erc721.balanceOf(seller1.address)).to.equal(0);
       expect(await erc721.balanceOf(seller2.address)).to.equal(0);
       expect(await erc721.balanceOf(buyer.address)).to.equal(2);
+    });
+
+    it('Test bulkPurchase GhostMarket & Looksrare (num orders = 2), ERC1155<->ETH', async () => {
+      const buyer = wallet2;
+      const seller1 = wallet1;
+      const seller2 = wallet3;
+
+      await erc1155.mint(seller1.address, tokenId, 10);
+      await erc1155.connect(seller1).setApprovalForAll(transferManagerERC1155.address, true, {from: seller1.address});
+
+      const erc1155TokenIdLocal2 = '6';
+      await erc1155.mint(seller2.address, erc1155TokenIdLocal2, 10);
+      await erc1155.connect(seller2).setApprovalForAll(transferProxy.address, true, {from: seller2.address});
+
+      const takerBid = {
+        isOrderAsk: false,
+        taker: bulkExchange.address,
+        price: 10000,
+        tokenId: '0x3039',
+        minPercentageToAsk: 8000,
+        params: '0x',
+      };
+      const makerAsk = {
+        isOrderAsk: true,
+        signer: seller1.address,
+        collection: erc1155.address,
+        price: 10000,
+        tokenId: '0x3039',
+        amount: 10,
+        strategy: strategy.address,
+        currency: weth.address,
+        nonce: 16,
+        startTime: 0,
+        endTime: '0xff00000000000000000000000000',
+        minPercentageToAsk: 8000,
+        params: '0x',
+        v: 28,
+        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
+        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+      };
+
+      expect(await erc1155.balanceOf(buyer.address, tokenId)).to.equal(0);
+      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+        takerBid,
+        makerAsk,
+        ERC1155
+      );
+
+      const tradeDataLooksRare = PurchaseData(MARKET_ID_LOOKSRARE, '10000', '0', dataForLooksRare);
+
+      const encDataLeft = await encDataV2([[], [], false]);
+      const encDataRight = await encDataV2([[[buyer.address, 10000]], [], false]);
+
+      const left2 = Order(
+        seller2.address,
+        Asset(ERC1155, enc(erc1155.address, erc1155TokenIdLocal2), '10'),
+        ZERO,
+        Asset(ETH, '0x', '100'),
+        '1',
+        0,
+        0,
+        ORDER_DATA_V2,
+        encDataLeft
+      );
+      const signatureLeft2 = await getSignature(left2, seller2.address, exchangeV2Proxy.address);
+
+      const directPurchaseParams = {
+        sellOrderMaker: seller2.address,
+        sellOrderNftAmount: 10,
+        nftAssetClass: ERC1155,
+        nftData: enc(erc1155.address, erc1155TokenIdLocal2),
+        sellOrderPaymentAmount: 100,
+        paymentToken: ZERO,
+        sellOrderSalt: 1,
+        sellOrderStart: 0,
+        sellOrderEnd: 0,
+        sellOrderDataType: ORDER_DATA_V2,
+        sellOrderData: encDataLeft,
+        sellOrderSignature: signatureLeft2,
+        buyOrderPaymentAmount: 100,
+        buyOrderNftAmount: 5,
+        buyOrderData: encDataRight,
+      };
+
+      const dataForExchCall2 = await wrapperHelper.getDataDirectPurchase(directPurchaseParams);
+      const tradeDataGhostMarket = PurchaseData(MARKET_ID_GHOSTMARKET, '100', await encodeFees(1500), dataForExchCall2);
+
+      await bulkExchange
+        .connect(buyer)
+        .bulkPurchase([tradeDataLooksRare, tradeDataGhostMarket], feeRecipienterUP.address, ZERO, false, {
+          from: buyer.address,
+          value: 10100,
+          gasPrice: 0,
+        });
+
+      expect(await erc1155.balanceOf(seller1.address, erc1155TokenIdLocal2)).to.equal(0);
+      expect(await erc1155.balanceOf(seller2.address, tokenId)).to.equal(0);
+      expect(await erc1155.balanceOf(buyer.address, erc1155TokenIdLocal2)).to.equal(5);
+      expect(await erc1155.balanceOf(buyer.address, tokenId)).to.equal(10);
+      expect(await weth.balanceOf(seller1.address)).to.equal(10000);
     });
   });
 
