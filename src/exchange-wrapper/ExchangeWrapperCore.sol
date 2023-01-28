@@ -38,13 +38,13 @@ abstract contract ExchangeWrapperCore is
     event Execution(bool result);
 
     enum Markets {
-        ExchangeV2,
         Rarible,
         WyvernExchange,
         SeaPort,
         X2Y2,
         LooksRareOrders,
-        SudoSwap
+        SudoSwap,
+        ExchangeV2
     }
 
     enum AdditionalDataTypes {
@@ -415,10 +415,7 @@ abstract contract ExchangeWrapperCore is
         now royalties support only for marketId = sudoswap
     */
     function supportsRoyalties(Markets marketId) internal pure returns (bool) {
-        if (
-            marketId == Markets.SudoSwap ||
-            marketId == Markets.LooksRareOrders
-        ) {
+        if (marketId == Markets.SudoSwap || marketId == Markets.LooksRareOrders) {
             return true;
         }
 
