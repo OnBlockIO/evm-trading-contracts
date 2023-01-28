@@ -1531,8 +1531,10 @@ describe('ExchangeWrapper Test', async function () {
       const seller = wallet1;
       const buyerLocal1 = wallet2;
       const zoneAddr = wallet2;
+      
       await erc721.mint(seller.address, tokenId);
       await erc721.connect(seller).setApprovalForAll(seaport.address, true, {from: seller.address});
+
       const considerationItemLeft = {
         itemType: 0,
         token: '0x0000000000000000000000000000000000000000',
@@ -1545,7 +1547,7 @@ describe('ExchangeWrapper Test', async function () {
       const offerItemLeft = {
         itemType: 2, // 2: ERC721 items
         token: erc721.address,
-        identifierOrCriteria: '0x3039',
+        identifierOrCriteria: '0x3039', // 12345
         startAmount: 1,
         endAmount: 1,
       };
@@ -1600,6 +1602,7 @@ describe('ExchangeWrapper Test', async function () {
       const seller = wallet1;
       const buyerLocal1 = wallet2;
       const zoneAddr = wallet2;
+
       await erc721.mint(seller.address, tokenId);
       await erc721.connect(seller).setApprovalForAll(seaport.address, true, {from: seller.address});
 
@@ -1615,7 +1618,7 @@ describe('ExchangeWrapper Test', async function () {
       const offerItemLeft = {
         itemType: 2, // 2: ERC721 items
         token: erc721.address,
-        identifierOrCriteria: '0x3039',
+        identifierOrCriteria: '0x3039', // 12345
         startAmount: 1,
         endAmount: 1,
       };
@@ -1678,7 +1681,7 @@ describe('ExchangeWrapper Test', async function () {
   });
 
   describe('Combined orders', () => {
-    it('Test bulkPurchase GhostMarket & Rarible (num orders = 2, type = V2/V1) orders are ready, ERC721<->ETH', async () => {
+    it('Test bulkPurchase GhostMarket & Rarible (num orders = 2, type = V2/V1), ERC721<->ETH', async () => {
       const buyer = wallet2;
       const seller1 = wallet1;
       const seller2 = wallet3;
@@ -1784,7 +1787,7 @@ describe('ExchangeWrapper Test', async function () {
       expect(await erc1155.balanceOf(wallet2.address, erc1155TokenId2)).to.equal(8);
     });
 
-    it('Test bulkPurchase GhostMarket & Wyvern (num orders = 3) orders are ready, ERC1155<->ETH', async () => {
+    it('Test bulkPurchase GhostMarket & Wyvern (num orders = 3), ERC1155<->ETH', async () => {
       const buyer = wallet2;
       const seller1 = wallet1;
       const seller2 = wallet3;
@@ -1896,6 +1899,124 @@ describe('ExchangeWrapper Test', async function () {
       expect(await erc1155.balanceOf(buyer.address, erc1155TokenIdLocal1)).to.equal(8);
       expect(await erc1155.balanceOf(buyer.address, erc1155TokenIdLocal2)).to.equal(5);
       expect(await erc1155.balanceOf(buyer.address, erc1155TokenIdLocal3)).to.equal(3);
+    });
+
+    it('Test bulkPurchase GhostMarket & Seaport (num orders = 3), ERC721<->ETH', async () => {
+      const buyer = wallet2;
+      const seller1 = wallet1;
+      const seller2 = wallet3;
+      const buyerLocal1 = wallet2;
+      const zoneAddr = wallet2;
+
+      const erc721TokenIdLocal1 = '5';
+      await erc721.mint(seller1.address, erc721TokenIdLocal1);
+      await erc721.connect(seller1).setApprovalForAll(transferProxy.address, true, {from: seller1.address});
+
+      await erc721.mint(seller2.address, tokenId);
+      await erc721.connect(seller2).setApprovalForAll(seaport.address, true, {from: seller2.address});
+
+      const encDataLeft = await encDataV2([[], [], false]);
+      const encDataRight = await encDataV2([[[buyer.address, 10000]], [], false]);
+
+      const left = Order(
+        seller1.address,
+        Asset(ERC721, enc(erc721.address, erc721TokenIdLocal1), '1'),
+        ZERO,
+        Asset(ETH, '0x', '100'),
+        '1',
+        0,
+        0,
+        ORDER_DATA_V2,
+        encDataLeft
+      );
+      const signatureLeft = await getSignature(left, seller1.address, exchangeV2Proxy.address);
+
+      const directPurchaseParams = {
+        sellOrderMaker: seller1.address,
+        sellOrderNftAmount: 1,
+        nftAssetClass: ERC721,
+        nftData: enc(erc721.address, erc721TokenIdLocal1),
+        sellOrderPaymentAmount: 100,
+        paymentToken: ZERO,
+        sellOrderSalt: 1,
+        sellOrderStart: 0,
+        sellOrderEnd: 0,
+        sellOrderDataType: ORDER_DATA_V2,
+        sellOrderData: encDataLeft,
+        sellOrderSignature: signatureLeft,
+        buyOrderPaymentAmount: 100,
+        buyOrderNftAmount: 1,
+        buyOrderData: encDataRight,
+      };
+
+      const dataForExchCallGhostMarket = await wrapperHelper.getDataDirectPurchase(directPurchaseParams);
+      const tradeDataGhostMarket = PurchaseData(MARKET_ID_GHOSTMARKET, '100', await encodeFees(1500), dataForExchCallGhostMarket);
+
+      const considerationItemLeft = {
+        itemType: 0,
+        token: '0x0000000000000000000000000000000000000000',
+        identifierOrCriteria: 0,
+        startAmount: 100,
+        endAmount: 100,
+        recipient: seller2.address,
+      };
+
+      const offerItemLeft = {
+        itemType: 2, // 2: ERC721 items
+        token: erc721.address,
+        identifierOrCriteria: '0x3039', // 12345
+        startAmount: 1,
+        endAmount: 1,
+      };
+
+      const OrderParametersLeft = {
+        offerer: seller2.address, // 0x00
+        zone: zoneAddr.address, // 0x20
+        offer: [offerItemLeft], // 0x40
+        consideration: [considerationItemLeft], // 0x60
+        orderType: 0, // 0: no partial fills, anyone can execute
+        startTime: 0, //
+        endTime: '0xff00000000000000000000000000', // 0xc0
+        zoneHash: '0x0000000000000000000000000000000000000000000000000000000000000000', // 0xe0
+        salt: '0x9d56bd7c39230517f254b5ce4fd292373648067bd5c6d09accbcb3713f328885', // 0x100
+        conduitKey: '0x0000000000000000000000000000000000000000000000000000000000000000', // 0x120
+        totalOriginalConsiderationItems: 1, // 0x140
+        // offer.length // 0x160
+      };
+
+      const _advancedOrder = {
+        parameters: OrderParametersLeft,
+        numerator: 1,
+        denominator: 1,
+        signature:
+          '0x3c7e9325a7459e2d2258ae8200c465f9a1e913d2cbd7f7f15988ab079f7726494a9a46f9db6e0aaaf8cfab2be8ecf68fed7314817094ca85acc5fbd6a1e192ca1b',
+        extraData:
+          '0x3c7e9325a7459e2d2258ae8200c465f9a1e913d2cbd7f7f15988ab079f7726494a9a46f9db6e0aaaf8cfab2be8ecf68fed7314817094ca85acc5fbd6a1e192ca1c',
+      };
+
+      const _criteriaResolvers: any = [];
+      const _fulfillerConduitKey = '0x0000000000000000000000000000000000000000000000000000000000000000';
+      const _recipient = buyerLocal1;
+
+      const dataForSeaportWithSelector = await wrapperHelper.getDataSeaPortFulfillAdvancedOrder(
+        _advancedOrder,
+        _criteriaResolvers,
+        _fulfillerConduitKey,
+        _recipient.address
+      );
+      const tradeDataSeaPort = PurchaseData(MARKET_ID_SEAPORT, '100', '0', dataForSeaportWithSelector);
+
+      await bulkExchange
+        .connect(buyer)
+        .bulkPurchase([tradeDataGhostMarket, tradeDataSeaPort], ZERO, ZERO, false, {
+          from: buyer.address,
+          value: 400,
+          gasPrice: 0,
+        });
+
+      expect(await erc721.balanceOf(seller1.address)).to.equal(0);
+      expect(await erc721.balanceOf(seller2.address)).to.equal(0);
+      expect(await erc721.balanceOf(buyer.address)).to.equal(2);
     });
   });
 
