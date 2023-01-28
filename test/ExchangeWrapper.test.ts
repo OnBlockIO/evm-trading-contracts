@@ -1805,17 +1805,80 @@ describe('ExchangeWrapper Test', async function () {
       const dataPlusAdditionalRoyalties = await wrapperHelper.encodeDataPlusRoyalties(dataPlusAdditionalRoyaltiesStruct);
       const dataTypePlusFees = await encodeDataTypeAndFees(1);
 
-      const tradeDataSeaPort = PurchaseData(MARKET_ID_LOOKSRARE, '10000', dataTypePlusFees, dataPlusAdditionalRoyalties);
+      const tradeData = PurchaseData(MARKET_ID_LOOKSRARE, '10000', dataTypePlusFees, dataPlusAdditionalRoyalties);
 
       await verifyBalanceChange(buyerLocal1.address, 13000, () =>
         verifyBalanceChange(royaltyAccount1.address, -1000, () =>
           verifyBalanceChange(royaltyAccount2.address, -2000, () =>
-            bulkExchange.connect(buyerLocal1).singlePurchase(tradeDataSeaPort, ZERO, ZERO, {from: buyerLocal1.address, value: 13000, gasPrice: 0})
+            bulkExchange.connect(buyerLocal1).singlePurchase(tradeData, ZERO, ZERO, {from: buyerLocal1.address, value: 13000, gasPrice: 0})
           )
         )
       );
       
       expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(1);
+      expect(await weth.balanceOf(seller.address)).to.equal(10000);
+    })
+
+    it('Test singlePurchase Looksrare - matchAskWithTakerBidUsingETHAndWETH, ERC1155<->ETH, with royalties', async () => {
+      const seller = wallet1;
+      const buyerLocal1 = wallet2;
+
+      await erc1155.mint(seller.address, tokenId, 10);
+      await erc1155.connect(seller).setApprovalForAll(transferManagerERC1155.address, true, {from: seller.address});
+      await transferSelectorNFT.addCollectionTransferManager(erc1155.address, transferManagerERC1155.address);
+
+      const takerBid = {
+        isOrderAsk: false,
+        taker: bulkExchange.address,
+        price: 10000,
+        tokenId: '0x3039',
+        minPercentageToAsk: 8000,
+        params: '0x'
+      }
+      const makerAsk = {
+        isOrderAsk: true,
+        signer: seller.address,
+        collection: erc1155.address,
+        price: 10000,
+        tokenId: '0x3039',
+        amount: 10,
+        strategy: strategy.address,
+        currency: weth.address,
+        nonce: 16,
+        startTime: 0,
+        endTime: '0xff00000000000000000000000000',
+        minPercentageToAsk: 8000,
+        params: '0x',
+        v: 28,
+        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
+        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3'
+      }
+
+      expect(await erc1155.balanceOf(buyerLocal1.address, tokenId)).to.equal(0);
+      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(takerBid, makerAsk, ERC1155);
+      
+      //adding royalties 
+      const royaltyAccount1 = wallet4;
+      const royaltyAccount2 = wallet5;
+      const additionalRoyalties = [await encodeBpPlusAccountTest(1000, royaltyAccount1.address), await encodeBpPlusAccountTest(2000, royaltyAccount2.address)];
+      const dataPlusAdditionalRoyaltiesStruct = {
+        data: dataForLooksRare,
+        additionalRoyalties: additionalRoyalties
+      };
+      const dataPlusAdditionalRoyalties = await wrapperHelper.encodeDataPlusRoyalties(dataPlusAdditionalRoyaltiesStruct);
+      const dataTypePlusFees = await encodeDataTypeAndFees(1);
+
+      const tradeData = PurchaseData(MARKET_ID_LOOKSRARE, '10000', dataTypePlusFees, dataPlusAdditionalRoyalties);
+
+      await verifyBalanceChange(buyerLocal1.address, 13000, () =>
+        verifyBalanceChange(royaltyAccount1.address, -1000, () =>
+          verifyBalanceChange(royaltyAccount2.address, -2000, () =>
+            bulkExchange.connect(buyerLocal1).singlePurchase(tradeData, ZERO, ZERO, {from: buyerLocal1.address, value: 13000, gasPrice: 0})
+          )
+        )
+      );
+      
+      expect(await erc1155.balanceOf(buyerLocal1.address, tokenId)).to.equal(10);
       expect(await weth.balanceOf(seller.address)).to.equal(10000);
     })
 
