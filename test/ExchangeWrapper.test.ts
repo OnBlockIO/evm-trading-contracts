@@ -779,6 +779,76 @@ describe('ExchangeWrapper Test', async function () {
   });
 
   describe('Wyvern orders', () => {
+    //"Test singlePurchase Wyvern (num orders = 3), ERC1155<->ETH",
+    //"Test bulkPurchase Wyvern (num orders = 3) orders are ready, ERC1155<->ETH"
+    //"Test bulkPurchase Wyvern and Rarible mixed (num orders = 3) orders are ready, ERC1155<->ETH"
+    it('Test singlePurchase Wyvern, ERC721<->ETH', async () => {
+      const buyer = wallet2;
+      const seller1 = wallet1;
+      const seller2 = wallet3;
+      const feeRecipienter = wallet5;
+      const feeMethodsSidesKindsHowToCallsMask = [1, 0, 0, 1, 1, 1, 0, 1];
+
+      const erc721TokenIdLocal = 5;
+      await erc721.mint(seller1.address, erc721TokenIdLocal);
+      await erc721.connect(seller1).setApprovalForAll(await wyvernProxyRegistry.proxies(seller1.address), true, {from: seller1.address});
+
+      const erc721TokenIdLocal2 = 6;
+      await erc721.mint(seller2.address, erc721TokenIdLocal2);
+      await erc721.connect(seller2).setApprovalForAll(await wyvernProxyRegistry.proxies(seller2.address), true, {from: seller2.address});
+
+      //for first order
+      const matchData = (await getOpenSeaMatchDataMerkleValidator(
+        wyvernExchangeWithBulkCancellations.address,
+        bulkExchange.address,
+        buyer.address,
+        seller1.address,
+        merkleValidator.address,
+        feeRecipienter.address,
+        100,
+        erc721TokenIdLocal,
+        erc721.address,
+        ZERO,
+        feeMethodsSidesKindsHowToCallsMask
+      ))
+      const buySellOrders1 = OpenSeaOrdersInput(...matchData);
+      const dataForWyvernCall1 = await wrapperHelper.getDataWyvernAtomicMatchWithError(buySellOrders1);
+      const tradeData1 = PurchaseData(2, '100', '0', dataForWyvernCall1); //2 is Wyvern orders, 100 is amount
+
+      //for second order
+      const matchData2 = (await getOpenSeaMatchDataMerkleValidator(
+        wyvernExchangeWithBulkCancellations.address,
+        bulkExchange.address,
+        buyer.address,
+        seller2.address,
+        merkleValidator.address,
+        feeRecipienter.address,
+        100,
+        erc721TokenIdLocal2,
+        erc721.address,
+        ZERO,
+        feeMethodsSidesKindsHowToCallsMask
+      ))
+		  const buySellOrders2 = OpenSeaOrdersInput(...matchData2);
+      const dataForWyvernCall2 = await wrapperHelper.getDataWyvernAtomicMatch(buySellOrders2);
+      const tradeData2 = PurchaseData(2, '100', await encodeFees(1500), dataForWyvernCall2); //2 is Wyvern orders, 100 is amount
+
+      await verifyBalanceChange(buyer.address, 115, async () =>
+      	verifyBalanceChange(seller2.address, -90, async () =>
+      		verifyBalanceChange(feeRecipienter.address, -10, () =>
+      		  verifyBalanceChange(feeRecipienterUP.address, -15, () =>
+      		    bulkExchange.connect(buyer).singlePurchase(tradeData2, feeRecipienterUP.address, ZERO, { from: buyer.address, value: 400, gasPrice: 0 })
+      		  )
+      		)
+      	)
+      );
+      //exception if wrong method
+      await expect(
+        bulkExchange.connect(buyer).singlePurchase(tradeData1, ZERO, ZERO, { from: buyer.address, value: 400, gasPrice: 0 })
+      ).to.be.revertedWith('Purchase WyvernExchange failed')
+      expect(await erc721.balanceOf(buyer.address)).to.equal(1);
+    })
+    
     it('Test bulkPurchase Wyvern (num orders = 3), 1 UpFee recipient, ERC721<->ETH', async () => {
       const buyer = wallet2;
       const seller1 = wallet1;
@@ -887,7 +957,7 @@ describe('ExchangeWrapper Test', async function () {
   });
 
   describe('Seaport orders', () => {
-    it('Test singlePurchase Seaport - fulfillAdvancedOrder through data selector, method fulfillAdvancedOrder, ERC721<->ETH', async () => {
+    it('Test singlePurchase Seaport - fulfillAdvancedOrder through data selector, ERC721<->ETH', async () => {
       const seller = wallet1;
       const buyerLocal1 = wallet2;
       const zoneAddr = wallet2;
@@ -955,6 +1025,85 @@ describe('ExchangeWrapper Test', async function () {
       expect(await erc721.balanceOf(seller.address)).to.equal(0);
       expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(1);
     });
+
+    it('Test singlePurchase Seaport - fulfillAvailableAdvancedOrders through data selector, ERC721<->ETH', async () => {
+      const seller = wallet1;
+      const buyerLocal1 = wallet2;
+      const zoneAddr = wallet2;
+      await erc721.mint(seller.address, tokenId)
+      await erc721.connect(seller).setApprovalForAll(seaport.address, true, {from: seller.address})
+
+      const considerationItemLeft = {
+        itemType: 0,
+        token: '0x0000000000000000000000000000000000000000',
+        identifierOrCriteria: 0,
+        startAmount: 100,
+        endAmount: 100,
+        recipient: seller.address
+      }
+
+      const offerItemLeft = {
+        itemType: 2, // 2: ERC721 items
+        token: erc721.address,
+        identifierOrCriteria: '0x3039',
+        startAmount: 1,
+        endAmount: 1
+      }
+
+      const OrderParametersLeft = {
+        offerer: seller.address,// 0x00
+        zone: zoneAddr.address, // 0x20
+        offer: [offerItemLeft], // 0x40
+        consideration: [considerationItemLeft], // 0x60
+        orderType: 0, // 0: no partial fills, anyone can execute
+        startTime: 0, //
+        endTime: '0xff00000000000000000000000000', // 0xc0
+        zoneHash: '0x0000000000000000000000000000000000000000000000000000000000000000', // 0xe0
+        salt: '0x9d56bd7c39230517f254b5ce4fd292373648067bd5c6d09accbcb3713f328885', // 0x100
+        conduitKey : '0x0000000000000000000000000000000000000000000000000000000000000000', // 0x120
+        totalOriginalConsiderationItems: 1 // 0x140
+        // offer.length // 0x160
+      }
+
+      const _advancedOrder = {
+        parameters: OrderParametersLeft,
+        numerator: 1,
+        denominator: 1,
+        signature: '0x3c7e9325a7459e2d2258ae8200c465f9a1e913d2cbd7f7f15988ab079f7726494a9a46f9db6e0aaaf8cfab2be8ecf68fed7314817094ca85acc5fbd6a1e192ca1b',
+        extraData: '0x3c7e9325a7459e2d2258ae8200c465f9a1e913d2cbd7f7f15988ab079f7726494a9a46f9db6e0aaaf8cfab2be8ecf68fed7314817094ca85acc5fbd6a1e192ca1c'
+      }
+
+      const _advancedOrders = [_advancedOrder];
+      const _criteriaResolvers: any = [];
+      const _fulfillerConduitKey = '0x0000000000000000000000000000000000000000000000000000000000000000';
+      const _recipient = buyerLocal1.address;
+      const _maximumFulfilled = 1;
+
+      const offerFulfillments = [
+        [ { orderIndex: 0, itemIndex: 0 } ]
+      ]
+
+      const considerationFulfillments = [
+        [ { orderIndex: 0, itemIndex: 0 } ]
+      ]
+
+      const dataForSeaportWithSelector = await wrapperHelper.getDataSeaPortFulfillAvailableAdvancedOrders(
+        _advancedOrders,
+        _criteriaResolvers,
+        offerFulfillments,
+        considerationFulfillments,
+        _fulfillerConduitKey,
+        _recipient,
+        _maximumFulfilled);
+
+      const tradeDataSeaPort = PurchaseData(3, '100', '0', dataForSeaportWithSelector); //3 is Seaport orders, 100 is amount
+
+      const tx = await bulkExchange.connect(buyerLocal1).singlePurchase(tradeDataSeaPort, ZERO, ZERO, {from: buyerLocal1.address, value: 100})
+      const receipt = await tx.wait();
+      // console.log('wrapper seaport (fulfillAvailableAdvancedOrder() by call : ETH <=> ERC721:', receipt.gasUsed.toString());
+      expect(await erc721.balanceOf(seller.address)).to.equal(0);
+      expect(await erc721.balanceOf(buyerLocal1.address)).to.equal(1);
+    })
   });
 
   describe('Combined orders', () => {
