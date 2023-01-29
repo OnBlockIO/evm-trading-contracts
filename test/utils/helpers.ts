@@ -18,6 +18,15 @@ export async function verifyBalanceChange(account: string, change: number, todo:
   return expect(actual).to.equal(change.toString());
 }
 
+export async function verifyBalanceChangeReturnTx(account: string, change: number, todo: any) {
+  const before = ethers.BigNumber.from(await hre.web3.eth.getBalance(account));
+  const tx = await todo();
+  const after = ethers.BigNumber.from(await hre.web3.eth.getBalance(account));
+  const actual = before.sub(after);
+  expect(change).to.equal(actual);
+  return tx;
+}
+
 export function encDataV1JS(data: any): string {
   const result = hre.web3.eth.abi.encodeParameter('tuple(address,uint256)[][]', data);
   //compared to solidity abi.encode function, web3.eth.abi.encodeParameter adds an additional
