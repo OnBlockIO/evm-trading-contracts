@@ -8,10 +8,10 @@ contract ExchangeWrapper is ExchangeWrapperCore {
     function __ExchangeWrapper_init(
         address _exchangeV2,
         address _rarible,
-        address _wyvernExchange,
-        address _seaPort,
+        address _wyvern,
+        address _seaport,
         address _x2y2,
-        address _looksRare,
+        address _looksrare,
         address _sudoswap
     ) external initializer {
         __Context_init_unchained();
@@ -20,10 +20,10 @@ contract ExchangeWrapper is ExchangeWrapperCore {
         __ExchangeWrapper_init_unchained(
             _exchangeV2,
             _rarible,
-            _wyvernExchange,
-            _seaPort,
+            _wyvern,
+            _seaport,
             _x2y2,
-            _looksRare,
+            _looksrare,
             _sudoswap
         );
     }

@@ -29,20 +29,20 @@ abstract contract ExchangeWrapperCore is
 
     address public exchangeV2;
     address public rarible;
-    address public wyvernExchange;
-    address public seaPort;
+    address public wyvern;
+    address public seaport;
     address public x2y2;
-    address public looksRare;
+    address public looksrare;
     address public sudoswap;
 
     event Execution(bool result, address indexed sender);
 
     enum Markets {
         Rarible,
-        WyvernExchange,
+        Wyvern,
         SeaPort,
         X2Y2,
-        LooksRareOrders,
+        LooksRare,
         SudoSwap,
         ExchangeV2
     }
@@ -82,18 +82,18 @@ abstract contract ExchangeWrapperCore is
     function __ExchangeWrapper_init_unchained(
         address _exchangeV2,
         address _rarible,
-        address _wyvernExchange,
-        address _seaPort,
+        address _wyvern,
+        address _seaport,
         address _x2y2,
-        address _looksRare,
+        address _looksrare,
         address _sudoswap
     ) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
-        wyvernExchange = _wyvernExchange;
-        seaPort = _seaPort;
+        wyvern = _wyvern;
+        seaport = _seaport;
         x2y2 = _x2y2;
-        looksRare = _looksRare;
+        looksrare = _looksrare;
         sudoswap = _sudoswap;
     }
 
@@ -179,22 +179,22 @@ abstract contract ExchangeWrapperCore is
         );
         uint paymentAmount = purchaseDetails.amount;
         if (purchaseDetails.marketId == Markets.SeaPort) {
-            (bool success, ) = address(seaPort).call{value: paymentAmount}(marketData);
+            (bool success, ) = address(seaport).call{value: paymentAmount}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
                 }
             } else {
-                require(success, "Purchase SeaPort failed");
+                require(success, "Purchase Seaport failed");
             }
-        } else if (purchaseDetails.marketId == Markets.WyvernExchange) {
-            (bool success, ) = address(wyvernExchange).call{value: paymentAmount}(marketData);
+        } else if (purchaseDetails.marketId == Markets.Wyvern) {
+            (bool success, ) = address(wyvern).call{value: paymentAmount}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
                 }
             } else {
-                require(success, "Purchase WyvernExchange failed");
+                require(success, "Purchase Wyvern failed");
             }
         } else if (purchaseDetails.marketId == Markets.ExchangeV2) {
             (bool success, ) = address(exchangeV2).call{value: paymentAmount}(marketData);
@@ -264,12 +264,12 @@ abstract contract ExchangeWrapperCore is
                     revert("unknown delegateType x2y2");
                 }
             }
-        } else if (purchaseDetails.marketId == Markets.LooksRareOrders) {
+        } else if (purchaseDetails.marketId == Markets.LooksRare) {
             (LibLooksRare.TakerOrder memory takerOrder, LibLooksRare.MakerOrder memory makerOrder, bytes4 typeNft) = abi
                 .decode(marketData, (LibLooksRare.TakerOrder, LibLooksRare.MakerOrder, bytes4));
             if (allowFail) {
                 try
-                    ILooksRare(looksRare).matchAskWithTakerBidUsingETHAndWETH{value: paymentAmount}(
+                    ILooksRare(looksrare).matchAskWithTakerBidUsingETHAndWETH{value: paymentAmount}(
                         takerOrder,
                         makerOrder
                     )
@@ -277,7 +277,7 @@ abstract contract ExchangeWrapperCore is
                     return (false, 0, 0);
                 }
             } else {
-                ILooksRare(looksRare).matchAskWithTakerBidUsingETHAndWETH{value: paymentAmount}(takerOrder, makerOrder);
+                ILooksRare(looksrare).matchAskWithTakerBidUsingETHAndWETH{value: paymentAmount}(takerOrder, makerOrder);
             }
             if (typeNft == LibAsset.ERC721_ASSET_CLASS) {
                 IERC721Upgradeable(makerOrder.collection).safeTransferFrom(
@@ -415,7 +415,7 @@ abstract contract ExchangeWrapperCore is
         now royalties support only for marketId = sudoswap
     */
     function supportsRoyalties(Markets marketId) internal pure returns (bool) {
-        if (marketId == Markets.SudoSwap || marketId == Markets.LooksRareOrders) {
+        if (marketId == Markets.SudoSwap || marketId == Markets.LooksRare) {
             return true;
         }
 

@@ -9,10 +9,10 @@ async function main() {
   const CHAIN = hre.network.name;
   const GHOSTMARKET = getSettings(CHAIN).exchange_proxy;
   const RARIBLE = getSettings(CHAIN)?.rarible || ZERO;
-  const WYVERN = getSettings(CHAIN)?.wyvernExchange || ZERO;
+  const WYVERN = getSettings(CHAIN)?.wyvern || ZERO;
   const SEAPORT = getSettings(CHAIN)?.seaport || ZERO;
   const X2Y2 = getSettings(CHAIN)?.x2y2 || ZERO;
-  const LOOKSRARE = getSettings(CHAIN)?.looksRare || ZERO;
+  const LOOKSRARE = getSettings(CHAIN)?.looksrare || ZERO;
   const SUDOSWAP = getSettings(CHAIN)?.sudoswap || ZERO;
 
   console.log(`Exchange Wrapper deployment on ${CHAIN} start`);
