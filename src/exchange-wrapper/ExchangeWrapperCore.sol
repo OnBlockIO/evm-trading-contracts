@@ -109,7 +109,7 @@ abstract contract ExchangeWrapperCore is
 
     /**
         @notice executes a single purchase
-        @param purchaseDetails - deatails about the purchase (more info in PurchaseDetails struct)
+        @param purchaseDetails - details about the purchase (more info in PurchaseDetails struct)
         @param feeRecipientFirst - address of the first fee recipient
         @param feeRecipientSecond - address of the second fee recipient
      */
@@ -129,7 +129,7 @@ abstract contract ExchangeWrapperCore is
 
     /**
         @notice executes an array of purchases
-        @param purchaseDetails - array of deatails about the purchases (more info in PurchaseDetails struct)
+        @param purchaseDetails - array of details about the purchases (more info in PurchaseDetails struct)
         @param feeRecipientFirst - address of the first fee recipient
         @param feeRecipientSecond - address of the second fee recipient
         @param allowFail - true if fails while executing orders are allowed, false if fail of a single order means fail of the whole batch
