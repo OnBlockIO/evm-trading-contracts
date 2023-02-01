@@ -24,7 +24,7 @@ const ethereum_testnet = {
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0xca1284B5EEb97c31cc693c4b182C8E1075Dc57f9',
   exchange_proxy: '0xfB2F452639cBB0850B46b20D24DE7b0a9cCb665f',
-  exchange_wrapper_proxy: '',
+  exchange_wrapper_proxy: '0x57C8f2BB412301F8787f188B5B8E3AF83013fdEc',
   customMatcher: '',
 };
 
@@ -48,7 +48,7 @@ const avalanche_testnet = {
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0x92bf637c4FadEC1b698002cbA1583850e6EC97d3',
   exchange_proxy: '0x32fD06f88AFc3ce26bbD1cD9FA97dd27BD0826Cd',
-  exchange_wrapper_proxy: '',
+  exchange_wrapper_proxy: '0x4573373ca18F2BAAa5CF6129578219f4788cbC17',
   customMatcher: '',
 };
 
@@ -59,7 +59,8 @@ const polygon_mainnet = {
   erc721LazyMintTransferProxy: '',
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0x7eD7Bff3bEfa9cEDf6A6d4768F4051fEd7fC1975',
-  exchange_wrapper_proxy: '0x3B48563237C32a1f886FD19DB6F5AFFD23855E2a',
+  exchange_proxy: '0x3B48563237C32a1f886FD19DB6F5AFFD23855E2a',
+  exchange_wrapper_proxy: '',
   customMatcher: '0xF5dD8AB614EB0869A2035160B947c9E733cb51ea',
 };
 
@@ -71,7 +72,7 @@ const polygon_testnet = {
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0x7E20461EcC3B27586EFEa0e3dB9E80bfbE55B9eB',
   exchange_proxy: '0x5B2e6bEE51bC4Cc389503DD186bA66d98405320F',
-  exchange_wrapper_proxy: '',
+  exchange_wrapper_proxy: '0xfd1F5A6cC20e61Db8d8Db646Bf0DD43bDCF366C5',
   customMatcher: '',
 };
 
@@ -82,7 +83,8 @@ const bsc_mainnet = {
   erc721LazyMintTransferProxy: '',
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0x1073e1d5977002d5db4F9E776482E8BF113C745c',
-  exchange_wrapper_proxy: '0x388171F81FC91EfC7338E07E52555a90c7D87972',
+  exchange_proxy: '0x388171F81FC91EfC7338E07E52555a90c7D87972',
+  exchange_wrapper_proxy: '',
   customMatcher: '0x875957cA6c9038D7Da37CBFc0FfcF7eb18d85d6A',
 };
 
@@ -93,7 +95,8 @@ const bsc_testnet = {
   erc721LazyMintTransferProxy: '',
   erc1155LazyMintTransferProxy: '',
   royalties_proxy: '0x5EC6bFE900C140323C66FC9Fc53619631B46Cb69',
-  exchange_wrapper_proxy: '0x00FCf5E8FF15D8b4753c94DdE10fB5a244af74CC',
+  exchange_proxy: '0x00FCf5E8FF15D8b4753c94DdE10fB5a244af74CC',
+  exchange_wrapper_proxy: '0x79ECc16af0CE90475d24A6059b83cA7b8f4FE859',
   ghostmarket: '',
   customMatcher: '',
 };
