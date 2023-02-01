@@ -1356,7 +1356,7 @@ describe('ExchangeWrapper Test', async function () {
         bulkExchange
           .connect(buyer)
           .singlePurchase(tradeData1, ZERO, ZERO, {from: buyer.address, value: 400, gasPrice: 0})
-      ).to.be.revertedWith('Purchase WyvernExchange failed');
+      ).to.be.revertedWith('Purchase Wyvern failed');
       expect(await erc721.balanceOf(buyer.address)).to.equal(1);
     });
 
