@@ -1,4 +1,4 @@
-const eth_mainnet = {
+const ethereum_mainnet = {
   fees: 200,
   transferProxy: '0x1bb6C21e6adB8757F46e77A7F4c5Ad9118f4A04d',
   erc20TransferProxy: '0x153909fB5232c72B5E613aae4898291b014785a1',
@@ -16,7 +16,7 @@ const eth_mainnet = {
   x2y2: '0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3',
 };
 
-const eth_testnet = {
+const ethereum_testnet = {
   fees: 200,
   transferProxy: '0x7aa199E2D5cFf1E6275A33c8dCE3c6085E393781',
   erc20TransferProxy: '0x34A40153C91a411b0a94eEa4506733e59d523495',
@@ -99,8 +99,8 @@ const bsc_testnet = {
 };
 
 let settings = {
-  eth_mainnet: eth_mainnet,
-  eth_testnet: eth_testnet,
+  ethereum_mainnet: ethereum_mainnet,
+  ethereum_testnet: ethereum_testnet,
   avalanche_mainnet: avalanche_mainnet,
   avalanche_testnet: avalanche_testnet,
   polygon_mainnet: polygon_mainnet,
