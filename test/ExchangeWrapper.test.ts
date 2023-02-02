@@ -2770,7 +2770,7 @@ describe('ExchangeWrapper Test', async function () {
           )
         )
       ).wait();
-      inReceipt(tx, 'Execution', [true, buyer.address]);
+      inReceipt(tx, 'Execution', [true]);
 
       expect(await weth.balanceOf(seller.address)).to.equal(100);
       expect(await erc721.ownerOf(erc721TokenId1)).to.equal(buyer.address);
