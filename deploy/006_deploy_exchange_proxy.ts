@@ -1,7 +1,7 @@
 import {getSettings} from '../.config';
 import hre, {deployments, getNamedAccounts} from 'hardhat';
 import {ethers} from 'hardhat';
-import {ERC721_LAZY, ERC1155_LAZY, COLLECTION} from '../test/utils/assets.js';
+import {ERC721_LAZY, ERC1155_LAZY, COLLECTION} from '../test/utils/assets';
 
 async function main() {
   const {deploy} = deployments;

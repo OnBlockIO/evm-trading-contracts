@@ -14,6 +14,7 @@ async function main() {
   const X2Y2 = getSettings(CHAIN)?.x2y2 || ZERO;
   const LOOKSRARE = getSettings(CHAIN)?.looksrare || ZERO;
   const SUDOSWAP = getSettings(CHAIN)?.sudoswap || ZERO;
+  if (!GHOSTMARKET) return;
 
   console.log(`Exchange Wrapper deployment on ${CHAIN} start`);
 

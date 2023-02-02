@@ -20,12 +20,12 @@ const ethereum_testnet = {
   fees: 0,
   transferProxy: '0x7aa199E2D5cFf1E6275A33c8dCE3c6085E393781',
   erc20TransferProxy: '0x34A40153C91a411b0a94eEa4506733e59d523495',
-  erc721LazyMintTransferProxy: '',
-  erc1155LazyMintTransferProxy: '',
+  erc721LazyMintTransferProxy: '0x4633a32D9316C6515517d9001fAFDdAdABf24543',
+  erc1155LazyMintTransferProxy: '0x1D86a5a19405f70308114bC21D092162C02C5Ae8',
   royalties_proxy: '0xca1284B5EEb97c31cc693c4b182C8E1075Dc57f9',
   exchange_proxy: '0x6c3E76022bEAAA29c12aca09823EDB6369F4bC6E',
   exchange_wrapper_proxy: '0x57C8f2BB412301F8787f188B5B8E3AF83013fdEc',
-  customMatcher: '',
+  customMatcher: '0x99428B1e5A8f5985625e9d19Ad0Ea19F33A5f749',
 };
 
 const avalanche_mainnet = {
