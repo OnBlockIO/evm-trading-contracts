@@ -7,7 +7,7 @@ import "../librairies/LibERC721LazyMint.sol";
 import "../librairies/LibERC1155LazyMint.sol";
 
 contract AssetMatcherCollection is IAssetMatcher {
-    bytes public constant EMPTY = "";
+    bytes internal constant EMPTY = "";
 
     function matchAssets(
         LibAsset.AssetType memory leftAssetType,
