@@ -35,7 +35,7 @@ abstract contract ExchangeWrapperCore is
     address public looksrare;
     address public sudoswap;
 
-    event Execution(bool result);
+    event Execution(bool result, address indexed sender);
 
     enum Markets {
         Rarible,
@@ -119,7 +119,7 @@ abstract contract ExchangeWrapperCore is
         address feeRecipientSecond
     ) external payable whenNotPaused {
         (bool success, uint feeAmountFirst, uint feeAmountSecond) = purchase(purchaseDetails, false);
-        emit Execution(success);
+        emit Execution(success, _msgSender());
 
         transferFee(feeAmountFirst, feeRecipientFirst);
         transferFee(feeAmountSecond, feeRecipientSecond);
@@ -149,7 +149,7 @@ abstract contract ExchangeWrapperCore is
             (bool success, uint firstFeeAmount, uint secondFeeAmount) = purchase(purchaseDetails[i], allowFail);
 
             result = result || success;
-            emit Execution(success);
+            emit Execution(success, _msgSender());
 
             sumFirstFees = sumFirstFees + (firstFeeAmount);
             sumSecondFees = sumSecondFees + (secondFeeAmount);
