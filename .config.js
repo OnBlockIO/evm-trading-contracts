@@ -44,12 +44,12 @@ const avalanche_testnet = {
   fees: 0,
   transferProxy: '0x05Ebd261CBd932eaA8e7Dc6C858AF189c77BcdB8',
   erc20TransferProxy: '0xF23121871c3117FFAF860E97A854162900Bd4eaf',
-  erc721LazyMintTransferProxy: '',
-  erc1155LazyMintTransferProxy: '',
+  erc721LazyMintTransferProxy: '0xE6bbAfB291DD683E85520785CC3502CA9ce581A5',
+  erc1155LazyMintTransferProxy: '0x388171F81FC91EfC7338E07E52555a90c7D87972',
   royalties_proxy: '0x92bf637c4FadEC1b698002cbA1583850e6EC97d3',
   exchange_proxy: '0x32fD06f88AFc3ce26bbD1cD9FA97dd27BD0826Cd',
   exchange_wrapper_proxy: '0x4573373ca18F2BAAa5CF6129578219f4788cbC17',
-  customMatcher: '',
+  customMatcher: '0x68efd84E9Fe2D36c36243dEB2E9B1d3d3cd15423',
 };
 
 const polygon_mainnet = {
