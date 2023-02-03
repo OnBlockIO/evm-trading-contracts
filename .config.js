@@ -68,12 +68,12 @@ const polygon_testnet = {
   fees: 0,
   transferProxy: '0x42c81EF5CCd03242c642164037d588557563F085',
   erc20TransferProxy: '0xb24BB6B0d477eA8c0F1eEe4c00b1281B3eF25397',
-  erc721LazyMintTransferProxy: '',
-  erc1155LazyMintTransferProxy: '',
+  erc721LazyMintTransferProxy: '0x6bA8a39421bA37cE20E7D3E95D4714725168b0C3',
+  erc1155LazyMintTransferProxy: '0x2001aDDf62723c0F87E9925473ac947D96C3616B',
   royalties_proxy: '0x7E20461EcC3B27586EFEa0e3dB9E80bfbE55B9eB',
   exchange_proxy: '0x5B2e6bEE51bC4Cc389503DD186bA66d98405320F',
   exchange_wrapper_proxy: '0xfd1F5A6cC20e61Db8d8Db646Bf0DD43bDCF366C5',
-  customMatcher: '',
+  customMatcher: '0x9725bb445165cf73811EE96E1c45A299205BdADA',
 };
 
 const bsc_mainnet = {
