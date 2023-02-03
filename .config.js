@@ -92,13 +92,12 @@ const bsc_testnet = {
   fees: 0,
   transferProxy: '0x5267e6176b87526979CbE6449a30deD076CA7BA9',
   erc20TransferProxy: '0x8e590eBb2D67bf86b543F6d96Fc1a6A989793c39',
-  erc721LazyMintTransferProxy: '',
-  erc1155LazyMintTransferProxy: '',
+  erc721LazyMintTransferProxy: '0xd691742070F39018525989E29f93b699FD26E22e',
+  erc1155LazyMintTransferProxy: '0x0D2a884d843facAB4d7f808Eb4A8E8c47eF8d815',
   royalties_proxy: '0x5EC6bFE900C140323C66FC9Fc53619631B46Cb69',
   exchange_proxy: '0x00FCf5E8FF15D8b4753c94DdE10fB5a244af74CC',
   exchange_wrapper_proxy: '0x79ECc16af0CE90475d24A6059b83cA7b8f4FE859',
-  ghostmarket: '',
-  customMatcher: '',
+  customMatcher: '0x627886ec8290cFb1A17A8d51311361ea86075aa2',
 };
 
 let settings = {
