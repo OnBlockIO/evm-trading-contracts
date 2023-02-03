@@ -2,6 +2,7 @@ module.exports = {
   skipFiles: [
     'custom-matcher/tests/',
     'exchange/tests/',
+    'exchange-wrapper/tests/',
     'interfaces/tests/',
     'librairies/tests/',
     'operator/tests/',
