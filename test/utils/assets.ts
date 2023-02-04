@@ -35,12 +35,6 @@ export const ORDER_DATA_V1 = id('V1');
 export const ORDER_DATA_V2 = id('V2');
 export const ORDER_DATA_V3_BUY = id('V3_BUY');
 export const ORDER_DATA_V3_SELL = id('V3_SELL');
-export const TO_MAKER = id('TO_MAKER');
-export const TO_TAKER = id('TO_TAKER');
-export const PROTOCOL = id('PROTOCOL');
-export const ROYALTY = id('ROYALTY');
-export const ORIGIN = id('ORIGIN');
-export const PAYOUT = id('PAYOUT');
 
 export default {
   ETH,
@@ -55,12 +49,6 @@ export default {
   ORDER_DATA_V2,
   ORDER_DATA_V3_BUY,
   ORDER_DATA_V3_SELL,
-  TO_MAKER,
-  TO_TAKER,
-  PROTOCOL,
-  ROYALTY,
-  ORIGIN,
-  PAYOUT,
   enc,
   id,
 };
