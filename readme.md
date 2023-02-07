@@ -1,6 +1,6 @@
 # GhostMarket Exchange smart contracts
 
-[![codecov](https://codecov.io/github/OnBlockIO/evm-trading-contracts/branch/main/graph/badge.svg?token=GHZYA9CM2E)](https://codecov.io/github/OnBlockIO/evm-trading-contracts)
+[![codecov](https://codecov.io/github/OnBlockIO/evm-trading-contracts/branch/master/graph/badge.svg?token=GHZYA9CM2E)](https://codecov.io/github/OnBlockIO/evm-trading-contracts)
 
 ## Deployed Contracts on BSC:
 
