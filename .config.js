@@ -36,7 +36,7 @@ const avalanche_mainnet = {
   erc1155LazyMintTransferProxy: '0xdB7d6C0Bc11fe3246a44B8f73C4edeE73Fc521B7',
   royalties_proxy: '0x913FbdC42a77edb0aEFFCEEAe00240C368d9B6b1',
   exchange_proxy: '0xEb4ABA7aeba732Fc2FC92a673585d950cCFC1de0',
-  exchange_wrapper_proxy: '0x09A47457526F552E64d7d8ad4f1a7f2166F1c723',
+  exchange_wrapper_proxy: '0x0C823CD09642864f495F0a474E1d26Dea9A516F9',
   customMatcher: '0x113c8b438687DD1a9b04e7B5984d1fC00E176AD6',
   seaport: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
 };
@@ -57,12 +57,12 @@ const polygon_mainnet = {
   fees: 0,
   transferProxy: '0x26D583e2CDa958b13CC319FAd124aa729f8A196e',
   erc20TransferProxy: '0x44C5CE28c29934B71A2a0447745d551DfC7B5133',
-  erc721LazyMintTransferProxy: '',
-  erc1155LazyMintTransferProxy: '',
+  erc721LazyMintTransferProxy: '0x6c04dB7aD98880D09b62FA03Fa204C6ec207c4A8',
+  erc1155LazyMintTransferProxy: '0x223Ee8844aB016A914d177C9e45C07A0406f2F0A',
   royalties_proxy: '0x7eD7Bff3bEfa9cEDf6A6d4768F4051fEd7fC1975',
   exchange_proxy: '0x3B48563237C32a1f886FD19DB6F5AFFD23855E2a',
-  exchange_wrapper_proxy: '',
-  customMatcher: '0xF5dD8AB614EB0869A2035160B947c9E733cb51ea',
+  exchange_wrapper_proxy: '0x09236d6b740ac67dCa842D9dB6FA4D067a684E76',
+  customMatcher: '0xAB8944314D0eA90fba56644A4989Dd9924F56748',
   seaport: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
 };
 
