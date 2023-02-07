@@ -1,5 +1,5 @@
 const ethereum_mainnet = {
-  fees: 200,
+  fees: 0,
   transferProxy: '0x1bb6C21e6adB8757F46e77A7F4c5Ad9118f4A04d',
   erc20TransferProxy: '0x153909fB5232c72B5E613aae4898291b014785a1',
   erc721LazyMintTransferProxy: '',
@@ -54,7 +54,7 @@ const avalanche_testnet = {
 };
 
 const polygon_mainnet = {
-  fees: 200,
+  fees: 0,
   transferProxy: '0x26D583e2CDa958b13CC319FAd124aa729f8A196e',
   erc20TransferProxy: '0x44C5CE28c29934B71A2a0447745d551DfC7B5133',
   erc721LazyMintTransferProxy: '',
@@ -79,7 +79,7 @@ const polygon_testnet = {
 };
 
 const bsc_mainnet = {
-  fees: 200,
+  fees: 0,
   transferProxy: '0x7f61f22C7962F733853C8902Ccf55BC78F379431',
   erc20TransferProxy: '0x2617Ad006cC4D4ed52D3Ed688316feF5b4658845',
   erc721LazyMintTransferProxy: '0x5466C8141f6A017059F3D4849B75CF691DAD167C',
