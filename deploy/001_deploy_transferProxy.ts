@@ -1,22 +1,24 @@
-import {HardhatRuntimeEnvironment} from 'hardhat/types';
-import {DeployFunction} from 'hardhat-deploy/types';
+import hre, {deployments, getNamedAccounts} from 'hardhat';
 
-const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const {deployments, getNamedAccounts} = hre;
+async function main() {
   const {deploy, execute} = deployments;
   const {deployer} = await getNamedAccounts();
 
-  await deploy('TransferProxy', {
+  const CHAIN = hre.network.name;
+
+  console.log(`TransferProxy deployment on ${CHAIN} start`);
+
+  const transferProxy = await deploy('TransferProxy', {
     from: deployer,
     log: true,
   });
-  
-  await execute(
-    'TransferProxy',
-    {from: deployer, log: true},
-    '__TransferProxy_init'
-  );
-};
 
-export default func;
-func.tags = ['TransferProxy'];
+  await execute('TransferProxy', {from: deployer, log: true}, '__TransferProxy_init');
+
+  console.log('TransferProxy deployed at: ', transferProxy.address);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

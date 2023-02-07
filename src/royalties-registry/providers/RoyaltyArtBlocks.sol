@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.6.2 <0.8.0;
-pragma abicoder v2;
+pragma solidity ^0.8.9;
 
-import "../../lib/LibPart.sol";
+import "../../librairies/LibPart.sol";
 
 abstract contract RoyaltyArtBlocks {
-    function getRoyaltyData(uint256 _tokenId)
+    function getRoyaltyData(
+        uint256 _tokenId
+    )
         external
         view
         virtual
