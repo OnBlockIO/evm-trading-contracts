@@ -29,15 +29,15 @@ const ethereum_testnet = {
 };
 
 const avalanche_mainnet = {
-  fees: 200,
+  fees: 0,
   transferProxy: '0x3d7e2A3ecb2AE2a516465c611DFf813d7B9297f8',
   erc20TransferProxy: '0x3417E77e81Cf31bb210c2364883EB83E5077f0Dd',
-  erc721LazyMintTransferProxy: '',
-  erc1155LazyMintTransferProxy: '',
+  erc721LazyMintTransferProxy: '0xFa660A5CE5B159C946932c36aA5A7bCa56f1D0fb',
+  erc1155LazyMintTransferProxy: '0xdB7d6C0Bc11fe3246a44B8f73C4edeE73Fc521B7',
   royalties_proxy: '0x913FbdC42a77edb0aEFFCEEAe00240C368d9B6b1',
   exchange_proxy: '0xEb4ABA7aeba732Fc2FC92a673585d950cCFC1de0',
-  exchange_wrapper_proxy: '',
-  customMatcher: '0x265ac81F659F1DA2F64c2620D826c6f3E63B8C43',
+  exchange_wrapper_proxy: '0x09A47457526F552E64d7d8ad4f1a7f2166F1c723',
+  customMatcher: '0x113c8b438687DD1a9b04e7B5984d1fC00E176AD6',
 };
 
 const avalanche_testnet = {
