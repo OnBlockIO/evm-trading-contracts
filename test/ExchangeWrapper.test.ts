@@ -35,6 +35,15 @@ import TransferManagerERC1155Artifact from '../src/exchange-wrapper/artifacts/Tr
 import ERC721DelegateArtifact from '../src/exchange-wrapper/artifacts/ERC721Delegate.json';
 import ERC1155DelegateArtifact from '../src/exchange-wrapper/artifacts/ERC1155Delegate.json';
 import X2Y2_r1Artifact from '../src/exchange-wrapper/artifacts/X2Y2_r1.json';
+// sudoswap
+import LSSVMPairEnumerableERC20Artifact from '../src/exchange-wrapper/artifacts/LSSVMPairEnumerableERC20.json';
+import LSSVMPairEnumerableETHArtifact from '../src/exchange-wrapper/artifacts/LSSVMPairEnumerableETH.json';
+import LSSVMPairMissingEnumerableERC20Artifact from '../src/exchange-wrapper/artifacts/LSSVMPairMissingEnumerableERC20.json';
+import LSSVMPairMissingEnumerableETHArtifact from '../src/exchange-wrapper/artifacts/LSSVMPairMissingEnumerableETH.json';
+import LSSVMPairFactoryArtifact from '../src/exchange-wrapper/artifacts/LSSVMPairFactory.json';
+import LSSVMRouterArtifact from '../src/exchange-wrapper/artifacts/LSSVMRouter.json';
+import LinearCurveArtifact from '../src/exchange-wrapper/artifacts/LinearCurve.json';
+import ExponentialCurveArtifact from '../src/exchange-wrapper/artifacts/ExponentialCurve.json';
 import {inReceipt} from './utils/expectEvent';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {Asset, Order} from './utils/order';
@@ -60,6 +69,7 @@ import {
   MARKET_ID_SEAPORT,
   MARKET_ID_WYVERN,
   MARKET_ID_X2Y2,
+  MARKET_ID_SUDOSWAP,
 } from './utils/constants';
 
 describe('ExchangeWrapper Test', async function () {
@@ -88,10 +98,13 @@ describe('ExchangeWrapper Test', async function () {
   let transferManagerERC721: any;
   let transferManagerERC1155: any;
   let transferSelectorNFT: any;
+  let strategy: any;
   let erc721Delegate: any;
   let erc1155Delegate: any;
   let x2y2: any;
-  let strategy: any;
+  let factorySudo: any;
+  let routerSudo: any;
+  let linSudo: any;
   let wallet0: SignerWithAddress;
   let wallet1: SignerWithAddress;
   let wallet2: SignerWithAddress;
@@ -205,6 +218,33 @@ describe('ExchangeWrapper Test', async function () {
     );
     const X2Y2_r1 = await ethers.getContractFactory(X2Y2_r1Artifact.abi, X2Y2_r1Artifact.bytecode);
 
+    const LSSVMPairEnumerableERC20 = await ethers.getContractFactory(
+      LSSVMPairEnumerableERC20Artifact.abi,
+      LSSVMPairEnumerableERC20Artifact.bytecode
+    );
+    const LSSVMPairEnumerableETH = await ethers.getContractFactory(
+      LSSVMPairEnumerableETHArtifact.abi,
+      LSSVMPairEnumerableETHArtifact.bytecode
+    );
+    const LSSVMPairMissingEnumerableERC20 = await ethers.getContractFactory(
+      LSSVMPairMissingEnumerableERC20Artifact.abi,
+      LSSVMPairMissingEnumerableERC20Artifact.bytecode
+    );
+    const LSSVMPairMissingEnumerableETH = await ethers.getContractFactory(
+      LSSVMPairMissingEnumerableETHArtifact.abi,
+      LSSVMPairMissingEnumerableETHArtifact.bytecode
+    );
+    const LSSVMPairFactory = await ethers.getContractFactory(
+      LSSVMPairFactoryArtifact.abi,
+      LSSVMPairFactoryArtifact.bytecode
+    );
+    const LSSVMRouter = await ethers.getContractFactory(LSSVMRouterArtifact.abi, LSSVMRouterArtifact.bytecode);
+    const LinearCurve = await ethers.getContractFactory(LinearCurveArtifact.abi, LinearCurveArtifact.bytecode);
+    const ExponentialCurve = await ethers.getContractFactory(
+      ExponentialCurveArtifact.abi,
+      ExponentialCurveArtifact.bytecode
+    );
+
     transferProxy = await TransferProxyTest.deploy();
     await transferProxy.__TransferProxy_init();
 
@@ -280,6 +320,10 @@ describe('ExchangeWrapper Test', async function () {
     await erc1155Delegate.grantRole('0x7630198b183b603be5df16e380207195f2a065102b113930ccb600feaf615331', x2y2.address);
     await x2y2.updateDelegates([erc1155Delegate.address], []);
 
+    factorySudo = await LSSVMPairFactory.deploy();
+    routerSudo = await LSSVMRouter.deploy();
+    linSudo = await LinearCurve.deploy();
+
     await transferProxy.addOperator(exchangeV2Proxy.address);
     await erc20TransferProxy.addOperator(exchangeV2Proxy.address);
     await transferProxy.addOperator(rarible.address);
@@ -301,7 +345,7 @@ describe('ExchangeWrapper Test', async function () {
           seaport.address,
           x2y2.address,
           looksRareExchange.address,
-          ZERO,
+          routerSudo.address,
         ],
         {initializer: '__ExchangeWrapper_init'}
       )
@@ -2656,6 +2700,16 @@ describe('ExchangeWrapper Test', async function () {
       expect(await weth.balanceOf(seller1.address)).to.equal(10000);
       expect(await weth.balanceOf(seller2.address)).to.equal(10000);
     });
+  });
+
+  describe('Sudoswap orders', () => {
+    it('Test singlePurchase Sudoswap, ERC721<->ETH', async () => {});
+
+    it('Test singlePurchase Sudoswap, ERC1155<->ETH', async () => {});
+
+    it('Test bulkPurchase Sudoswap (num orders = 2), ERC721<->ETH', async () => {});
+
+    it('Test bulkPurchase Sudoswap (num orders = 2), ERC1155<->ETH', async () => {});
   });
 
   describe('Combined orders', () => {
