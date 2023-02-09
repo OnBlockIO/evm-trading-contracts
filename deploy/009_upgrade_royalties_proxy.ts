@@ -1,5 +1,5 @@
 import hre, {deployments, getNamedAccounts} from 'hardhat';
-import { getSettings } from '../.config';
+import {getSettings} from '../.config';
 
 async function main() {
   const {deploy} = deployments;
@@ -8,7 +8,7 @@ async function main() {
   const CHAIN = hre.network.name;
   const ROYALTIES_PROXY = getSettings(CHAIN).royalties_proxy;
   if (!ROYALTIES_PROXY) return;
-  
+
   console.log(`Royalties Proxy upgrade on ${CHAIN} start`);
 
   const royalties_proxy = await deploy('RoyaltiesRegistry', {
@@ -16,7 +16,7 @@ async function main() {
     from: deployer,
     proxy: {
       owner: deployer,
-      proxyContract: 'OpenZeppelinTransparentProxy'
+      proxyContract: 'OpenZeppelinTransparentProxy',
     },
     log: true,
   });

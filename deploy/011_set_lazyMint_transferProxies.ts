@@ -1,6 +1,6 @@
-import hre, { ethers } from 'hardhat';
-import { getSettings } from '../.config';
-import { ERC1155_LAZY, ERC721_LAZY } from '../test/utils/assets';
+import hre, {ethers} from 'hardhat';
+import {getSettings} from '../.config';
+import {ERC1155_LAZY, ERC721_LAZY} from '../test/utils/assets';
 
 async function main() {
   const CHAIN = hre.network.name;

@@ -1,6 +1,6 @@
 import {getSettings} from '../.config';
 import hre, {deployments, getNamedAccounts} from 'hardhat';
-import { ZERO } from '../test/utils/assets';
+import {ZERO} from '../test/utils/assets';
 
 async function main() {
   const {deploy} = deployments;

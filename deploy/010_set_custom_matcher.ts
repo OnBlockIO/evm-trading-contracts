@@ -1,6 +1,6 @@
-import hre, { ethers } from 'hardhat';
-import { getSettings } from '../.config';
-import { COLLECTION } from '../test/utils/assets';
+import hre, {ethers} from 'hardhat';
+import {getSettings} from '../.config';
+import {COLLECTION} from '../test/utils/assets';
 
 async function main() {
   const CHAIN = hre.network.name;
