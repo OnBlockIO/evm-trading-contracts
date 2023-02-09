@@ -16,6 +16,7 @@ import "./interfaces/IExchangeV2.sol";
 import "./interfaces/ISeaPort.sol";
 import "./interfaces/Ix2y2.sol";
 import "./interfaces/ILooksRare.sol";
+import "./interfaces/IBlurExchange.sol";
 
 abstract contract ExchangeWrapperCore is
     Initializable,
@@ -34,6 +35,7 @@ abstract contract ExchangeWrapperCore is
     address public x2y2;
     address public looksrare;
     address public sudoswap;
+    address public blur;
 
     event Execution(bool result, address indexed sender);
 
@@ -44,7 +46,8 @@ abstract contract ExchangeWrapperCore is
         X2Y2,
         LooksRare,
         SudoSwap,
-        ExchangeV2
+        ExchangeV2,
+        Blur
     }
 
     enum AdditionalDataTypes {
@@ -86,7 +89,8 @@ abstract contract ExchangeWrapperCore is
         address _seaport,
         address _x2y2,
         address _looksrare,
-        address _sudoswap
+        address _sudoswap,
+        address _blur
     ) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
@@ -95,6 +99,7 @@ abstract contract ExchangeWrapperCore is
         x2y2 = _x2y2;
         looksrare = _looksrare;
         sudoswap = _sudoswap;
+        blur = _blur;
     }
 
     /// @notice Pause the contract
@@ -304,6 +309,15 @@ abstract contract ExchangeWrapperCore is
                 }
             } else {
                 require(success, "Purchase SudoSwap failed");
+            }
+        } else if (purchaseDetails.marketId == Markets.Blur) {
+            (bool success,) = address(blur).call{value : paymentAmount}(marketData);
+            if (allowFail) {
+                if (!success) {
+                    return (false, 0, 0);
+                }
+            } else {
+                require(success, "Purchase blurio failed");
             }
         } else {
             revert("Unknown purchase details");

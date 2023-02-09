@@ -14,6 +14,7 @@ const ethereum_mainnet = {
   sudoswap: '0x2B2e8cDA09bBA9660dCA5cB6233787738Ad68329',
   wyvern: '0x7f268357A8c2552623316e2562D90e642bB538E5',
   x2y2: '0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3',
+  blur: '0x000000000000Ad05Ccc4F10045630fb830B95127',
 };
 
 const ethereum_testnet = {

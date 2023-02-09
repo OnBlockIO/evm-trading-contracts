@@ -44,6 +44,15 @@ import LSSVMPairFactoryArtifact from '../src/exchange-wrapper/artifacts/LSSVMPai
 import LSSVMRouterArtifact from '../src/exchange-wrapper/artifacts/LSSVMRouter.json';
 import LinearCurveArtifact from '../src/exchange-wrapper/artifacts/LinearCurve.json';
 import ExponentialCurveArtifact from '../src/exchange-wrapper/artifacts/ExponentialCurve.json';
+// blur
+import BlurExchangeArtifact from '../src/exchange-wrapper/artifacts/BlurExchange.json';
+import ExecutionDelegateArtifact from '../src/exchange-wrapper/artifacts/ExecutionDelegate.json';
+import BlurPoolArtifact from '../src/exchange-wrapper/artifacts/BlurPool.json';
+import PolicyManagerArtifact from '../src/exchange-wrapper/artifacts/PolicyManager.json';
+import SafeCollectionBidPolicyERC721Artifact from '../src/exchange-wrapper/artifacts/SafeCollectionBidPolicyERC721.json';
+import StandardPolicyERC721Artifact from '../src/exchange-wrapper/artifacts/StandardPolicyERC721.json';
+import StandardPolicyNoOracleERC721Artifact from '../src/exchange-wrapper/artifacts/StandardPolicyNoOracleERC721.json';
+
 import {inReceipt} from './utils/expectEvent';
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
 import {Asset, Order} from './utils/order';
@@ -70,6 +79,7 @@ import {
   MARKET_ID_WYVERN,
   MARKET_ID_X2Y2,
   MARKET_ID_SUDOSWAP,
+  MARKET_ID_BLUR,
 } from './utils/constants';
 
 describe('ExchangeWrapper Test', async function () {
@@ -110,6 +120,13 @@ describe('ExchangeWrapper Test', async function () {
   let _missingEnumerableETHTemplate: any;
   let _enumerableERC20Template: any;
   let _missingEnumerableERC20Template: any;
+  let blurExchange: any;
+  let blurPool: any;
+  let executionDelegate: any;
+  let policyManager: any;
+  let standardPolicyNoOracleERC721: any;
+  let standardPolicyERC721: any;
+  let safeCollectionBidPolicyERC721: any;
   let wallet0: SignerWithAddress;
   let wallet1: SignerWithAddress;
   let wallet2: SignerWithAddress;
@@ -250,6 +267,23 @@ describe('ExchangeWrapper Test', async function () {
       ExponentialCurveArtifact.bytecode
     );
 
+    const BlurExchange = await ethers.getContractFactory(BlurExchangeArtifact.abi, BlurExchangeArtifact.bytecode);
+    const ExecutionDelegate = await ethers.getContractFactory(ExecutionDelegateArtifact.abi, ExecutionDelegateArtifact.bytecode);
+    const BlurPool = await ethers.getContractFactory(
+      BlurPoolArtifact.abi,
+      BlurPoolArtifact.bytecode
+    );
+    const PolicyManager = await ethers.getContractFactory(PolicyManagerArtifact.abi, PolicyManagerArtifact.bytecode);
+    const SafeCollectionBidPolicyERC721 = await ethers.getContractFactory(SafeCollectionBidPolicyERC721Artifact.abi, SafeCollectionBidPolicyERC721Artifact.bytecode);
+    const StandardPolicyERC721 = await ethers.getContractFactory(
+      StandardPolicyERC721Artifact.abi,
+      StandardPolicyERC721Artifact.bytecode
+    );
+    const StandardPolicyNoOracleERC721 = await ethers.getContractFactory(
+      StandardPolicyNoOracleERC721Artifact.abi,
+      StandardPolicyNoOracleERC721Artifact.bytecode
+    );
+
     transferProxy = await TransferProxyTest.deploy();
     await transferProxy.__TransferProxy_init();
 
@@ -337,6 +371,19 @@ describe('ExchangeWrapper Test', async function () {
     await factorySudo.setBondingCurveAllowed(expSudo.address, true)
     await factorySudo.setBondingCurveAllowed(linSudo.address, true)
 
+    standardPolicyNoOracleERC721 = await StandardPolicyNoOracleERC721.deploy();
+    standardPolicyERC721 = await StandardPolicyERC721.deploy();
+    safeCollectionBidPolicyERC721 = await SafeCollectionBidPolicyERC721.deploy();
+    policyManager = await PolicyManager.deploy();
+    await policyManager.addPolicy(standardPolicyNoOracleERC721.address);
+    await policyManager.addPolicy(standardPolicyERC721.address);
+    await policyManager.addPolicy(safeCollectionBidPolicyERC721.address);
+    executionDelegate = await ExecutionDelegate.deploy();
+    blurPool = await BlurPool.deploy();
+    blurExchange = await BlurExchange.deploy();
+    blurExchange.initialize(weth.address, blurPool.address, executionDelegate.address, policyManager.address, wallet0.address, 125);
+    await executionDelegate.approveContract(blurExchange.address);
+
     await transferProxy.addOperator(exchangeV2Proxy.address);
     await erc20TransferProxy.addOperator(exchangeV2Proxy.address);
     await transferProxy.addOperator(rarible.address);
@@ -359,6 +406,7 @@ describe('ExchangeWrapper Test', async function () {
           x2y2.address,
           looksRareExchange.address,
           routerSudo.address,
+          blurExchange.address,
         ],
         {initializer: '__ExchangeWrapper_init'}
       )
@@ -2774,6 +2822,164 @@ describe('ExchangeWrapper Test', async function () {
     // combined gm + sudo
     // combined all with sudo
   });
+
+  describe.skip('Blur orders', () => {
+    it('Test singlePurchase Blur, ERC721<->ERC20', async () => {
+      const seller = wallet1
+      const buyer = wallet2
+
+      await erc721.mint(seller.address, tokenId)
+      await erc721.connect(seller).setApprovalForAll(executionDelegate.address, true, {from: seller.address})
+
+      const sellOrder = {
+        order: {
+          trader: seller.address,
+          side: 1,
+          matchingPolicy: standardPolicyERC721.address,
+          collection: erc721.address,
+          tokenId: tokenId,
+          amount: 1,
+          paymentToken: weth.address,
+          fees: [],
+          salt: 0,
+          extraParams: '0x01',
+          price: "1000",
+          listingTime: '100',
+          expirationTime: '16757909942000'
+        },
+        v: 27,
+        r: '0xd233a46410387ec0bc310b3d974606d643368ae73b88c48a0b971b573d534c60',
+        s: '0x6f532bbb29ca86832ee0cd56ba3cfb0483d90438eb2c0e3a9a4ac658ab6053ee',
+        extraSignature: '0x',
+        signatureVersion: 0,
+        blockNumber: 30
+      }
+
+      const buyOrder = {
+        order: {
+          trader: buyer.address,
+          side: 0,
+          matchingPolicy: standardPolicyERC721.address,
+          collection: erc721.address,
+          tokenId: tokenId,
+          amount: 1,
+          paymentToken: weth.address,
+          fees: [],
+          salt: 0,
+          extraParams: '0x01',
+          price: "1000",
+          listingTime: '100',
+          expirationTime: '16757909942000'
+        },
+        v: 27,
+        r: '0xd233a46410387ec0bc310b3d974606d643368ae73b88c48a0b971b573d534c60',
+        s: '0x6f532bbb29ca86832ee0cd56ba3cfb0483d90438eb2c0e3a9a4ac658ab6053ee',
+        extraSignature: '0x',
+        signatureVersion: 0,
+        blockNumber: 30
+      }
+
+      // await token.connect(seller).setApprovalForAll(executionDelegate.address, true);
+      // await token.connect(buyer).setApprovalForAll(executionDelegate.address, true);
+      // await weth9.connect(seller).approve(executionDelegate.address, eth("10000"));
+      // await weth9.connect(buyer).approve(executionDelegate.address, eth("10000"));
+      // await weth9.connect(seller).approve("0x6c888f487a5a97768dee6303faf281c6efdc6203", 100000000);
+
+      // const tradeData = PurchaseData(MARKET_ID_BLUR, '1000', '0', await wrapperHelper.encodeDataBlur(sellOrder, buyOrder))
+      // const tx = await bulkExchange.singlePurchase(tradeData, ZERO, ZERO, {from: buyer.address, value: 1000})
+      // const receipt = await tx.wait();
+      // console.log('Blur order:', receipt.gasUsed.toString());
+      await blurExchange.connect(buyer).execute(buyOrder, sellOrder, {from: buyer.address, value: 1000});
+
+      expect(await erc721.ownerOf(tokenId)).to.equal(buyer)
+    });
+
+    it('Test singlePurchase Blur, ERC721<->ETH', async () => {
+      const seller = wallet1;
+      const buyer = wallet2;
+
+      await erc721.mint(seller.address, tokenId)
+      await erc721.connect(seller).setApprovalForAll(executionDelegate.address, true, {from: seller.address})
+      await executionDelegate.approveContract(erc721.address);
+
+      const sellOrder = {
+        order: {
+          trader: seller.address,
+          side: 1,
+          matchingPolicy: standardPolicyERC721.address,
+          collection: erc721.address,
+          tokenId: tokenId,
+          amount: 1,
+          paymentToken: ZERO,
+          fees: [],
+          salt: 0,
+          extraParams: '0x01',
+          price: "1000",
+          listingTime: '100',
+          expirationTime: '16757909942000'
+        },
+        v: 27,
+        r: '0xd233a46410387ec0bc310b3d974606d643368ae73b88c48a0b971b573d534c60',
+        s: '0x6f532bbb29ca86832ee0cd56ba3cfb0483d90438eb2c0e3a9a4ac658ab6053ee',
+        extraSignature: '0x',
+        signatureVersion: 0,
+        blockNumber: 30
+      }
+
+      const buyOrder = {
+        order: {
+          trader: buyer.address,
+          side: 0,
+          matchingPolicy: standardPolicyERC721.address,
+          collection: erc721.address,
+          tokenId: tokenId,
+          amount: 1,
+          paymentToken: ZERO,
+          fees: [],
+          salt: 0,
+          extraParams: '0x01',
+          price: "1000",
+          listingTime: '100',
+          expirationTime: '16757909942000'
+        },
+        v: 27,
+        r: '0xd233a46410387ec0bc310b3d974606d643368ae73b88c48a0b971b573d534c60',
+        s: '0x6f532bbb29ca86832ee0cd56ba3cfb0483d90438eb2c0e3a9a4ac658ab6053ee',
+        extraSignature: '0x',
+        signatureVersion: 0,
+        blockNumber: 30
+      }
+
+      // await token.connect(seller).setApprovalForAll(executionDelegate.address, true);
+      // await token.connect(buyer).setApprovalForAll(executionDelegate.address, true);
+      // await weth9.connect(seller).approve(executionDelegate.address, eth("10000"));
+      // await weth9.connect(buyer).approve(executionDelegate.address, eth("10000"));
+      // await weth9.connect(seller).approve("0x6c888f487a5a97768dee6303faf281c6efdc6203", 100000000);
+
+      // const tradeData = PurchaseData(MARKET_ID_BLUR, '1000', '0', await wrapperHelper.encodeDataBlur(sellOrder, buyOrder))
+      // const tx = await bulkExchange.singlePurchase(tradeData, ZERO, ZERO, {from: buyer.adress, value: 1000})
+      // const receipt = await tx.wait();
+      // console.log('Blur order:', receipt.gasUsed.toString());
+      await blurExchange.connect(buyer).execute(buyOrder, sellOrder, {from: buyer.address, value: 1000});
+
+      expect(await erc721.ownerOf(tokenId)).to.equal(buyer)
+    });
+
+    it('Test singlePurchase Blur, ERC1155<->ETH', async () => {
+      
+    });
+
+    it('Test bulkPurchase Blur (num orders = 2), ERC721<->ETH', async () => {
+      
+    });
+
+    it('Test bulkPurchase Blur (num orders = 2), ERC1155<->ETH', async () => {
+      
+    });
+
+    // combined gm + blur
+    // combined all with blur
+  })
 
   describe('Combined orders', () => {
     it('Test bulkPurchase GhostMarket & Rarible (num orders = 2, type = V2/V1), ERC721<->ETH', async () => {

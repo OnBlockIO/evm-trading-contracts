@@ -15,3 +15,4 @@ export const MARKET_ID_X2Y2 = 3;
 export const MARKET_ID_LOOKSRARE = 4;
 export const MARKET_ID_SUDOSWAP = 5;
 export const MARKET_ID_GHOSTMARKET = 6;
+export const MARKET_ID_BLUR = 7;
