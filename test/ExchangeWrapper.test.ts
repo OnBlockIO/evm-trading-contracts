@@ -105,6 +105,11 @@ describe('ExchangeWrapper Test', async function () {
   let factorySudo: any;
   let routerSudo: any;
   let linSudo: any;
+  let expSudo: any;
+  let _enumerableETHTemplate: any;
+  let _missingEnumerableETHTemplate: any;
+  let _enumerableERC20Template: any;
+  let _missingEnumerableERC20Template: any;
   let wallet0: SignerWithAddress;
   let wallet1: SignerWithAddress;
   let wallet2: SignerWithAddress;
@@ -320,9 +325,17 @@ describe('ExchangeWrapper Test', async function () {
     await erc1155Delegate.grantRole('0x7630198b183b603be5df16e380207195f2a065102b113930ccb600feaf615331', x2y2.address);
     await x2y2.updateDelegates([erc1155Delegate.address], []);
 
-    factorySudo = await LSSVMPairFactory.deploy();
-    routerSudo = await LSSVMRouter.deploy();
+    _enumerableETHTemplate = await LSSVMPairEnumerableETH.deploy();
+    _missingEnumerableETHTemplate = await LSSVMPairMissingEnumerableETH.deploy();
+    _enumerableERC20Template = await LSSVMPairEnumerableERC20.deploy();
+    _missingEnumerableERC20Template = await LSSVMPairMissingEnumerableERC20.deploy();
+    factorySudo = await LSSVMPairFactory.deploy(_enumerableETHTemplate.address, _missingEnumerableETHTemplate.address, _enumerableERC20Template.address, _missingEnumerableERC20Template.address, wallet9.address, "5000000000000000");
+    routerSudo = await LSSVMRouter.deploy(factorySudo.address);
+    await factorySudo.setRouterAllowed(routerSudo.address, true)
+    expSudo = await ExponentialCurve.deploy();
     linSudo = await LinearCurve.deploy();
+    await factorySudo.setBondingCurveAllowed(expSudo.address, true)
+    await factorySudo.setBondingCurveAllowed(linSudo.address, true)
 
     await transferProxy.addOperator(exchangeV2Proxy.address);
     await erc20TransferProxy.addOperator(exchangeV2Proxy.address);
@@ -2702,14 +2715,64 @@ describe('ExchangeWrapper Test', async function () {
     });
   });
 
-  describe('Sudoswap orders', () => {
-    it('Test singlePurchase Sudoswap, ERC721<->ETH', async () => {});
+  describe.skip('Sudoswap orders', () => {
+    it('Test singlePurchase Sudoswap, ERC721<->ETH', async () => {
+      const seller = wallet1;
+      const buyer = wallet2;
+
+      await factorySudo.deployed()
+      await routerSudo.deployed()
+      await linSudo.deployed();
+
+      await erc721.mint(seller.address, tokenId)
+      await erc721.connect(seller).setApprovalForAll(factorySudo.address, true, {from: seller.address})
+
+      const input = [
+        erc721.address,
+        linSudo.address,
+        seller.address,
+        1,
+        '100',
+        0,
+        "1000",
+        [
+          tokenId
+        ]
+      ]
+
+      const tx = await (await factorySudo.connect(seller).createPairETH(...input, {from: seller.address})).wait()
+
+      let pair
+      inReceipt(tx, 'NewPair', (ev: any) => {
+        pair = ev.poolAddress;
+        return true;
+      });
+      expect(await erc721.ownerOf(tokenId)).to.equal(pair)
+
+      const input2 = [
+        [ {pair: pair, nftIds: [ tokenId ] } ] as any,
+        buyer.address,
+        buyer.address,
+        "99999999999999"
+      ] as const
+
+      const tradeData = PurchaseData(MARKET_ID_SUDOSWAP, '1105', '0', await wrapperHelper.encodeSudoSwapCall(...input2))
+
+      const tx2 = await bulkExchange.singlePurchase(tradeData, ZERO, ZERO, {from: buyer.address, value: 1105})
+      const receipt = await tx2.wait();
+      // console.log('X2Y2:', receipt.gasUsed.toString());
+
+      expect(await erc721.ownerOf(tokenId)).to.equal(buyer.address)
+    });
 
     it('Test singlePurchase Sudoswap, ERC1155<->ETH', async () => {});
 
     it('Test bulkPurchase Sudoswap (num orders = 2), ERC721<->ETH', async () => {});
 
     it('Test bulkPurchase Sudoswap (num orders = 2), ERC1155<->ETH', async () => {});
+
+    // combined gm + sudo
+    // combined all with sudo
   });
 
   describe('Combined orders', () => {
