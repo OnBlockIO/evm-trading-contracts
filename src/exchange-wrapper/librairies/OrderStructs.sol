@@ -2,9 +2,18 @@
 
 pragma solidity ^0.8.9;
 
-enum Side { Buy, Sell }
-enum SignatureVersion { Single, Bulk }
-enum AssetType { ERC721, ERC1155 }
+enum Side {
+    Buy,
+    Sell
+}
+enum SignatureVersion {
+    Single,
+    Bulk
+}
+enum AssetType {
+    ERC721,
+    ERC1155
+}
 
 struct Fee {
     uint16 rate;
@@ -39,6 +48,6 @@ struct Input {
 }
 
 struct Execution {
-  Input sell;
-  Input buy;
+    Input sell;
+    Input buy;
 }

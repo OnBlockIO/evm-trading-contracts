@@ -287,7 +287,10 @@ contract WrapperHelper {
         );
     }
 
-    function encodeDataBlur(LibBlur.Input calldata buy, LibBlur.Input calldata sell) external pure returns(bytes memory){
+    function encodeDataBlur(
+        LibBlur.Input calldata buy,
+        LibBlur.Input calldata sell
+    ) external pure returns (bytes memory) {
         return abi.encode(buy, sell);
     }
 }

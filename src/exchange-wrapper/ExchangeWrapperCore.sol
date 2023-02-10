@@ -311,7 +311,7 @@ abstract contract ExchangeWrapperCore is
                 require(success, "Purchase SudoSwap failed");
             }
         } else if (purchaseDetails.marketId == Markets.Blur) {
-            (bool success,) = address(blur).call{value : paymentAmount}(marketData);
+            (bool success, ) = address(blur).call{value: paymentAmount}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);

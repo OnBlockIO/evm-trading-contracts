@@ -13,7 +13,5 @@ interface IBlurExchange {
 
     function incrementNonce() external;
 
-    function execute(Input calldata sell, Input calldata buy)
-        external
-        payable;
+    function execute(Input calldata sell, Input calldata buy) external payable;
 }
