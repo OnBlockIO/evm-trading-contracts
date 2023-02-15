@@ -25,7 +25,7 @@ const ethereum_testnet = {
   erc1155LazyMintTransferProxy: '0x1D86a5a19405f70308114bC21D092162C02C5Ae8',
   royalties_proxy: '0xca1284B5EEb97c31cc693c4b182C8E1075Dc57f9',
   exchange_proxy: '0x6c3E76022bEAAA29c12aca09823EDB6369F4bC6E',
-  exchange_wrapper_proxy: '0x57C8f2BB412301F8787f188B5B8E3AF83013fdEc',
+  exchange_wrapper_proxy: '0xc8F0542E4bc3DCCf64Dd5Ae5464d00F61D405363',
   customMatcher: '0x99428B1e5A8f5985625e9d19Ad0Ea19F33A5f749',
 };
 
