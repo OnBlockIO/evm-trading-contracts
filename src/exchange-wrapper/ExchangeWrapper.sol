@@ -13,11 +13,15 @@ contract ExchangeWrapper is ExchangeWrapperCore {
         address _x2y2,
         address _looksrare,
         address _sudoswap,
-        address _blur
+        address _blur,
+        address _wethToken,
+        ISwapRouterV3 _uniswapRouterV3,
+        address _erc20TransferProxy
+        // ISwapRouterV2 _uniswapRouterV2,
     ) external initializer {
         __Context_init_unchained();
         __Ownable_init_unchained();
         __Pausable_init_unchained();
-        __ExchangeWrapper_init_unchained(_exchangeV2, _rarible, _wyvern, _seaport, _x2y2, _looksrare, _sudoswap, _blur);
+        __ExchangeWrapper_init_unchained(_exchangeV2, _rarible, _wyvern, _seaport, _x2y2, _looksrare, _sudoswap, _blur, _wethToken, _uniswapRouterV3, _erc20TransferProxy/*, _uniswapRouterV2*/);
     }
 }

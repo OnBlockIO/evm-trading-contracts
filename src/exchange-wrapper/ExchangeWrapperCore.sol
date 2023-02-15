@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 import "./interfaces/IWyvernExchange.sol";
 import "./interfaces/IExchangeV2.sol";
@@ -17,6 +18,9 @@ import "./interfaces/ISeaPort.sol";
 import "./interfaces/Ix2y2.sol";
 import "./interfaces/ILooksRare.sol";
 import "./interfaces/IBlurExchange.sol";
+import {IWETH} from "./interfaces/IWETH.sol";
+import {ISwapRouterV3} from "./interfaces/ISwapRouterV3.sol";
+// import {ISwapRouterV2} from "./interfaces/ISwapRouterV3.sol";
 
 abstract contract ExchangeWrapperCore is
     Initializable,
@@ -27,15 +31,20 @@ abstract contract ExchangeWrapperCore is
 {
     using LibTransfer for address;
     using BpLibrary for uint;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    address public exchangeV2;
-    address public rarible;
-    address public wyvern;
-    address public seaport;
-    address public x2y2;
-    address public looksrare;
-    address public sudoswap;
-    address public blur;
+    address internal exchangeV2;
+    address internal rarible;
+    address internal wyvern;
+    address internal seaport;
+    address internal x2y2;
+    address internal looksrare;
+    address internal sudoswap;
+    address internal blur;
+    address internal wethToken;
+    ISwapRouterV3 internal uniswapRouterV3;
+    address internal erc20TransferProxy;
+    // ISwapRouterV2 internal uniswapRouterV2;
 
     event Execution(bool result, address indexed sender);
 
@@ -82,6 +91,37 @@ abstract contract ExchangeWrapperCore is
         uint[] additionalRoyalties;
     }
 
+    /**
+        @notice struct for the swap in data
+        @param tokenIn - tokenIn
+        @param tokenOut - tokenOut
+        @param amountOut - amountOut
+        @param amountInMaximum - amountInMaximum
+        @param unwrap - unwrap
+     */
+    struct SwapDetailsIn {
+        address tokenIn;
+        address tokenOut;
+        uint256 amountOut;
+        uint256 amountInMaximum;
+        bool unwrap;
+    }
+
+    /**
+        @notice struct for the swap out data
+        @param tokenIn - tokenIn
+        @param tokenOut - tokenOut
+        @param amountIn - amountOut
+        @param amountOutMinimum - amountOutMinimum
+     */
+    struct SwapDetailsOut {
+        address tokenIn;
+        address tokenOut;
+        uint256 amountIn;
+        uint256 amountOutMinimum;
+        bool wrap;
+    }
+
     function __ExchangeWrapper_init_unchained(
         address _exchangeV2,
         address _rarible,
@@ -90,7 +130,11 @@ abstract contract ExchangeWrapperCore is
         address _x2y2,
         address _looksrare,
         address _sudoswap,
-        address _blur
+        address _blur,
+        address _wethToken,
+        ISwapRouterV3 _uniswapRouterV3,
+        address _erc20TransferProxy
+        // ISwapRouterV2 _uniswapRouterV2,
     ) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
@@ -100,6 +144,10 @@ abstract contract ExchangeWrapperCore is
         looksrare = _looksrare;
         sudoswap = _sudoswap;
         blur = _blur;
+        wethToken = _wethToken;
+        uniswapRouterV3 = _uniswapRouterV3;
+        erc20TransferProxy = _erc20TransferProxy;
+        // uniswapRouterV2 = _uniswapRouterV2;
     }
 
     /// @notice Pause the contract
@@ -112,6 +160,32 @@ abstract contract ExchangeWrapperCore is
         _unpause();
     }
 
+    /// temp for upgrade - to remove once initialized
+    function setTransferProxy(address _erc20TransferProxy) external onlyOwner {
+        erc20TransferProxy = _erc20TransferProxy;
+    }
+
+    function setRarible(address _rarible) external onlyOwner {
+        rarible = _rarible;
+    }
+
+    function setBlur(address _blur) external onlyOwner {
+        blur = _blur;
+    }
+
+    function setWeth(address _wethToken) external onlyOwner {
+        wethToken = _wethToken;
+    }
+
+    function setUniswapV3(ISwapRouterV3 _uniswapRouterV3) external onlyOwner {
+        uniswapRouterV3 = _uniswapRouterV3;
+    }
+
+    /*function setUniswapV2(ISwapRouterV2 _uniswapRouterV2) external onlyOwner {
+        uniswapRouterV2 = _uniswapRouterV2;
+    }*/
+    /// temp for upgrade - to remove once initialized
+
     /**
         @notice executes a single purchase
         @param purchaseDetails - details about the purchase (more info in PurchaseDetails struct)
@@ -121,8 +195,16 @@ abstract contract ExchangeWrapperCore is
     function singlePurchase(
         PurchaseDetails memory purchaseDetails,
         address feeRecipientFirst,
-        address feeRecipientSecond
+        address feeRecipientSecond,
+        SwapDetailsIn memory swapDetails
     ) external payable whenNotPaused {
+
+        if (swapDetails.tokenIn != address(0))
+        {
+            bool isSwapExecuted = swapTokensForETHOrWETH(swapDetails);
+            require(isSwapExecuted, "swap not successful");
+        }
+
         (bool success, uint feeAmountFirst, uint feeAmountSecond) = purchase(purchaseDetails, false);
         emit Execution(success, _msgSender());
 
@@ -144,11 +226,19 @@ abstract contract ExchangeWrapperCore is
         PurchaseDetails[] memory purchaseDetails,
         address feeRecipientFirst,
         address feeRecipientSecond,
-        bool allowFail
+        bool allowFail,
+        SwapDetailsIn memory swapDetails
+
     ) external payable whenNotPaused {
         uint sumFirstFees = 0;
         uint sumSecondFees = 0;
         bool result = false;
+
+        if (swapDetails.tokenIn != address(0))
+        {
+            bool isSwapExecuted = swapTokensForETHOrWETH(swapDetails);
+            require(isSwapExecuted, "swap not successful");
+        }
 
         uint length = purchaseDetails.length;
         for (uint i; i < length; ++i) {
@@ -438,6 +528,98 @@ abstract contract ExchangeWrapperCore is
         }
 
         return false;
+    }
+
+    /**
+        * @notice swaps tokenIn for ETH or WETH
+        * @param swapDetails swapDetails required
+     */
+    function swapTokensForETHOrWETH(SwapDetailsIn memory swapDetails) internal returns (bool) {
+
+        // Move tokenIn to contract
+        IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(IERC20Upgradeable(swapDetails.tokenIn), _msgSender(), address(this), swapDetails.amountInMaximum);
+
+        // Approve tokenIn on uniswap
+        uint256 allowance = IERC20Upgradeable(swapDetails.tokenIn).allowance(address(uniswapRouterV3), address(this));
+        if (allowance < swapDetails.amountInMaximum)
+        {
+            IERC20Upgradeable(swapDetails.tokenIn).approve(address(uniswapRouterV3), type(uint256).max);
+        }
+
+        // Set the order parameters
+        ISwapRouterV3.ExactOutputSingleParams memory params = ISwapRouterV3.ExactOutputSingleParams(
+            address(swapDetails.tokenIn), // tokenIn
+            address(wethToken), // tokenOut
+            3000, // fee
+            address(this), // recipient
+            block.timestamp, // deadline
+            swapDetails.amountOut, // amountOut
+            swapDetails.amountInMaximum, // amountInMaximum
+            0 // sqrtPriceLimitX96
+        );
+
+        // Swap
+        try uniswapRouterV3.exactOutputSingle(params) returns (uint256) {} catch {
+            return false;
+        }
+        // Refund ETH from swap if any
+        uniswapRouterV3.refundETH();
+
+        // Unwrap if required
+        if (swapDetails.unwrap)
+        {
+            IWETH(wethToken).withdraw(swapDetails.amountOut);
+        }
+
+        // Refund tokenIn left if any
+        uint256 amountLeft = IERC20Upgradeable(swapDetails.tokenIn).balanceOf(address(this));
+        if (amountLeft > 0)
+        {
+            IERC20Upgradeable(swapDetails.tokenIn).transfer(_msgSender(), amountLeft);
+        }
+       
+        return true;
+    }
+
+    /**
+        * @notice swaps ETH or WETH for tokenOut
+        * @param swapDetails swapDetails required
+     */
+    function swapETHOrWethForTokens(SwapDetailsOut memory swapDetails) internal returns (bool) {
+
+       // Move tokenIn to contract if ERC20
+        if (!swapDetails.wrap)
+        {
+            IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(IERC20Upgradeable(swapDetails.tokenIn), _msgSender(), address(this), swapDetails.amountIn);
+        }
+
+        // Approve tokenIn on uniswap
+        uint256 allowance = IERC20Upgradeable(wethToken).allowance(address(uniswapRouterV3), address(this));
+        if (allowance < swapDetails.amountIn)
+        {
+            IERC20Upgradeable(wethToken).approve(address(uniswapRouterV3), type(uint256).max);
+        }
+
+        // Set the order parameters
+        ISwapRouterV3.ExactInputSingleParams memory params = ISwapRouterV3.ExactInputSingleParams(
+            address(wethToken), // tokenIn
+            address(swapDetails.tokenOut), // tokenOut
+            3000, // fee
+            address(this), // recipient
+            block.timestamp, // deadline
+            swapDetails.amountIn, // amountIn
+            swapDetails.amountOutMinimum, // amountOutMinimum
+            0 // sqrtPriceLimitX96
+        );
+
+        // Swap
+        try uniswapRouterV3.exactInputSingle(params) returns (uint256) {} catch {
+            return false;
+        }
+        // Refund ETH from swap if any
+        uniswapRouterV3.refundETH();
+
+        return true;
     }
 
     receive() external payable {}
