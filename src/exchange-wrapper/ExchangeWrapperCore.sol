@@ -20,7 +20,7 @@ import "./interfaces/ILooksRare.sol";
 import "./interfaces/IBlurExchange.sol";
 import {IWETH} from "./interfaces/IWETH.sol";
 import {ISwapRouterV3} from "./interfaces/ISwapRouterV3.sol";
-// import {ISwapRouterV2} from "./interfaces/ISwapRouterV3.sol";
+import {ISwapRouterV2} from "./interfaces/ISwapRouterV2.sol";
 
 abstract contract ExchangeWrapperCore is
     Initializable,
@@ -44,7 +44,7 @@ abstract contract ExchangeWrapperCore is
     address internal wethToken;
     ISwapRouterV3 internal uniswapRouterV3;
     address internal erc20TransferProxy;
-    // ISwapRouterV2 internal uniswapRouterV2;
+    ISwapRouterV2 internal uniswapRouterV2;
 
     event Execution(bool result, address indexed sender);
 
@@ -131,8 +131,8 @@ abstract contract ExchangeWrapperCore is
         address _blur,
         address _wethToken,
         ISwapRouterV3 _uniswapRouterV3,
-        address _erc20TransferProxy
-        // ISwapRouterV2 _uniswapRouterV2,
+        address _erc20TransferProxy,
+        ISwapRouterV2 _uniswapRouterV2
     ) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
@@ -145,7 +145,7 @@ abstract contract ExchangeWrapperCore is
         wethToken = _wethToken;
         uniswapRouterV3 = _uniswapRouterV3;
         erc20TransferProxy = _erc20TransferProxy;
-        // uniswapRouterV2 = _uniswapRouterV2;
+        uniswapRouterV2 = _uniswapRouterV2;
     }
 
     /// @notice Pause the contract
@@ -179,9 +179,9 @@ abstract contract ExchangeWrapperCore is
         uniswapRouterV3 = _uniswapRouterV3;
     }
 
-    /*function setUniswapV2(ISwapRouterV2 _uniswapRouterV2) external onlyOwner {
+    function setUniswapV2(ISwapRouterV2 _uniswapRouterV2) external onlyOwner {
         uniswapRouterV2 = _uniswapRouterV2;
-    }*/
+    }
     /// temp for upgrade - to remove once initialized
 
     /**
@@ -197,9 +197,14 @@ abstract contract ExchangeWrapperCore is
         SwapDetailsIn memory swapDetails
     ) external payable whenNotPaused {
 
-        if (swapDetails.amountOut > 0)
+        if (swapDetails.amountOut > 0 && address(uniswapRouterV3) != address(0))
         {
             bool isSwapExecuted = swapTokensForETHOrWETH(swapDetails);
+            require(isSwapExecuted, "swap not successful");
+        }
+        else if (swapDetails.amountOut > 0)
+        {
+            bool isSwapExecuted = swapV2TokensForETHOrWETH(swapDetails);
             require(isSwapExecuted, "swap not successful");
         }
 
@@ -529,7 +534,64 @@ abstract contract ExchangeWrapperCore is
     }
 
     /**
-        * @notice swaps tokenIn for ETH or WETH
+        * @notice swaps tokenIn for ETH or WETH - uniswap v2
+        * @param swapDetails swapDetails required
+     */
+    function swapV2TokensForETHOrWETH(SwapDetailsIn memory swapDetails) internal returns (bool) {
+
+        // extract tokenIn from path
+        address tokenIn;
+        bytes memory _path = swapDetails.path;
+        assembly {
+            tokenIn := div(mload(add(add(_path, 0x20), 0)), 0x1000000000000000000000000)
+        }
+
+        // Move tokenIn to contract
+        IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(IERC20Upgradeable(tokenIn), _msgSender(), address(this), swapDetails.amountInMaximum);
+
+        // Approve tokenIn on uniswap
+        uint256 allowance = IERC20Upgradeable(tokenIn).allowance(address(uniswapRouterV2), address(this));
+        if (allowance < swapDetails.amountInMaximum)
+        {
+            IERC20Upgradeable(tokenIn).approve(address(uniswapRouterV2), type(uint256).max);
+        }
+
+        // Set the order parameters
+        ISwapRouterV2.ExactOutputParams memory params = ISwapRouterV2.ExactOutputParams(
+            swapDetails.path,
+            address(this), // recipient
+            swapDetails.amountOut, // amountOut
+            swapDetails.amountInMaximum // amountInMaximum
+        );
+
+        // Swap
+        uint256 amountIn;
+        try uniswapRouterV2.exactOutput(params) returns (uint256 amount)
+        {
+            amountIn = amount;
+        } catch {
+            return false;
+        }
+        // Refund ETH from swap if any
+        uniswapRouterV2.refundETH();
+
+        // Unwrap if required
+        if (swapDetails.unwrap)
+        {
+            IWETH(wethToken).withdraw(swapDetails.amountOut);
+        }
+
+        // Refund tokenIn left if any
+        if (amountIn < swapDetails.amountInMaximum)
+        {
+            IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
+        }
+       
+        return true;
+    }
+
+    /**
+        * @notice swaps tokenIn for ETH or WETH - uniswap v3
         * @param swapDetails swapDetails required
      */
     function swapTokensForETHOrWETH(SwapDetailsIn memory swapDetails) internal returns (bool) {
@@ -587,8 +649,52 @@ abstract contract ExchangeWrapperCore is
         return true;
     }
 
+
     /**
-        * @notice swaps ETH or WETH for tokenOut
+        * @notice swaps ETH or WETH for tokenOut - uniswap v2
+        * @param swapDetails swapDetails required
+     */
+    function swapV2ETHOrWethForTokens(SwapDetailsOut memory swapDetails) internal returns (bool) {
+
+       // Move tokenIn to contract if ERC20
+        if (!swapDetails.wrap)
+        {
+            // extract tokenIn from path
+            address tokenIn;
+            bytes memory _path = swapDetails.path;
+            assembly {
+                tokenIn := div(mload(add(add(_path, 0x20), 0)), 0x1000000000000000000000000)
+            }
+            IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(IERC20Upgradeable(tokenIn), _msgSender(), address(this), swapDetails.amountIn);
+        }
+
+        // Approve tokenIn on uniswap
+        uint256 allowance = IERC20Upgradeable(wethToken).allowance(address(uniswapRouterV2), address(this));
+        if (allowance < swapDetails.amountIn)
+        {
+            IERC20Upgradeable(wethToken).approve(address(uniswapRouterV2), type(uint256).max);
+        }
+
+        // Set the order parameters
+        ISwapRouterV2.ExactInputParams memory params = ISwapRouterV2.ExactInputParams(
+            swapDetails.path, // path
+            address(this), // recipient
+            swapDetails.amountIn, // amountIn
+            swapDetails.amountOutMinimum // amountOutMinimum
+        );
+
+        // Swap
+        try uniswapRouterV2.exactInput(params) returns (uint256) {} catch {
+            return false;
+        }
+        // Refund ETH from swap if any
+        uniswapRouterV2.refundETH();
+
+        return true;
+    }
+
+    /**
+        * @notice swaps ETH or WETH for tokenOut - uniswap v3
         * @param swapDetails swapDetails required
      */
     function swapETHOrWethForTokens(SwapDetailsOut memory swapDetails) internal returns (bool) {
