@@ -562,7 +562,11 @@ abstract contract ExchangeWrapperCore is
         );
 
         // Swap
-        try uniswapRouterV3.exactOutput(params) returns (uint256) {} catch {
+        uint256 amountIn;
+        try uniswapRouterV3.exactOutput(params) returns (uint256 amount)
+        {
+            amountIn = amount;
+        } catch {
             return false;
         }
         // Refund ETH from swap if any
@@ -575,10 +579,9 @@ abstract contract ExchangeWrapperCore is
         }
 
         // Refund tokenIn left if any
-        uint256 amountLeft = IERC20Upgradeable(tokenIn).balanceOf(address(this));
-        if (amountLeft > 0)
+        if (amountIn < swapDetails.amountInMaximum)
         {
-            IERC20Upgradeable(tokenIn).transfer(_msgSender(), amountLeft);
+            IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
         }
        
         return true;
