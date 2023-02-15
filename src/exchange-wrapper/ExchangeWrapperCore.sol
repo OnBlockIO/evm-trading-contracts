@@ -150,7 +150,8 @@ abstract contract ExchangeWrapperCore is
         uint sumSecondFees = 0;
         bool result = false;
 
-        for (uint i = 0; i < purchaseDetails.length; i++) {
+        uint length = purchaseDetails.length;
+        for (uint i; i < length; ++i) {
             (bool success, uint firstFeeAmount, uint secondFeeAmount) = purchase(purchaseDetails[i], allowFail);
 
             result = result || success;
@@ -230,10 +231,11 @@ abstract contract ExchangeWrapperCore is
                 Ix2y2(x2y2).run{value: paymentAmount}(input);
             }
 
-            //for every element in input.details[] getting
+            // for every element in input.details[] getting
             // order = input.details[i].orderIdx
             // and from that order getting item = input.details[i].itemId
-            for (uint i = 0; i < input.details.length; i++) {
+            uint length = input.details.length;
+            for (uint i; i < length; ++i) {
                 uint orderId = input.details[i].orderIdx;
                 uint itemId = input.details[i].itemIdx;
                 bytes memory data = input.orders[orderId].items[itemId].data;
@@ -402,7 +404,8 @@ abstract contract ExchangeWrapperCore is
         @param _additionalRoyalties array uint256 (base point + royalty recipient address)
      */
     function transferAdditionalRoyalties(uint[] memory _additionalRoyalties, uint amount) internal {
-        for (uint i = 0; i < _additionalRoyalties.length; i++) {
+        uint length = _additionalRoyalties.length;
+        for (uint i; i < length; ++i) {
             if (_additionalRoyalties[i] > 0) {
                 address payable account = payable(address(uint160(_additionalRoyalties[i])));
                 uint basePoint = uint(_additionalRoyalties[i] >> 160);
@@ -417,7 +420,8 @@ abstract contract ExchangeWrapperCore is
         require(src.length == replacement.length);
         require(src.length == mask.length);
 
-        for (uint256 i = 0; i < src.length; i++) {
+        uint256 length = src.length;
+        for (uint256 i; i < length; ++i) {
             if (mask[i] != 0) {
                 src[i] = replacement[i];
             }
