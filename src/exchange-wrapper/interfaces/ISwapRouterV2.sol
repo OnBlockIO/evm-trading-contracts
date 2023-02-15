@@ -3,61 +3,53 @@
 pragma solidity ^0.8.9;
 
 /// @title Router token swapping functionality
-/// @notice Functions for swapping tokens via Uniswap V3
+/// @notice Functions for swapping tokens via Uniswap V2
 interface ISwapRouterV2 {
-	struct ExactInputSingleParams {
-		address tokenIn;
-		address tokenOut;
-		uint24 fee;
-		address recipient;
-		uint256 amountIn;
-		uint256 amountOutMinimum;
-		uint160 sqrtPriceLimitX96;
-	}
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
 
-	/// @notice Swaps `amountIn` of one token for as much as possible of another token
-	/// @param params The parameters necessary for the swap, encoded as `ExactInputSingleParams` in calldata
-	/// @return amountOut The amount of the received token
-	function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut);
+    function swapTokensForExactTokens(
+        uint amountOut,
+        uint amountInMax,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
 
-	struct ExactInputParams {
-		bytes path;
-		address recipient;
-		uint256 amountIn;
-		uint256 amountOutMinimum;
-	}
+    function swapExactETHForTokens(
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external payable returns (uint[] memory amounts);
 
-	/// @notice Swaps `amountIn` of one token for as much as possible of another along the specified path
-	/// @param params The parameters necessary for the multi-hop swap, encoded as `ExactInputParams` in calldata
-	/// @return amountOut The amount of the received token
-	function exactInput(ExactInputParams calldata params) external payable returns (uint256 amountOut);
+    function swapTokensForExactETH(
+        uint amountOut,
+        uint amountInMax,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
 
-    struct ExactOutputSingleParams {
-        address tokenIn;
-        address tokenOut;
-        uint24 fee;
-        address recipient;
-        uint256 amountOut;
-        uint256 amountInMaximum;
-        uint160 sqrtPriceLimitX96;
-    }
+    function swapExactTokensForETH(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
 
-    /// @notice Swaps as little as possible of one token for `amountOut` of another token
-    /// @param params The parameters necessary for the swap, encoded as `ExactOutputSingleParams` in calldata
-    /// @return amountIn The amount of the input token
-    function exactOutputSingle(ExactOutputSingleParams calldata params) external payable returns (uint256 amountIn);
-
-    struct ExactOutputParams {
-        bytes path;
-        address recipient;
-        uint256 amountOut;
-        uint256 amountInMaximum;
-    }
-
-    /// @notice Swaps as little as possible of one token for `amountOut` of another along the specified path (reversed)
-    /// @param params The parameters necessary for the multi-hop swap, encoded as `ExactOutputParams` in calldata
-    /// @return amountIn The amount of the input token
-    function exactOutput(ExactOutputParams calldata params) external payable returns (uint256 amountIn);
+    function swapETHForExactTokens(
+        uint amountOut,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external payable returns (uint[] memory amounts);
 
     function refundETH() external payable;
 }
