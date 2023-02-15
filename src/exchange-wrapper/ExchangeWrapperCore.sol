@@ -100,8 +100,7 @@ abstract contract ExchangeWrapperCore is
         @param unwrap - unwrap
      */
     struct SwapDetailsIn {
-        address tokenIn;
-        address tokenOut;
+        bytes path;
         uint256 amountOut;
         uint256 amountInMaximum;
         bool unwrap;
@@ -115,8 +114,7 @@ abstract contract ExchangeWrapperCore is
         @param amountOutMinimum - amountOutMinimum
      */
     struct SwapDetailsOut {
-        address tokenIn;
-        address tokenOut;
+        bytes path;
         uint256 amountIn;
         uint256 amountOutMinimum;
         bool wrap;
@@ -199,7 +197,7 @@ abstract contract ExchangeWrapperCore is
         SwapDetailsIn memory swapDetails
     ) external payable whenNotPaused {
 
-        if (swapDetails.tokenIn != address(0))
+        if (swapDetails.amountOut > 0)
         {
             bool isSwapExecuted = swapTokensForETHOrWETH(swapDetails);
             require(isSwapExecuted, "swap not successful");
@@ -234,7 +232,7 @@ abstract contract ExchangeWrapperCore is
         uint sumSecondFees = 0;
         bool result = false;
 
-        if (swapDetails.tokenIn != address(0))
+        if (swapDetails.amountOut > 0)
         {
             bool isSwapExecuted = swapTokensForETHOrWETH(swapDetails);
             require(isSwapExecuted, "swap not successful");
@@ -536,30 +534,35 @@ abstract contract ExchangeWrapperCore is
      */
     function swapTokensForETHOrWETH(SwapDetailsIn memory swapDetails) internal returns (bool) {
 
+        // extract tokenIn from path
+        address tokenIn;
+        bytes memory _path = swapDetails.path;
+        uint _start = _path.length - 20;
+        assembly {
+            tokenIn := div(mload(add(add(_path, 0x20), _start)), 0x1000000000000000000000000)
+        }
+
         // Move tokenIn to contract
-        IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(IERC20Upgradeable(swapDetails.tokenIn), _msgSender(), address(this), swapDetails.amountInMaximum);
+        IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(IERC20Upgradeable(tokenIn), _msgSender(), address(this), swapDetails.amountInMaximum);
 
         // Approve tokenIn on uniswap
-        uint256 allowance = IERC20Upgradeable(swapDetails.tokenIn).allowance(address(uniswapRouterV3), address(this));
+        uint256 allowance = IERC20Upgradeable(tokenIn).allowance(address(uniswapRouterV3), address(this));
         if (allowance < swapDetails.amountInMaximum)
         {
-            IERC20Upgradeable(swapDetails.tokenIn).approve(address(uniswapRouterV3), type(uint256).max);
+            IERC20Upgradeable(tokenIn).approve(address(uniswapRouterV3), type(uint256).max);
         }
 
         // Set the order parameters
-        ISwapRouterV3.ExactOutputSingleParams memory params = ISwapRouterV3.ExactOutputSingleParams(
-            address(swapDetails.tokenIn), // tokenIn
-            address(wethToken), // tokenOut
-            3000, // fee
+        ISwapRouterV3.ExactOutputParams memory params = ISwapRouterV3.ExactOutputParams(
+            swapDetails.path,
             address(this), // recipient
             block.timestamp, // deadline
             swapDetails.amountOut, // amountOut
-            swapDetails.amountInMaximum, // amountInMaximum
-            0 // sqrtPriceLimitX96
+            swapDetails.amountInMaximum // amountInMaximum
         );
 
         // Swap
-        try uniswapRouterV3.exactOutputSingle(params) returns (uint256) {} catch {
+        try uniswapRouterV3.exactOutput(params) returns (uint256) {} catch {
             return false;
         }
         // Refund ETH from swap if any
@@ -572,10 +575,10 @@ abstract contract ExchangeWrapperCore is
         }
 
         // Refund tokenIn left if any
-        uint256 amountLeft = IERC20Upgradeable(swapDetails.tokenIn).balanceOf(address(this));
+        uint256 amountLeft = IERC20Upgradeable(tokenIn).balanceOf(address(this));
         if (amountLeft > 0)
         {
-            IERC20Upgradeable(swapDetails.tokenIn).transfer(_msgSender(), amountLeft);
+            IERC20Upgradeable(tokenIn).transfer(_msgSender(), amountLeft);
         }
        
         return true;
@@ -590,7 +593,14 @@ abstract contract ExchangeWrapperCore is
        // Move tokenIn to contract if ERC20
         if (!swapDetails.wrap)
         {
-            IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(IERC20Upgradeable(swapDetails.tokenIn), _msgSender(), address(this), swapDetails.amountIn);
+            // extract tokenIn from path
+            address tokenIn;
+            bytes memory _path = swapDetails.path;
+            uint _start = _path.length;
+            assembly {
+                tokenIn := div(mload(add(add(_path, 0x20), _start)), 0x1000000000000000000000000)
+            }
+            IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(IERC20Upgradeable(tokenIn), _msgSender(), address(this), swapDetails.amountIn);
         }
 
         // Approve tokenIn on uniswap
@@ -601,19 +611,16 @@ abstract contract ExchangeWrapperCore is
         }
 
         // Set the order parameters
-        ISwapRouterV3.ExactInputSingleParams memory params = ISwapRouterV3.ExactInputSingleParams(
-            address(wethToken), // tokenIn
-            address(swapDetails.tokenOut), // tokenOut
-            3000, // fee
+        ISwapRouterV3.ExactInputParams memory params = ISwapRouterV3.ExactInputParams(
+            swapDetails.path, // path
             address(this), // recipient
             block.timestamp, // deadline
             swapDetails.amountIn, // amountIn
-            swapDetails.amountOutMinimum, // amountOutMinimum
-            0 // sqrtPriceLimitX96
+            swapDetails.amountOutMinimum // amountOutMinimum
         );
 
         // Swap
-        try uniswapRouterV3.exactInputSingle(params) returns (uint256) {} catch {
+        try uniswapRouterV3.exactInput(params) returns (uint256) {} catch {
             return false;
         }
         // Refund ETH from swap if any
