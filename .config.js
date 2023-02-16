@@ -47,7 +47,7 @@ const avalanche_mainnet = {
   customMatcher: '0x113c8b438687DD1a9b04e7B5984d1fC00E176AD6',
   seaport: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
   wrapped:'0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
-  uniswapV2: '',
+  uniswapV2: '0xE3Ffc583dC176575eEA7FD9dF2A7c65F7E23f4C3',
   uniswapV3: ''
 };
 
