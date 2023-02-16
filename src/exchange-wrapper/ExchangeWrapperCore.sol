@@ -239,7 +239,7 @@ abstract contract ExchangeWrapperCore is
         address feeRecipientSecond,
         SwapDetailsIn memory swapDetails
     ) external payable whenNotPaused {
-        bool isSwapExecuted = swapTokensForETH(swapDetails);
+        bool isSwapExecuted = swapTokensForETHOrWETH(swapDetails);
         require(isSwapExecuted, "swap not successful");
         singlePurchase(purchaseDetails, feeRecipientFirst, feeRecipientSecond);
     }
