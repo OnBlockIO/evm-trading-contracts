@@ -623,6 +623,13 @@ abstract contract ExchangeWrapperCore is
         // extract tokenIn from path
         address tokenIn = swapDetails.path[0];
 
+        // if source = wrapped and destination = native, unwrap and return
+        if (tokenIn == wrappedToken)
+        {
+            IWETH(wrappedToken).withdraw(swapDetails.amountOut);
+            return true;
+        }
+
         // Move tokenIn to contract
         IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
             IERC20Upgradeable(tokenIn),
@@ -694,6 +701,13 @@ abstract contract ExchangeWrapperCore is
         uint _start = _path.length - 20;
         assembly {
             tokenIn := div(mload(add(add(_path, 0x20), _start)), 0x1000000000000000000000000)
+        }
+
+        // if source = wrapped and destination = native, unwrap and return
+        if (tokenIn == wrappedToken)
+        {
+            IWETH(wrappedToken).withdraw(swapDetails.amountOut);
+            return true;
         }
 
         // Move tokenIn to contract
