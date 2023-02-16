@@ -62,7 +62,7 @@ const avalanche_testnet = {
   exchange_wrapper_proxy: '0xDe28ff4d26B3c124d47299B100201E89aB58E675',
   customMatcher: '0x68efd84E9Fe2D36c36243dEB2E9B1d3d3cd15423',
   wrapped:'0xd00ae08403B9bbb9124bB305C09058E32C39A48c',
-  uniswapV2: '',
+  uniswapV2: '0x0C344c52841d3F8d488E1CcDBafB42CE2C7fdFA9',
   uniswapV3: ''
 };
 
