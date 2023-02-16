@@ -115,6 +115,7 @@ abstract contract ExchangeWrapperCore is
         address[] path;
         uint256 amountOut;
         uint256 amountInMaximum;
+        uint256[] binSteps;
     }
 
     /**
@@ -141,6 +142,7 @@ abstract contract ExchangeWrapperCore is
         address[] path;
         uint256 amountIn;
         uint256 amountOutMinimum;
+        uint256[] binSteps;
     }
 
     function __ExchangeWrapper_init_unchained(
@@ -636,19 +638,41 @@ abstract contract ExchangeWrapperCore is
         }
 
         // Swap
+        uint256 chainId = block.chainid;
+        bool isAvalanche = chainId == 43114 || chainId == 43113;
         uint256 amountIn;
-        try
-            uniswapRouterV2.swapTokensForExactETH(
-                swapDetails.amountOut, // amountOut
-                swapDetails.amountInMaximum, // amountInMaximum
-                swapDetails.path, // path
-                address(this), // recipient
-                block.timestamp // deadline
-            )
-        returns (uint[] memory amounts) {
-            amountIn = amounts[0];
-        } catch {
-            return false;
+        if (isAvalanche)
+        {
+            try
+                uniswapRouterV2.swapTokensForExactAVAX(
+                    swapDetails.amountOut, // amountOut
+                    swapDetails.amountInMaximum, // amountInMaximum
+                    swapDetails.binSteps, // binSteps
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountIn = amounts[0];
+            } catch {
+                return false;
+            }
+        }
+        else
+        {
+            try
+                uniswapRouterV2.swapTokensForExactETH(
+                    swapDetails.amountOut, // amountOut
+                    swapDetails.amountInMaximum, // amountInMaximum
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountIn = amounts[0];
+            } catch {
+                return false;
+            }
         }
 
         // Refund tokenIn left if any
@@ -725,18 +749,39 @@ abstract contract ExchangeWrapperCore is
     function swapV2ETHForTokens(SwapV2DetailsOut memory swapDetails) internal returns (bool) {
 
         // Swap
+        uint256 chainId = block.chainid;
+        bool isAvalanche = chainId == 43114 || chainId == 43113;
         uint256 amountIn;
-        try
-            uniswapRouterV2.swapExactETHForTokens(
-                swapDetails.amountOutMinimum, // amountOutMinimum
-                swapDetails.path, // path
-                address(this), // recipient
-                block.timestamp // deadline
-            )
-        returns (uint[] memory amounts) {
-            amountIn = amounts[0];
-        } catch {
-            return false;
+        if (isAvalanche)
+        {
+            try
+                uniswapRouterV2.swapExactAVAXForTokens(
+                    swapDetails.amountOutMinimum, // amountOutMinimum
+                    swapDetails.binSteps, // binSteps
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountIn = amounts[0];
+            } catch {
+                return false;
+            }
+        }
+        else
+        {
+            try
+                uniswapRouterV2.swapExactETHForTokens(
+                    swapDetails.amountOutMinimum, // amountOutMinimum
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountIn = amounts[0];
+            } catch {
+                return false;
+            }
         }
 
         return true;

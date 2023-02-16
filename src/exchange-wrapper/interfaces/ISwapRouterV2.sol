@@ -51,5 +51,39 @@ interface ISwapRouterV2 {
         uint deadline
     ) external payable returns (uint[] memory amounts);
 
+    function swapExactAVAXForTokens(
+        uint amountOutMin,
+        uint[] calldata binSteps,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external payable returns (uint[] memory amounts);
+
+    function swapTokensForExactAVAX(
+        uint amountOut,
+        uint amountInMax,
+        uint[] calldata binSteps,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
+
+    function swapExactTokensForAVAX(
+        uint amountIn,
+        uint amountOutMin,
+        uint[] calldata binSteps,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
+
+    function swapAVAXForExactTokens(
+        uint amountOut,
+        uint[] calldata binSteps,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external payable returns (uint[] memory amounts);
+
     function refundETH() external payable;
 }
