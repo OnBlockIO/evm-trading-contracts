@@ -33,18 +33,18 @@ abstract contract ExchangeWrapperCore is
     using BpLibrary for uint;
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    address internal exchangeV2;
-    address internal rarible;
-    address internal wyvern;
-    address internal seaport;
-    address internal x2y2;
-    address internal looksrare;
-    address internal sudoswap;
-    address internal blur;
-    address internal wrappedToken;
-    ISwapRouterV3 internal uniswapRouterV3;
-    address internal erc20TransferProxy;
-    ISwapRouterV2 internal uniswapRouterV2;
+    address public exchangeV2;
+    address public rarible;
+    address public wyvern;
+    address public seaport;
+    address public x2y2;
+    address public looksrare;
+    address public sudoswap;
+    address public blur;
+    address public wrappedToken;
+    ISwapRouterV3 public uniswapRouterV3;
+    address public erc20TransferProxy;
+    ISwapRouterV2 public uniswapRouterV2;
 
     event Execution(bool result, address indexed sender);
 
@@ -181,6 +181,14 @@ abstract contract ExchangeWrapperCore is
         _unpause();
     }
 
+    function setUniswapV2(ISwapRouterV2 _uniswapRouterV2) external onlyOwner {
+        uniswapRouterV2 = _uniswapRouterV2;
+    }
+
+    function setUniswapV3(ISwapRouterV3 _uniswapRouterV3) external onlyOwner {
+        uniswapRouterV3 = _uniswapRouterV3;
+    }
+
     /// temp for upgrade - to remove once initialized
     function setTransferProxy(address _erc20TransferProxy) external onlyOwner {
         erc20TransferProxy = _erc20TransferProxy;
@@ -197,15 +205,6 @@ abstract contract ExchangeWrapperCore is
     function setWrapped(address _wrappedToken) external onlyOwner {
         wrappedToken = _wrappedToken;
     }
-
-    function setUniswapV3(ISwapRouterV3 _uniswapRouterV3) external onlyOwner {
-        uniswapRouterV3 = _uniswapRouterV3;
-    }
-
-    function setUniswapV2(ISwapRouterV2 _uniswapRouterV2) external onlyOwner {
-        uniswapRouterV2 = _uniswapRouterV2;
-    }
-
     /// temp for upgrade - to remove once initialized
 
     /**
