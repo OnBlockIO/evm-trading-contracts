@@ -15,6 +15,9 @@ const ethereum_mainnet = {
   wyvern: '0x7f268357A8c2552623316e2562D90e642bB538E5',
   x2y2: '0x74312363e45DCaBA76c59ec49a7Aa8A65a67EeD3',
   blur: '0x000000000000Ad05Ccc4F10045630fb830B95127',
+  wrapped:'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+  uniswapV2: '',
+  uniswapV3: '0xE592427A0AEce92De3Edee1F18E0157C05861564'
 };
 
 const ethereum_testnet = {
@@ -27,6 +30,9 @@ const ethereum_testnet = {
   exchange_proxy: '0x6c3E76022bEAAA29c12aca09823EDB6369F4bC6E',
   exchange_wrapper_proxy: '0xc8F0542E4bc3DCCf64Dd5Ae5464d00F61D405363',
   customMatcher: '0x99428B1e5A8f5985625e9d19Ad0Ea19F33A5f749',
+  wrapped:'0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6',
+  uniswapV2: '',
+  uniswapV3: '0xE592427A0AEce92De3Edee1F18E0157C05861564'
 };
 
 const avalanche_mainnet = {
@@ -40,6 +46,9 @@ const avalanche_mainnet = {
   exchange_wrapper_proxy: '0x0C823CD09642864f495F0a474E1d26Dea9A516F9',
   customMatcher: '0x113c8b438687DD1a9b04e7B5984d1fC00E176AD6',
   seaport: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
+  wrapped:'0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7',
+  uniswapV2: '',
+  uniswapV3: ''
 };
 
 const avalanche_testnet = {
@@ -52,6 +61,9 @@ const avalanche_testnet = {
   exchange_proxy: '0x32fD06f88AFc3ce26bbD1cD9FA97dd27BD0826Cd',
   exchange_wrapper_proxy: '0x4573373ca18F2BAAa5CF6129578219f4788cbC17',
   customMatcher: '0x68efd84E9Fe2D36c36243dEB2E9B1d3d3cd15423',
+  wrapped:'0xd00ae08403B9bbb9124bB305C09058E32C39A48c',
+  uniswapV2: '',
+  uniswapV3: ''
 };
 
 const polygon_mainnet = {
@@ -65,6 +77,9 @@ const polygon_mainnet = {
   exchange_wrapper_proxy: '0x09236d6b740ac67dCa842D9dB6FA4D067a684E76',
   customMatcher: '0xAB8944314D0eA90fba56644A4989Dd9924F56748',
   seaport: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
+  wrapped:'0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
+  uniswapV2: '0xa5e0829caced8ffdd4de3c43696c57f7d7a678ff',
+  uniswapV3: ''
 };
 
 const polygon_testnet = {
@@ -77,6 +92,9 @@ const polygon_testnet = {
   exchange_proxy: '0x5B2e6bEE51bC4Cc389503DD186bA66d98405320F',
   exchange_wrapper_proxy: '0xfd1F5A6cC20e61Db8d8Db646Bf0DD43bDCF366C5',
   customMatcher: '0x9725bb445165cf73811EE96E1c45A299205BdADA',
+  wrapped:'0x9c3c9283d3e44854697cd22d3faa240cfb032889',
+  uniswapV2: '0x8954AfA98594b838bda56FE4C12a09D7739D179b',
+  uniswapV3: ''
 };
 
 const bsc_mainnet = {
@@ -90,6 +108,9 @@ const bsc_mainnet = {
   exchange_wrapper_proxy: '0x32E0C20421c96cA4B423a7806e151e953C647c48',
   customMatcher: '0xD55cA4003B07E692a25bA7EbcCaeC100ED7bf015',
   seaport: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
+  wrapped:'0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+  uniswapV2: '0x10ED43C718714eb63d5aA57B78B54704E256024E',
+  uniswapV3: ''
 };
 
 const bsc_testnet = {
@@ -102,6 +123,9 @@ const bsc_testnet = {
   exchange_proxy: '0x00FCf5E8FF15D8b4753c94DdE10fB5a244af74CC',
   exchange_wrapper_proxy: '0x79ECc16af0CE90475d24A6059b83cA7b8f4FE859',
   customMatcher: '0x627886ec8290cFb1A17A8d51311361ea86075aa2',
+  wrapped:'0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
+  uniswapV2: '0xD99D1c33F9fC3444f8101754aBC46c52416550D1',
+  uniswapV3: ''
 };
 
 let settings = {

@@ -14,7 +14,7 @@ contract ExchangeWrapper is ExchangeWrapperCore {
         address _looksrare,
         address _sudoswap,
         address _blur,
-        address _wethToken,
+        address _wrappedToken,
         ISwapRouterV3 _uniswapRouterV3,
         address _erc20TransferProxy,
         ISwapRouterV2 _uniswapRouterV2
@@ -31,7 +31,7 @@ contract ExchangeWrapper is ExchangeWrapperCore {
             _looksrare,
             _sudoswap,
             _blur,
-            _wethToken,
+            _wrappedToken,
             _uniswapRouterV3,
             _erc20TransferProxy,
             _uniswapRouterV2

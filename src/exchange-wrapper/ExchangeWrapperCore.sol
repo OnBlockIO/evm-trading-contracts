@@ -41,7 +41,7 @@ abstract contract ExchangeWrapperCore is
     address internal looksrare;
     address internal sudoswap;
     address internal blur;
-    address internal wethToken;
+    address internal wrappedToken;
     ISwapRouterV3 internal uniswapRouterV3;
     address internal erc20TransferProxy;
     ISwapRouterV2 internal uniswapRouterV2;
@@ -156,7 +156,7 @@ abstract contract ExchangeWrapperCore is
         address _looksrare,
         address _sudoswap,
         address _blur,
-        address _wethToken,
+        address _wrappedToken,
         ISwapRouterV3 _uniswapRouterV3,
         address _erc20TransferProxy,
         ISwapRouterV2 _uniswapRouterV2
@@ -169,7 +169,7 @@ abstract contract ExchangeWrapperCore is
         looksrare = _looksrare;
         sudoswap = _sudoswap;
         blur = _blur;
-        wethToken = _wethToken;
+        wrappedToken = _wrappedToken;
         uniswapRouterV3 = _uniswapRouterV3;
         erc20TransferProxy = _erc20TransferProxy;
         uniswapRouterV2 = _uniswapRouterV2;
@@ -198,8 +198,8 @@ abstract contract ExchangeWrapperCore is
         blur = _blur;
     }
 
-    function setWeth(address _wethToken) external onlyOwner {
-        wethToken = _wethToken;
+    function setWrapped(address _wrappedToken) external onlyOwner {
+        wrappedToken = _wrappedToken;
     }
 
     function setUniswapV3(ISwapRouterV3 _uniswapRouterV3) external onlyOwner {
@@ -660,7 +660,7 @@ abstract contract ExchangeWrapperCore is
 
         // Unwrap if required
         if (swapDetails.unwrap) {
-            IWETH(wethToken).withdraw(swapDetails.amountOut);
+            IWETH(wrappedToken).withdraw(swapDetails.amountOut);
         }
 
         // Refund tokenIn left if any
@@ -719,7 +719,7 @@ abstract contract ExchangeWrapperCore is
 
         // Unwrap if required
         if (swapDetails.unwrap) {
-            IWETH(wethToken).withdraw(swapDetails.amountOut);
+            IWETH(wrappedToken).withdraw(swapDetails.amountOut);
         }
 
         // Refund tokenIn left if any
@@ -748,9 +748,9 @@ abstract contract ExchangeWrapperCore is
         }
 
         // Approve tokenIn on uniswap
-        uint256 allowance = IERC20Upgradeable(wethToken).allowance(address(uniswapRouterV2), address(this));
+        uint256 allowance = IERC20Upgradeable(wrappedToken).allowance(address(uniswapRouterV2), address(this));
         if (allowance < swapDetails.amountIn) {
-            IERC20Upgradeable(wethToken).approve(address(uniswapRouterV2), type(uint256).max);
+            IERC20Upgradeable(wrappedToken).approve(address(uniswapRouterV2), type(uint256).max);
         }
 
         // Swap
@@ -797,9 +797,9 @@ abstract contract ExchangeWrapperCore is
         }
 
         // Approve tokenIn on uniswap
-        uint256 allowance = IERC20Upgradeable(wethToken).allowance(address(uniswapRouterV3), address(this));
+        uint256 allowance = IERC20Upgradeable(wrappedToken).allowance(address(uniswapRouterV3), address(this));
         if (allowance < swapDetails.amountIn) {
-            IERC20Upgradeable(wethToken).approve(address(uniswapRouterV3), type(uint256).max);
+            IERC20Upgradeable(wrappedToken).approve(address(uniswapRouterV3), type(uint256).max);
         }
 
         // Set the order parameters
