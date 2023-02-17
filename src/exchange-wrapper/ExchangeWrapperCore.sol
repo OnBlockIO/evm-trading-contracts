@@ -785,7 +785,7 @@ abstract contract ExchangeWrapperCore is
         // if source = wrapped and destination = native, unwrap and return
         if (tokenIn == wrappedToken && swapDetails.unwrap)
         {
-            IWETH(wrappedToken).withdraw(swapDetails.amountOut);
+            IWETH(wrappedToken).withdraw(swapDetails.amountInMaximum);
             return true;
         }
 
