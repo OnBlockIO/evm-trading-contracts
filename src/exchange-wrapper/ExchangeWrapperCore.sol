@@ -213,6 +213,7 @@ abstract contract ExchangeWrapperCore is
     function setWrapped(address _wrappedToken) external onlyOwner {
         wrappedToken = _wrappedToken;
     }
+
     /// temp for upgrade - to remove once initialized
 
     /**
@@ -220,7 +221,7 @@ abstract contract ExchangeWrapperCore is
         @param purchaseDetails - details about the purchase (more info in PurchaseDetails struct)
         @param feeRecipientFirst - address of the first fee recipient
         @param feeRecipientSecond - address of the second fee recipient
-        @param swapDetails - swapDetailsV2
+        @param swapDetails - swapDetails v2
      */
     function singlePurchaseWithV2Swap(
         PurchaseDetails memory purchaseDetails,
@@ -238,7 +239,7 @@ abstract contract ExchangeWrapperCore is
         @param purchaseDetails - details about the purchase (more info in PurchaseDetails struct)
         @param feeRecipientFirst - address of the first fee recipient
         @param feeRecipientSecond - address of the second fee recipient
-        @param swapDetails - swapDetailsV3
+        @param swapDetails - swapDetails v3
      */
     function singlePurchaseWithSwap(
         PurchaseDetails memory purchaseDetails,
@@ -277,7 +278,7 @@ abstract contract ExchangeWrapperCore is
         @param feeRecipientFirst - address of the first fee recipient
         @param feeRecipientSecond - address of the second fee recipient
         @param allowFail - true if fails while executing orders are allowed, false if fail of a single order means fail of the whole batch
-        @param swapDetails - swapDetailsV2
+        @param swapDetails - swapDetails v2
      */
 
     function bulkPurchaseWithV2Swap(
@@ -298,7 +299,7 @@ abstract contract ExchangeWrapperCore is
         @param feeRecipientFirst - address of the first fee recipient
         @param feeRecipientSecond - address of the second fee recipient
         @param allowFail - true if fails while executing orders are allowed, false if fail of a single order means fail of the whole batch
-        @param swapDetails - swapDetailsV3
+        @param swapDetails - swapDetails v3
      */
 
     function bulkPurchaseWithSwap(
@@ -624,6 +625,7 @@ abstract contract ExchangeWrapperCore is
     /**
      * @notice swaps tokens for exact tokens - uniswap v2
      * @param swapDetails swapDetails required
+     * @param combined bool is combined with sale
      */
     function swapV2TokensForExactTokens(SwapV2DetailsIn memory swapDetails, bool combined) public returns (bool) {
         // extract tokenIn from path
@@ -647,9 +649,8 @@ abstract contract ExchangeWrapperCore is
         uint256 chainId = block.chainid;
         bool isAvalanche = chainId == 43114 || chainId == 43113;
         uint256 amountIn;
-        
-        if (isAvalanche)
-        {
+
+        if (isAvalanche) {
             try
                 uniswapRouterV2.swapTokensForExactTokens(
                     swapDetails.amountOut, // amountOut
@@ -664,9 +665,7 @@ abstract contract ExchangeWrapperCore is
             } catch {
                 return false;
             }
-        }
-        else
-        {
+        } else {
             try
                 uniswapRouterV2.swapTokensForExactTokens(
                     swapDetails.amountOut, // amountOut
@@ -688,10 +687,7 @@ abstract contract ExchangeWrapperCore is
         }
 
         // If direct swap call, send back funds + fees
-        if (!combined)
-        {
-
-        }
+        if (!combined) {}
 
         return true;
     }
@@ -699,6 +695,7 @@ abstract contract ExchangeWrapperCore is
     /**
      * @notice swaps exact tokens for tokens - uniswap v2
      * @param swapDetails swapDetails required
+     * @param combined bool is combined with sale
      */
     function swapV2ExactTokensForTokens(SwapV2DetailsOut memory swapDetails, bool combined) public returns (bool) {
         // extract tokenIn from path
@@ -722,9 +719,8 @@ abstract contract ExchangeWrapperCore is
         uint256 chainId = block.chainid;
         bool isAvalanche = chainId == 43114 || chainId == 43113;
         uint256 amountOut;
-        
-        if (isAvalanche)
-        {
+
+        if (isAvalanche) {
             try
                 uniswapRouterV2.swapTokensForExactTokens(
                     swapDetails.amountIn, // amountIn
@@ -739,9 +735,7 @@ abstract contract ExchangeWrapperCore is
             } catch {
                 return false;
             }
-        }
-        else
-        {
+        } else {
             try
                 uniswapRouterV2.swapTokensForExactTokens(
                     swapDetails.amountIn, // amountIn
@@ -758,10 +752,7 @@ abstract contract ExchangeWrapperCore is
         }
 
         // If direct swap call, send back funds + fees
-        if (!combined)
-        {
-
-        }
+        if (!combined) {}
 
         return true;
     }
@@ -769,6 +760,7 @@ abstract contract ExchangeWrapperCore is
     /**
      * @notice swaps tokens for exact ETH or WETH - uniswap v2
      * @param swapDetails swapDetails required
+     * @param combined bool is combined with sale
      */
     function swapV2TokensForExactETHOrWETH(SwapV2DetailsIn memory swapDetails, bool combined) public returns (bool) {
         // extract tokenIn from path
@@ -783,8 +775,7 @@ abstract contract ExchangeWrapperCore is
         );
 
         // if source = wrapped and destination = native, unwrap and return
-        if (tokenIn == wrappedToken && swapDetails.unwrap)
-        {
+        if (tokenIn == wrappedToken && swapDetails.unwrap) {
             IWETH(wrappedToken).withdraw(swapDetails.amountInMaximum);
             return true;
         }
@@ -799,8 +790,7 @@ abstract contract ExchangeWrapperCore is
         uint256 chainId = block.chainid;
         bool isAvalanche = chainId == 43114 || chainId == 43113;
         uint256 amountIn;
-        if (isAvalanche)
-        {
+        if (isAvalanche) {
             try
                 uniswapRouterV2.swapTokensForExactAVAX(
                     swapDetails.amountOut, // amountOut
@@ -815,9 +805,7 @@ abstract contract ExchangeWrapperCore is
             } catch {
                 return false;
             }
-        }
-        else
-        {
+        } else {
             try
                 uniswapRouterV2.swapTokensForExactETH(
                     swapDetails.amountOut, // amountOut
@@ -844,10 +832,7 @@ abstract contract ExchangeWrapperCore is
         }
 
         // If direct swap call, send back funds + fees
-        if (!combined)
-        {
-
-        }
+        if (!combined) {}
 
         return true;
     }
@@ -855,8 +840,12 @@ abstract contract ExchangeWrapperCore is
     /**
      * @notice swaps exact ETH or WETH for tokens - uniswap v2
      * @param swapDetails swapDetails required
+     * @param combined bool is combined with sale
      */
-    function swapV2ExactETHOrWETHForTokens(SwapV2DetailsOut memory swapDetails, bool combined) public payable returns (bool) {
+    function swapV2ExactETHOrWETHForTokens(
+        SwapV2DetailsOut memory swapDetails,
+        bool combined
+    ) public payable returns (bool) {
         // extract tokenIn / tokenOut from path
         address tokenIn = swapDetails.path[0];
         address tokenOut = swapDetails.path[swapDetails.path.length - 1];
@@ -874,8 +863,7 @@ abstract contract ExchangeWrapperCore is
         }
 
         // if source = native and destination = wrapped, wrap and return
-        if (msg.value > 0 && tokenOut == wrappedToken)
-        {
+        if (msg.value > 0 && tokenOut == wrappedToken) {
             IWETH(wrappedToken).deposit{value: msg.value};
             return true;
         }
@@ -884,8 +872,7 @@ abstract contract ExchangeWrapperCore is
         uint256 chainId = block.chainid;
         bool isAvalanche = chainId == 43114 || chainId == 43113;
         uint256 amountIn;
-        if (isAvalanche)
-        {
+        if (isAvalanche) {
             try
                 uniswapRouterV2.swapExactAVAXForTokens(
                     swapDetails.amountOutMinimum, // amountOutMinimum
@@ -899,9 +886,7 @@ abstract contract ExchangeWrapperCore is
             } catch {
                 return false;
             }
-        }
-        else
-        {
+        } else {
             try
                 uniswapRouterV2.swapExactETHForTokens(
                     swapDetails.amountOutMinimum, // amountOutMinimum
@@ -917,10 +902,7 @@ abstract contract ExchangeWrapperCore is
         }
 
         // If direct swap call, send back funds + fees
-        if (!combined)
-        {
-            
-        }
+        if (!combined) {}
 
         return true;
     }
@@ -928,6 +910,7 @@ abstract contract ExchangeWrapperCore is
     /**
      * @notice swaps tokens for exact tokens - uniswap v3
      * @param swapDetails swapDetails required
+     * @param combined bool is combined with sale
      */
     function swapTokensForExactTokens(SwapDetailsIn memory swapDetails, bool combined) public payable returns (bool) {
         // extract tokenIn / tokenOut from path
@@ -951,15 +934,13 @@ abstract contract ExchangeWrapperCore is
         }
 
         // if source = wrapped and destination = native, unwrap and return
-        if (tokenIn == wrappedToken && swapDetails.unwrap)
-        {
+        if (tokenIn == wrappedToken && swapDetails.unwrap) {
             IWETH(wrappedToken).withdraw(swapDetails.amountOut);
             return true;
         }
 
         // if source = native and destination = wrapped, wrap and return
-        if (msg.value > 0 && tokenOut == wrappedToken)
-        {
+        if (msg.value > 0 && tokenOut == wrappedToken) {
             IWETH(wrappedToken).deposit{value: msg.value};
             return true;
         }
@@ -1001,10 +982,7 @@ abstract contract ExchangeWrapperCore is
         }
 
         // If direct swap call, send back funds + fees
-        if (!combined)
-        {
-            
-        }
+        if (!combined) {}
 
         return true;
     }
@@ -1012,6 +990,7 @@ abstract contract ExchangeWrapperCore is
     /**
      * @notice swaps exact tokens for tokens - uniswap v3
      * @param swapDetails swapDetails required
+     * @param combined bool is combined with sale
      */
     function swapExactTokensForTokens(SwapDetailsOut memory swapDetails, bool combined) public payable returns (bool) {
         // extract tokenIn / tokenOut from path
@@ -1035,15 +1014,13 @@ abstract contract ExchangeWrapperCore is
         }
 
         // if source = wrapped and destination = native, unwrap and return
-        if (tokenIn == wrappedToken && swapDetails.unwrap)
-        {
+        if (tokenIn == wrappedToken && swapDetails.unwrap) {
             IWETH(wrappedToken).withdraw(swapDetails.amountIn);
             return true;
         }
 
         // if source = native and destination = wrapped, wrap and return
-        if (msg.value > 0 && tokenOut == wrappedToken)
-        {
+        if (msg.value > 0 && tokenOut == wrappedToken) {
             IWETH(wrappedToken).deposit{value: msg.value};
             return true;
         }
@@ -1070,7 +1047,7 @@ abstract contract ExchangeWrapperCore is
         } catch {
             return false;
         }
-        
+
         // Refund ETH from swap if any
         uniswapRouterV3.refundETH();
 
@@ -1080,10 +1057,7 @@ abstract contract ExchangeWrapperCore is
         }
 
         // If direct swap call, send back funds + fees
-        if (!combined)
-        {
-            
-        }
+        if (!combined) {}
 
         return true;
     }

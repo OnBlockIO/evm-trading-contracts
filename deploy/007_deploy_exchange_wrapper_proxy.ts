@@ -32,7 +32,20 @@ async function main() {
       execute: {
         init: {
           methodName: '__ExchangeWrapper_init',
-          args: [GHOSTMARKET, RARIBLE, WYVERN, SEAPORT, X2Y2, LOOKSRARE, SUDOSWAP, BLUR, WRAPPED, UNISWAPV3, ERC20_TRANSFER_PROXY, UNISWAPV2],
+          args: [
+            GHOSTMARKET,
+            RARIBLE,
+            WYVERN,
+            SEAPORT,
+            X2Y2,
+            LOOKSRARE,
+            SUDOSWAP,
+            BLUR,
+            WRAPPED,
+            UNISWAPV3,
+            ERC20_TRANSFER_PROXY,
+            UNISWAPV2,
+          ],
         },
       },
     },
