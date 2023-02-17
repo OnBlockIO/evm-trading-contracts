@@ -623,13 +623,6 @@ abstract contract ExchangeWrapperCore is
         // extract tokenIn from path
         address tokenIn = swapDetails.path[0];
 
-        // if source = wrapped and destination = native, unwrap and return
-        if (tokenIn == wrappedToken)
-        {
-            IWETH(wrappedToken).withdraw(swapDetails.amountOut);
-            return true;
-        }
-
         // Move tokenIn to contract
         IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
             IERC20Upgradeable(tokenIn),
@@ -637,6 +630,13 @@ abstract contract ExchangeWrapperCore is
             address(this),
             swapDetails.amountInMaximum
         );
+
+        // if source = wrapped and destination = native, unwrap and return
+        if (tokenIn == wrappedToken)
+        {
+            IWETH(wrappedToken).withdraw(swapDetails.amountOut);
+            return true;
+        }
 
         // Approve tokenIn on uniswap
         uint256 allowance = IERC20Upgradeable(tokenIn).allowance(address(uniswapRouterV2), address(this));
