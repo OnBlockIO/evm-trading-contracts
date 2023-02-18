@@ -17,7 +17,9 @@ contract ExchangeWrapper is ExchangeWrapperCore {
         address _wrappedToken,
         ISwapRouterV3 _uniswapRouterV3,
         address _erc20TransferProxy,
-        ISwapRouterV2 _uniswapRouterV2
+        ISwapRouterV2 _uniswapRouterV2,
+        uint256 _swapValue,
+        address _swapRecipient
     ) external initializer {
         __Context_init_unchained();
         __Ownable_init_unchained();
@@ -34,7 +36,9 @@ contract ExchangeWrapper is ExchangeWrapperCore {
             _wrappedToken,
             _uniswapRouterV3,
             _erc20TransferProxy,
-            _uniswapRouterV2
+            _uniswapRouterV2,
+            _swapValue,
+            _swapRecipient
         );
     }
 }
