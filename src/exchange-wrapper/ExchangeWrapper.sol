@@ -18,15 +18,6 @@ contract ExchangeWrapper is ExchangeWrapperCore {
         __Context_init_unchained();
         __Ownable_init_unchained();
         __Pausable_init_unchained();
-        __ExchangeWrapper_init_unchained(
-            _exchangeV2,
-            _rarible,
-            _wyvern,
-            _seaport,
-            _x2y2,
-            _looksrare,
-            _sudoswap,
-            _blur
-        );
+        __ExchangeWrapper_init_unchained(_exchangeV2, _rarible, _wyvern, _seaport, _x2y2, _looksrare, _sudoswap, _blur);
     }
 }

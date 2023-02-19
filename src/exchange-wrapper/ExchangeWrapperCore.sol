@@ -215,6 +215,7 @@ abstract contract ExchangeWrapperCore is
     function setBlur(address _blur) external onlyOwner {
         blur = _blur;
     }
+
     /// temp for upgrade - to remove once initialized
 
     /**
