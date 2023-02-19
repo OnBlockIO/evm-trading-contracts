@@ -7,7 +7,6 @@ async function main() {
   const {deployer} = await getNamedAccounts();
 
   const CHAIN = hre.network.name;
-  const ERC20_TRANSFER_PROXY = getSettings(CHAIN).erc20TransferProxy;
   const GHOSTMARKET = getSettings(CHAIN).exchange_proxy;
   const RARIBLE = getSettings(CHAIN)?.rarible || ZERO;
   const WYVERN = getSettings(CHAIN)?.wyvern || ZERO;
@@ -16,9 +15,6 @@ async function main() {
   const LOOKSRARE = getSettings(CHAIN)?.looksrare || ZERO;
   const SUDOSWAP = getSettings(CHAIN)?.sudoswap || ZERO;
   const BLUR = getSettings(CHAIN)?.blur || ZERO;
-  const WRAPPED = getSettings(CHAIN)?.wrapped || ZERO;
-  const UNISWAPV2 = getSettings(CHAIN)?.uniswapV2 || ZERO;
-  const UNISWAPV3 = getSettings(CHAIN)?.uniswapV3 || ZERO;
   if (!GHOSTMARKET) return;
 
   console.log(`Exchange Wrapper deployment on ${CHAIN} start`);
@@ -41,10 +37,6 @@ async function main() {
             LOOKSRARE,
             SUDOSWAP,
             BLUR,
-            WRAPPED,
-            UNISWAPV3,
-            ERC20_TRANSFER_PROXY,
-            UNISWAPV2,
           ],
         },
       },
