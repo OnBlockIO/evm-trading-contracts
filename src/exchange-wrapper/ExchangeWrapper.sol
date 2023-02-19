@@ -13,13 +13,7 @@ contract ExchangeWrapper is ExchangeWrapperCore {
         address _x2y2,
         address _looksrare,
         address _sudoswap,
-        address _blur,
-        address _wrappedToken,
-        ISwapRouterV3 _uniswapRouterV3,
-        address _erc20TransferProxy,
-        ISwapRouterV2 _uniswapRouterV2,
-        uint256 _swapValue,
-        address _swapRecipient
+        address _blur
     ) external initializer {
         __Context_init_unchained();
         __Ownable_init_unchained();
@@ -32,13 +26,7 @@ contract ExchangeWrapper is ExchangeWrapperCore {
             _x2y2,
             _looksrare,
             _sudoswap,
-            _blur,
-            _wrappedToken,
-            _uniswapRouterV3,
-            _erc20TransferProxy,
-            _uniswapRouterV2,
-            _swapValue,
-            _swapRecipient
+            _blur
         );
     }
 }

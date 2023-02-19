@@ -161,13 +161,7 @@ abstract contract ExchangeWrapperCore is
         address _x2y2,
         address _looksrare,
         address _sudoswap,
-        address _blur,
-        address _wrappedToken,
-        ISwapRouterV3 _uniswapRouterV3,
-        address _erc20TransferProxy,
-        ISwapRouterV2 _uniswapRouterV2,
-        uint256 _swapFee,
-        address _swapRecipient
+        address _blur
     ) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
@@ -177,12 +171,6 @@ abstract contract ExchangeWrapperCore is
         looksrare = _looksrare;
         sudoswap = _sudoswap;
         blur = _blur;
-        wrappedToken = _wrappedToken;
-        uniswapRouterV3 = _uniswapRouterV3;
-        erc20TransferProxy = _erc20TransferProxy;
-        uniswapRouterV2 = _uniswapRouterV2;
-        _swapFeeValue = _swapFee;
-        _swapFeeRecipient = _swapRecipient;
     }
 
     /// @notice Pause the contract
@@ -203,11 +191,23 @@ abstract contract ExchangeWrapperCore is
         uniswapRouterV3 = _uniswapRouterV3;
     }
 
-    /// temp for upgrade - to remove once initialized
     function setTransferProxy(address _erc20TransferProxy) external onlyOwner {
         erc20TransferProxy = _erc20TransferProxy;
     }
 
+    function setWrapped(address _wrappedToken) external onlyOwner {
+        wrappedToken = _wrappedToken;
+    }
+
+    function setSwapFeeValue(uint256 swapFeeValue) external onlyOwner {
+        _swapFeeValue = swapFeeValue;
+    }
+
+    function setSwapFeeRecipient(address swapFeeRecipient) external onlyOwner {
+        _swapFeeRecipient = swapFeeRecipient;
+    }
+
+    /// temp for upgrade - to remove once initialized
     function setRarible(address _rarible) external onlyOwner {
         rarible = _rarible;
     }
@@ -215,11 +215,6 @@ abstract contract ExchangeWrapperCore is
     function setBlur(address _blur) external onlyOwner {
         blur = _blur;
     }
-
-    function setWrapped(address _wrappedToken) external onlyOwner {
-        wrappedToken = _wrappedToken;
-    }
-
     /// temp for upgrade - to remove once initialized
 
     /**
