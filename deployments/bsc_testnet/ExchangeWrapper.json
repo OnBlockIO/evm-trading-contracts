@@ -1,5 +1,5 @@
 {
-  "address": "0xF91df8f83ccE0433bF6001394cdD5d8B9c8c042c",
+  "address": "0xB66165b623a6b9D4169323b839b0889CCFa64074",
   "abi": [
     {
       "anonymous": false,
@@ -705,32 +705,6 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "swapFeeRecipient",
-          "type": "address"
-        }
-      ],
-      "name": "setSwapFeeRecipient",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "swapFeeValue",
-          "type": "uint256"
-        }
-      ],
-      "name": "setSwapFeeValue",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "_erc20TransferProxy",
           "type": "address"
         }
@@ -825,155 +799,6 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "enum ExchangeWrapperCore.Markets",
-              "name": "marketId",
-              "type": "uint8"
-            },
-            {
-              "internalType": "uint256",
-              "name": "amount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "fees",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bytes",
-              "name": "data",
-              "type": "bytes"
-            }
-          ],
-          "internalType": "struct ExchangeWrapperCore.PurchaseDetails",
-          "name": "purchaseDetails",
-          "type": "tuple"
-        },
-        {
-          "internalType": "address",
-          "name": "feeRecipientFirst",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "feeRecipientSecond",
-          "type": "address"
-        },
-        {
-          "components": [
-            {
-              "internalType": "bytes",
-              "name": "path",
-              "type": "bytes"
-            },
-            {
-              "internalType": "uint256",
-              "name": "amountOut",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "amountInMaximum",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "unwrap",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct ExchangeWrapperCore.SwapDetailsIn",
-          "name": "swapDetails",
-          "type": "tuple"
-        }
-      ],
-      "name": "singlePurchaseWithSwap",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "enum ExchangeWrapperCore.Markets",
-              "name": "marketId",
-              "type": "uint8"
-            },
-            {
-              "internalType": "uint256",
-              "name": "amount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "fees",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bytes",
-              "name": "data",
-              "type": "bytes"
-            }
-          ],
-          "internalType": "struct ExchangeWrapperCore.PurchaseDetails",
-          "name": "purchaseDetails",
-          "type": "tuple"
-        },
-        {
-          "internalType": "address",
-          "name": "feeRecipientFirst",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "feeRecipientSecond",
-          "type": "address"
-        },
-        {
-          "components": [
-            {
-              "internalType": "address[]",
-              "name": "path",
-              "type": "address[]"
-            },
-            {
-              "internalType": "uint256",
-              "name": "amountOut",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "amountInMaximum",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256[]",
-              "name": "binSteps",
-              "type": "uint256[]"
-            },
-            {
-              "internalType": "bool",
-              "name": "unwrap",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct ExchangeWrapperCore.SwapV2DetailsIn",
-          "name": "swapDetails",
-          "type": "tuple"
-        }
-      ],
-      "name": "singlePurchaseWithV2Swap",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
       "inputs": [],
       "name": "sudoswap",
       "outputs": [
@@ -1033,11 +858,6 @@
           "internalType": "struct ExchangeWrapperCore.SwapDetailsOut",
           "name": "swapDetails",
           "type": "tuple"
-        },
-        {
-          "internalType": "bool",
-          "name": "combined",
-          "type": "bool"
         }
       ],
       "name": "swapExactTokensForTokens",
@@ -1079,11 +899,6 @@
           "internalType": "struct ExchangeWrapperCore.SwapDetailsIn",
           "name": "swapDetails",
           "type": "tuple"
-        },
-        {
-          "internalType": "bool",
-          "name": "combined",
-          "type": "bool"
         }
       ],
       "name": "swapTokensForExactTokens",
@@ -1130,11 +945,6 @@
           "internalType": "struct ExchangeWrapperCore.SwapV2DetailsOut",
           "name": "swapDetails",
           "type": "tuple"
-        },
-        {
-          "internalType": "bool",
-          "name": "combined",
-          "type": "bool"
         }
       ],
       "name": "swapV2ExactETHOrWETHForTokens",
@@ -1181,11 +991,6 @@
           "internalType": "struct ExchangeWrapperCore.SwapV2DetailsOut",
           "name": "swapDetails",
           "type": "tuple"
-        },
-        {
-          "internalType": "bool",
-          "name": "combined",
-          "type": "bool"
         }
       ],
       "name": "swapV2ExactTokensForTokens",
@@ -1232,11 +1037,6 @@
           "internalType": "struct ExchangeWrapperCore.SwapV2DetailsIn",
           "name": "swapDetails",
           "type": "tuple"
-        },
-        {
-          "internalType": "bool",
-          "name": "combined",
-          "type": "bool"
         }
       ],
       "name": "swapV2TokensForExactETHOrWETH",
@@ -1283,11 +1083,6 @@
           "internalType": "struct ExchangeWrapperCore.SwapV2DetailsIn",
           "name": "swapDetails",
           "type": "tuple"
-        },
-        {
-          "internalType": "bool",
-          "name": "combined",
-          "type": "bool"
         }
       ],
       "name": "swapV2TokensForExactTokens",
@@ -1408,51 +1203,51 @@
       "type": "constructor"
     }
   ],
-  "transactionHash": "0x7153ba00799bec45ebbb03a3a0081b19e910f6207a66b5d6a502e4cddd7b2d7d",
+  "transactionHash": "0xf6433b4d5ea30dc1c09951c2146b658c66f518f3c158f24b216f7e4d04486d13",
   "receipt": {
     "to": null,
     "from": "0x9E1bd73820A607b06086b5B5173765a61CEEE7dC",
-    "contractAddress": "0xF91df8f83ccE0433bF6001394cdD5d8B9c8c042c",
-    "transactionIndex": 1,
-    "gasUsed": "628977",
-    "logsBloom": "0x00000000000000000000000000000000000000020000000000800000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000020000000000000000000800000000000000000000000000000000400000000000000000000000000000000000000000000080000000000000000000000000040000040000000000000400000000000000000000400000000000000000000000000000000000000000040000004000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000",
-    "blockHash": "0xdebad4fe1c1b96b8fda123a56e9dc9e7db8e3edfb6844a357e17fbe600557760",
-    "transactionHash": "0x7153ba00799bec45ebbb03a3a0081b19e910f6207a66b5d6a502e4cddd7b2d7d",
+    "contractAddress": "0xB66165b623a6b9D4169323b839b0889CCFa64074",
+    "transactionIndex": 3,
+    "gasUsed": "628933",
+    "logsBloom": "0x00000000000000080000000000000000000000020000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000020000000000000000000800000000000000000000000000000000400000000000000000800000000000000000000000000080000000000000000000000000000000040000000000000400000000000000000000000000000000000000000000000000000000000000040000004000000000000000000000000020000000000000000000000000000000000000100000000000000000000000000000",
+    "blockHash": "0x6f72113d76e0b66ae866272def20bf31afc56af283c27271b1d66a488efa9de0",
+    "transactionHash": "0xf6433b4d5ea30dc1c09951c2146b658c66f518f3c158f24b216f7e4d04486d13",
     "logs": [
       {
-        "transactionIndex": 1,
-        "blockNumber": 27386179,
-        "transactionHash": "0x7153ba00799bec45ebbb03a3a0081b19e910f6207a66b5d6a502e4cddd7b2d7d",
-        "address": "0xF91df8f83ccE0433bF6001394cdD5d8B9c8c042c",
+        "transactionIndex": 3,
+        "blockNumber": 27413037,
+        "transactionHash": "0xf6433b4d5ea30dc1c09951c2146b658c66f518f3c158f24b216f7e4d04486d13",
+        "address": "0xB66165b623a6b9D4169323b839b0889CCFa64074",
         "topics": [
           "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
           "0x0000000000000000000000000000000000000000000000000000000000000000",
           "0x0000000000000000000000009e1bd73820a607b06086b5b5173765a61ceee7dc"
         ],
         "data": "0x",
-        "logIndex": 0,
-        "blockHash": "0xdebad4fe1c1b96b8fda123a56e9dc9e7db8e3edfb6844a357e17fbe600557760"
+        "logIndex": 6,
+        "blockHash": "0x6f72113d76e0b66ae866272def20bf31afc56af283c27271b1d66a488efa9de0"
       },
       {
-        "transactionIndex": 1,
-        "blockNumber": 27386179,
-        "transactionHash": "0x7153ba00799bec45ebbb03a3a0081b19e910f6207a66b5d6a502e4cddd7b2d7d",
-        "address": "0xF91df8f83ccE0433bF6001394cdD5d8B9c8c042c",
+        "transactionIndex": 3,
+        "blockNumber": 27413037,
+        "transactionHash": "0xf6433b4d5ea30dc1c09951c2146b658c66f518f3c158f24b216f7e4d04486d13",
+        "address": "0xB66165b623a6b9D4169323b839b0889CCFa64074",
         "topics": [
           "0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498"
         ],
         "data": "0x0000000000000000000000000000000000000000000000000000000000000001",
-        "logIndex": 1,
-        "blockHash": "0xdebad4fe1c1b96b8fda123a56e9dc9e7db8e3edfb6844a357e17fbe600557760"
+        "logIndex": 7,
+        "blockHash": "0x6f72113d76e0b66ae866272def20bf31afc56af283c27271b1d66a488efa9de0"
       }
     ],
-    "blockNumber": 27386179,
-    "cumulativeGasUsed": "662553",
+    "blockNumber": 27413037,
+    "cumulativeGasUsed": "2324024",
     "status": 1,
     "byzantium": true
   },
   "args": [
-    "0x8a0D1Cc7b80d0daB8c52B3Ed3866d7e6E987cF80",
+    "0x721e7ab3b63aFB793FC253Cf5020B26ee1f40511",
     "0x0BDc6fa7d78781d9149168E06D9E0FbD7B4B61E0",
     "0xaa78ae9300000000000000000000000000fcf5e8ff15d8b4753c94dde10fb5a244af74cc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
   ],
@@ -1474,7 +1269,7 @@
       "0x0000000000000000000000000000000000000000"
     ]
   },
-  "implementation": "0x8a0D1Cc7b80d0daB8c52B3Ed3866d7e6E987cF80",
+  "implementation": "0x721e7ab3b63aFB793FC253Cf5020B26ee1f40511",
   "devdoc": {
     "details": "This contract implements a proxy that is upgradeable by an admin.  To avoid https://medium.com/nomic-labs-blog/malicious-backdoors-in-ethereum-proxies-62629adf3357[proxy selector clashing], which can potentially be used in an attack, this contract uses the https://blog.openzeppelin.com/the-transparent-proxy-pattern/[transparent proxy pattern]. This pattern implies two things that go hand in hand:  1. If any account other than the admin calls the proxy, the call will be forwarded to the implementation, even if that call matches one of the admin functions exposed by the proxy itself. 2. If the admin calls the proxy, it can access the admin functions, but its calls will never be forwarded to the implementation. If the admin tries to call a function on the implementation it will fail with an error that says \"admin cannot fallback to proxy target\".  These properties mean that the admin account can only be used for admin actions like upgrading the proxy or changing the admin, so it's best if it's a dedicated account that is not used for anything else. This will avoid headaches due to sudden errors when trying to call a function from the proxy implementation.  Our recommendation is for the dedicated account to be an instance of the {ProxyAdmin} contract. If set up this way, you should think of the `ProxyAdmin` instance as the real administrative inerface of your proxy.",
     "events": {
