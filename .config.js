@@ -121,7 +121,7 @@ const bsc_testnet = {
   erc1155LazyMintTransferProxy: '0x0D2a884d843facAB4d7f808Eb4A8E8c47eF8d815',
   royalties_proxy: '0x5EC6bFE900C140323C66FC9Fc53619631B46Cb69',
   exchange_proxy: '0x00FCf5E8FF15D8b4753c94DdE10fB5a244af74CC',
-  exchange_wrapper_proxy: '0x721e7ab3b63afb793fc253cf5020b26ee1f40511 ',
+  exchange_wrapper_proxy: '0xB66165b623a6b9D4169323b839b0889CCFa64074',
   customMatcher: '0x627886ec8290cFb1A17A8d51311361ea86075aa2',
   wrapped: '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
   uniswapV2: '0xD99D1c33F9fC3444f8101754aBC46c52416550D1',
