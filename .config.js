@@ -90,7 +90,7 @@ const polygon_testnet = {
   erc1155LazyMintTransferProxy: '0x2001aDDf62723c0F87E9925473ac947D96C3616B',
   royalties_proxy: '0x7E20461EcC3B27586EFEa0e3dB9E80bfbE55B9eB',
   exchange_proxy: '0x5B2e6bEE51bC4Cc389503DD186bA66d98405320F',
-  exchange_wrapper_proxy: '0x3210D5277108cFeB242933070E0Ef26bfC85815B',
+  exchange_wrapper_proxy: '0x79d2CD8f785A483176d8EBe58a279c9f2A55F380',
   customMatcher: '0x9725bb445165cf73811EE96E1c45A299205BdADA',
   wrapped: '0x9c3c9283d3e44854697cd22d3faa240cfb032889',
   uniswapV2: '0x8954AfA98594b838bda56FE4C12a09D7739D179b',
