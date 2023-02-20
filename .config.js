@@ -59,7 +59,7 @@ const avalanche_testnet = {
   erc1155LazyMintTransferProxy: '0x388171F81FC91EfC7338E07E52555a90c7D87972',
   royalties_proxy: '0x92bf637c4FadEC1b698002cbA1583850e6EC97d3',
   exchange_proxy: '0x32fD06f88AFc3ce26bbD1cD9FA97dd27BD0826Cd',
-  exchange_wrapper_proxy: '0xDe28ff4d26B3c124d47299B100201E89aB58E675',
+  exchange_wrapper_proxy: '0x879cD86a5B2D395455516dd73E5465CD4b8F306D',
   customMatcher: '0x68efd84E9Fe2D36c36243dEB2E9B1d3d3cd15423',
   wrapped: '0xd00ae08403B9bbb9124bB305C09058E32C39A48c',
   uniswapV2: '0x0C344c52841d3F8d488E1CcDBafB42CE2C7fdFA9',
