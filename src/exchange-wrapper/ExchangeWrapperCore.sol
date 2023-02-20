@@ -209,6 +209,7 @@ abstract contract ExchangeWrapperCore is
     function setBlur(address _blur) external onlyOwner {
         blur = _blur;
     }
+
     /// temp for upgrade - to remove once initialized
 
     /**
@@ -249,14 +250,12 @@ abstract contract ExchangeWrapperCore is
     ) public payable whenNotPaused {
         address tokenOut = swapDetails.path[swapDetails.path.length - 1];
         // tokens for eth or weth
-        if (tokenOut == wrappedToken)
-        {
+        if (tokenOut == wrappedToken) {
             bool isSwapExecuted = swapV2TokensForExactETHOrWETH(swapDetails);
             require(isSwapExecuted, "swap not successful");
         }
         // tokens for tokens
-        else
-        {
+        else {
             bool isSwapExecuted = swapV2TokensForExactTokens(swapDetails);
             require(isSwapExecuted, "swap not successful");
         }
@@ -800,9 +799,7 @@ abstract contract ExchangeWrapperCore is
      * @notice swaps exact ETH or WETH for tokens - uniswap v2
      * @param swapDetails swapDetails required
      */
-    function swapV2ExactETHOrWETHForTokens(
-        SwapV2DetailsOut memory swapDetails
-    ) public payable returns (bool) {
+    function swapV2ExactETHOrWETHForTokens(SwapV2DetailsOut memory swapDetails) public payable returns (bool) {
         // extract tokenIn / tokenOut from path
         address tokenIn = swapDetails.path[0];
         address tokenOut = swapDetails.path[swapDetails.path.length - 1];

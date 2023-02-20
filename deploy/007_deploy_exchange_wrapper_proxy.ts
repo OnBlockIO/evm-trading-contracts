@@ -28,16 +28,7 @@ async function main() {
       execute: {
         init: {
           methodName: '__ExchangeWrapper_init',
-          args: [
-            GHOSTMARKET,
-            RARIBLE,
-            WYVERN,
-            SEAPORT,
-            X2Y2,
-            LOOKSRARE,
-            SUDOSWAP,
-            BLUR,
-          ],
+          args: [GHOSTMARKET, RARIBLE, WYVERN, SEAPORT, X2Y2, LOOKSRARE, SUDOSWAP, BLUR],
         },
       },
     },
