@@ -2,11 +2,8 @@
 
 pragma solidity ^0.8.9;
 
-import "../../exchange/ExchangeV2.sol";
-
-import {RoyaltiesRegistry} from "../../royalties-registry/RoyaltiesRegistry.sol";
-import {TransferProxy} from "../../transfer-proxy/TransferProxy.sol";
-import {ERC20TransferProxy} from "../../transfer-proxy/ERC20TransferProxy.sol";
+import "../../librairies/LibOrder.sol";
+import "../../librairies/LibDirectTransfer.sol";
 
 interface IExchangeV2 {
     function matchOrders(
