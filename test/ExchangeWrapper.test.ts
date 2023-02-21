@@ -4444,7 +4444,6 @@ describe('ExchangeWrapper Test', async function () {
     it('Test uniswap v3 direct swap WETH<>ETH', async () => {
       const buyer = wallet1;
       const priceIn = '10000000000000000';
-      const priceOut = '32832900';
 
       // add wrapper as an operator of erc20 transfer proxy
       await erc20TransferProxy.addOperator(bulkExchange.address);
@@ -4698,7 +4697,6 @@ describe('ExchangeWrapper Test', async function () {
     it('Test uniswap v2 direct swap WETH<>ETH', async () => {
       const buyer = wallet1;
       const priceIn = '10000000000000000';
-      const priceOut = '32832900';
 
       // add wrapper as an operator of erc20 transfer proxy
       await erc20TransferProxy.addOperator(bulkExchange.address);
@@ -4709,11 +4707,11 @@ describe('ExchangeWrapper Test', async function () {
       // set wrapped
       await bulkExchange.setWrapped(weth.address);
       // wrap some eth
-      await weth.deposit({value: priceOut});
+      await weth.deposit({value: priceIn});
       // send to buyer
-      await weth.transfer(buyer.address, priceOut);
+      await weth.transfer(buyer.address, priceIn);
       // approve weth
-      await weth.connect(buyer).approve(erc20TransferProxy.address, priceOut, {from: buyer.address});
+      await weth.connect(buyer).approve(erc20TransferProxy.address, priceIn, {from: buyer.address});
 
       // swap details
       const encodedPath = [weth.address, weth.address];
