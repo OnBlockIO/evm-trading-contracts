@@ -18,9 +18,11 @@ import "./interfaces/ISeaPort.sol";
 import "./interfaces/Ix2y2.sol";
 import "./interfaces/ILooksRare.sol";
 import "./interfaces/IBlurExchange.sol";
-import {IWETH} from "./interfaces/IWETH.sol";
-import {ISwapRouterV3} from "./interfaces/ISwapRouterV3.sol";
-import {ISwapRouterV2} from "./interfaces/ISwapRouterV2.sol";
+import "./interfaces/IWETH.sol";
+import "./interfaces/ISwapRouterV3.sol";
+import "./interfaces/ISwapRouterV2.sol";
+import "../interfaces/INftTransferProxy.sol";
+import "../interfaces/IERC20TransferProxy.sol";
 
 abstract contract ExchangeWrapperCore is
     Initializable,

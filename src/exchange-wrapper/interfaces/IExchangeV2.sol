@@ -2,7 +2,8 @@
 
 pragma solidity ^0.8.9;
 
-import "../../exchange/ExchangeV2.sol";
+import "../../librairies/LibOrder.sol";
+import "../../librairies/LibDirectTransfer.sol";
 
 import {RoyaltiesRegistry} from "../../royalties-registry/RoyaltiesRegistry.sol";
 import {TransferProxy} from "../../transfer-proxy/TransferProxy.sol";
