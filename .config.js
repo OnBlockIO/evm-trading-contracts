@@ -76,6 +76,7 @@ const polygon_mainnet = {
   exchange_proxy: '0x3B48563237C32a1f886FD19DB6F5AFFD23855E2a',
   exchange_wrapper_proxy: '0x09236d6b740ac67dCa842D9dB6FA4D067a684E76',
   customMatcher: '0xAB8944314D0eA90fba56644A4989Dd9924F56748',
+  rarible: '0x835131b455778559CFdDd358eA3Fc762728F4E3e',
   seaport: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
   wrapped: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
   uniswapV2: '0xa5e0829caced8ffdd4de3c43696c57f7d7a678ff',

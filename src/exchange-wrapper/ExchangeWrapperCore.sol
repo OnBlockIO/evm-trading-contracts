@@ -203,17 +203,6 @@ abstract contract ExchangeWrapperCore is
         erc20TransferProxy = _erc20TransferProxy;
     }
 
-    /// temp for upgrade - to remove once initialized
-    function setRarible(address _rarible) external onlyOwner {
-        rarible = _rarible;
-    }
-
-    function setBlur(address _blur) external onlyOwner {
-        blur = _blur;
-    }
-
-    /// temp for upgrade - to remove once initialized
-
     /**
         @notice executes a single purchase
         @param purchaseDetails - details about the purchase (more info in PurchaseDetails struct)
