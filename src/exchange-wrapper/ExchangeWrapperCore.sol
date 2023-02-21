@@ -251,12 +251,12 @@ abstract contract ExchangeWrapperCore is
         address tokenOut = swapDetails.path[swapDetails.path.length - 1];
         // tokens for eth or weth
         if (tokenOut == wrappedToken) {
-            bool isSwapExecuted = swapV2TokensForExactETHOrWETH(swapDetails);
+            bool isSwapExecuted = swapV2TokensForExactETHOrWETH(swapDetails, true);
             require(isSwapExecuted, "swap not successful");
         }
         // tokens for tokens
         else {
-            bool isSwapExecuted = swapV2TokensForExactTokens(swapDetails);
+            bool isSwapExecuted = swapV2TokensForExactTokens(swapDetails, true);
             require(isSwapExecuted, "swap not successful");
         }
 
@@ -279,7 +279,7 @@ abstract contract ExchangeWrapperCore is
         bool allowFail,
         SwapDetailsIn memory swapDetails
     ) public payable whenNotPaused {
-        bool isSwapExecuted = swapTokensForExactTokens(swapDetails);
+        bool isSwapExecuted = swapTokensForExactTokens(swapDetails, true);
         require(isSwapExecuted, "swap not successful");
         bulkPurchase(purchaseDetails, feeRecipientFirst, feeRecipientSecond, allowFail);
     }
@@ -595,8 +595,9 @@ abstract contract ExchangeWrapperCore is
     /**
      * @notice swaps tokens for exact tokens - uniswap v2
      * @param swapDetails swapDetails required
+     * @param combined combined swap + buy - if true funds are not sent back to sender buy kept for trade
      */
-    function swapV2TokensForExactTokens(SwapV2DetailsIn memory swapDetails) public returns (bool) {
+    function swapV2TokensForExactTokens(SwapV2DetailsIn memory swapDetails, bool combined) public returns (bool) {
         // extract tokenIn from path
         address tokenIn = swapDetails.path[0];
 
@@ -653,6 +654,11 @@ abstract contract ExchangeWrapperCore is
         // Refund tokenIn left if any
         if (amountIn < swapDetails.amountInMaximum) {
             IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
+        }
+
+        if (!combined) {
+            address tokenOut = swapDetails.path[swapDetails.path.length - 1];
+            IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
         }
 
         return true;
@@ -722,8 +728,9 @@ abstract contract ExchangeWrapperCore is
     /**
      * @notice swaps tokens for exact ETH or WETH - uniswap v2
      * @param swapDetails swapDetails required
+     * @param combined combined swap + buy - if true funds are not sent back to sender buy kept for trade
      */
-    function swapV2TokensForExactETHOrWETH(SwapV2DetailsIn memory swapDetails) public returns (bool) {
+    function swapV2TokensForExactETHOrWETH(SwapV2DetailsIn memory swapDetails, bool combined) public returns (bool) {
         // extract tokenIn from path
         address tokenIn = swapDetails.path[0];
 
@@ -782,14 +789,26 @@ abstract contract ExchangeWrapperCore is
             }
         }
 
+        // Refund tokenIn left if any
+        if (amountIn < swapDetails.amountInMaximum) {
+            IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
+        }
+
         // Unwrap if required
         if (swapDetails.unwrap) {
             IWETH(wrappedToken).withdraw(swapDetails.amountOut);
         }
 
-        // Refund tokenIn left if any
-        if (amountIn < swapDetails.amountInMaximum) {
-            IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
+        if (!combined) {
+            if (swapDetails.unwrap)
+            {
+                address(_msgSender()).transferEth(swapDetails.amountOut);
+            }
+            else
+            {
+                address tokenOut = swapDetails.path[swapDetails.path.length - 1];
+                IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
+            }
         }
 
         return true;
@@ -861,8 +880,9 @@ abstract contract ExchangeWrapperCore is
     /**
      * @notice swaps tokens for exact tokens - uniswap v3
      * @param swapDetails swapDetails required
+     * @param combined combined swap + buy - if true funds are not sent back to sender buy kept for trade
      */
-    function swapTokensForExactTokens(SwapDetailsIn memory swapDetails) public payable returns (bool) {
+    function swapTokensForExactTokens(SwapDetailsIn memory swapDetails, bool combined) public payable returns (bool) {
         // extract tokenIn / tokenOut from path
         address tokenIn;
         address tokenOut;
@@ -929,6 +949,17 @@ abstract contract ExchangeWrapperCore is
         // Refund tokenIn left if any
         if (amountIn < swapDetails.amountInMaximum) {
             IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
+        }
+
+        if (!combined) {
+            if (swapDetails.unwrap)
+            {
+                address(_msgSender()).transferEth(swapDetails.amountOut);
+            }
+            else
+            {
+                IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
+            }
         }
 
         return true;
