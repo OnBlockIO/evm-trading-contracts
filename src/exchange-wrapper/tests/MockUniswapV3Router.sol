@@ -28,11 +28,11 @@ contract MockUniswapV3Router is ISwapRouterV3 {
         return 0;
     }
 
-    function refundETH() external payable override {
+    function uniswapV3SwapCallback(int256, int256, bytes calldata) external pure {
         return;
     }
 
-    function uniswapV3SwapCallback(int256, int256, bytes calldata) external pure {
+    function refundETH() external payable override {
         return;
     }
 
