@@ -800,12 +800,9 @@ abstract contract ExchangeWrapperCore is
         }
 
         if (!combined) {
-            if (swapDetails.unwrap)
-            {
+            if (swapDetails.unwrap) {
                 address(_msgSender()).transferEth(swapDetails.amountOut);
-            }
-            else
-            {
+            } else {
                 address tokenOut = swapDetails.path[swapDetails.path.length - 1];
                 IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
             }
@@ -952,12 +949,9 @@ abstract contract ExchangeWrapperCore is
         }
 
         if (!combined) {
-            if (swapDetails.unwrap)
-            {
+            if (swapDetails.unwrap) {
                 address(_msgSender()).transferEth(swapDetails.amountOut);
-            }
-            else
-            {
+            } else {
                 IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
             }
         }
