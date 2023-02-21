@@ -4441,6 +4441,42 @@ describe('ExchangeWrapper Test', async function () {
   });
 
   describe('Swap integration', () => {
+    it('Test uniswap v3 direct swap WETH<>ETH', async () => {
+      const buyer = wallet1;
+      const priceIn = '10000000000000000';
+      const priceOut = '32832900';
+
+      // add wrapper as an operator of erc20 transfer proxy
+      await erc20TransferProxy.addOperator(bulkExchange.address);
+      // set uniswap v3 router
+      await bulkExchange.setUniswapV3(uniswapV3Router.address);
+      // set erc20 transfer proxy
+      await bulkExchange.setTransferProxy(erc20TransferProxy.address);
+      // set wrapped
+      await bulkExchange.setWrapped(weth.address);
+      // wrap some eth
+      await weth.deposit({value: priceIn});
+      // send to buyer
+      await weth.transfer(buyer.address, priceIn);
+      // approve weth
+      await weth.connect(buyer).approve(erc20TransferProxy.address, priceIn, {from: buyer.address});
+
+      // swap details
+      const encodedPath = encodePath([weth.address, weth.address], [3000]);
+      const swapDetails: any = [
+        encodedPath, // encoded path
+        priceIn, // amount out
+        priceIn, // amount in max
+        true, // unwrap weth to eth
+      ];
+
+      await bulkExchange
+        .connect(buyer)
+        .swapTokensForExactTokens(swapDetails, false, {from: buyer.address, value: 0, gasPrice: 0});
+
+      expect(await weth.balanceOf(buyer.address)).to.equal(0);
+    });
+
     it('Test uniswap v3 direct swap WETH<>ERC20', async () => {
       const buyer = wallet1;
       const priceIn = '10000000000000000';
@@ -4461,7 +4497,7 @@ describe('ExchangeWrapper Test', async function () {
       // mint some erc20 to buyer
       await erc20.mint(buyer.address, priceOut);
       // approve erc20 from buyer
-      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut);
+      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut, {from: buyer.address});
 
       // swap details
       const encodedPath = encodePath([weth.address, erc20.address], [3000]);
@@ -4500,7 +4536,7 @@ describe('ExchangeWrapper Test', async function () {
       // mint some erc20 to buyer
       await erc20.mint(buyer.address, priceOut);
       // approve erc20 from buyer
-      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut);
+      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut, {from: buyer.address});
 
       // swap details
       const encodedPath = encodePath([weth.address, erc20.address], [3000]);
@@ -4536,7 +4572,7 @@ describe('ExchangeWrapper Test', async function () {
       // mint some erc20 to buyer
       await erc20.mint(buyer.address, priceOut);
       // approve erc20 from buyer
-      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut);
+      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut, {from: buyer.address});
 
       // swap details
       const encodedPath = encodePath([erc202.address, erc20.address], [3000]);
@@ -4617,7 +4653,7 @@ describe('ExchangeWrapper Test', async function () {
       // mint some erc20 to buyer
       await erc20.mint(buyer.address, priceOut);
       // approve erc20 from buyer
-      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut);
+      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut, {from: buyer.address});
 
       //exception if not sending ETH and no swap
       await expect(
@@ -4659,6 +4695,43 @@ describe('ExchangeWrapper Test', async function () {
       expect(await erc721.balanceOf(buyer.address)).to.equal(1);
     });
 
+    it('Test uniswap v2 direct swap WETH<>ETH', async () => {
+      const buyer = wallet1;
+      const priceIn = '10000000000000000';
+      const priceOut = '32832900';
+
+      // add wrapper as an operator of erc20 transfer proxy
+      await erc20TransferProxy.addOperator(bulkExchange.address);
+      // set uniswap v3 router
+      await bulkExchange.setUniswapV2(uniswapV2Router.address);
+      // set erc20 transfer proxy
+      await bulkExchange.setTransferProxy(erc20TransferProxy.address);
+      // set wrapped
+      await bulkExchange.setWrapped(weth.address);
+      // wrap some eth
+      await weth.deposit({value: priceOut});
+      // send to buyer
+      await weth.transfer(buyer.address, priceOut);
+      // approve weth
+      await weth.connect(buyer).approve(erc20TransferProxy.address, priceOut, {from: buyer.address});
+
+      // swap details
+      const encodedPath = [weth.address, weth.address];
+      const swapDetails: any = [
+        encodedPath, // encoded path
+        priceIn, // amount out
+        priceIn, // amount in max
+        [0], // binSteps
+        true, // wrap eth to weth
+      ];
+
+      await bulkExchange
+        .connect(buyer)
+        .swapV2TokensForExactETHOrWETH(swapDetails, false, {from: buyer.address, gasPrice: 0});
+
+      expect(await weth.balanceOf(buyer.address)).to.equal(0);
+    });
+
     it('Test uniswap v2 direct swap WETH<>ERC20', async () => {
       const buyer = wallet1;
       const priceIn = '10000000000000000';
@@ -4677,7 +4750,7 @@ describe('ExchangeWrapper Test', async function () {
       // mint some erc20 to buyer
       await erc20.mint(buyer.address, priceOut);
       // approve erc20 from buyer
-      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut);
+      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut, {from: buyer.address});
 
       // swap details
       const encodedPath = [erc20.address, weth.address];
@@ -4715,7 +4788,7 @@ describe('ExchangeWrapper Test', async function () {
       // mint some erc20 to buyer
       await erc20.mint(buyer.address, priceOut);
       // approve erc20 from buyer
-      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut);
+      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut, {from: buyer.address});
 
       // swap details
       const encodedPath = [erc20.address, weth.address];
@@ -4752,7 +4825,7 @@ describe('ExchangeWrapper Test', async function () {
       // mint some erc20 to buyer
       await erc20.mint(buyer.address, priceOut);
       // approve erc20 from buyer
-      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut);
+      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut, {from: buyer.address});
 
       // swap details
       const encodedPath = [erc20.address, erc202.address];
@@ -4832,7 +4905,7 @@ describe('ExchangeWrapper Test', async function () {
       // mint some erc20 to buyer
       await erc20.mint(buyer.address, priceOut);
       // approve erc20 from buyer
-      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut);
+      await erc20.connect(buyer).approve(erc20TransferProxy.address, priceOut, {from: buyer.address});
 
       // swap details
       const encodedPath = [erc20.address, weth.address];

@@ -671,8 +671,9 @@ abstract contract ExchangeWrapperCore is
      * @param swapDetails swapDetails required
      */
     function swapV2ExactTokensForTokens(SwapV2DetailsOut memory swapDetails) public returns (bool) {
-        // extract tokenIn from path
+        // extract tokenIn / tokenOut from path
         address tokenIn = swapDetails.path[0];
+        address tokenOut = swapDetails.path[swapDetails.path.length - 1];
 
         // Move tokenIn to contract
         IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
@@ -724,6 +725,9 @@ abstract contract ExchangeWrapperCore is
             }
         }
 
+        // send token out back
+        IERC20Upgradeable(tokenOut).transfer(_msgSender(), amountOut);
+
         return true;
     }
 
@@ -747,6 +751,9 @@ abstract contract ExchangeWrapperCore is
         // if source = wrapped and destination = native, unwrap and return
         if (tokenIn == wrappedToken && swapDetails.unwrap) {
             IWETH(wrappedToken).withdraw(swapDetails.amountInMaximum);
+            if (!combined) {
+                address(_msgSender()).transferEth(swapDetails.amountInMaximum);
+            }
             return true;
         }
 
@@ -837,6 +844,7 @@ abstract contract ExchangeWrapperCore is
         // if source = native and destination = wrapped, wrap and return
         if (msg.value > 0 && tokenOut == wrappedToken) {
             IWETH(wrappedToken).deposit{value: msg.value}();
+            IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountIn);
             return true;
         }
 
@@ -873,6 +881,9 @@ abstract contract ExchangeWrapperCore is
             }
         }
 
+        // send token out back
+        IERC20Upgradeable(tokenOut).transfer(_msgSender(), amountOut);
+
         return true;
     }
 
@@ -905,12 +916,18 @@ abstract contract ExchangeWrapperCore is
         // if source = wrapped and destination = native, unwrap and return
         if (tokenIn == wrappedToken && swapDetails.unwrap) {
             IWETH(wrappedToken).withdraw(swapDetails.amountOut);
+            if (!combined) {
+                address(_msgSender()).transferEth(swapDetails.amountOut);
+            }
             return true;
         }
 
         // if source = native and destination = wrapped, wrap and return
         if (msg.value > 0 && tokenOut == wrappedToken) {
             IWETH(wrappedToken).deposit{value: msg.value}();
+            if (!combined) {
+                IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
+            }
             return true;
         }
 
@@ -989,12 +1006,14 @@ abstract contract ExchangeWrapperCore is
         // if source = wrapped and destination = native, unwrap and return
         if (tokenIn == wrappedToken && swapDetails.unwrap) {
             IWETH(wrappedToken).withdraw(swapDetails.amountIn);
+            address(_msgSender()).transferEth(swapDetails.amountIn);
             return true;
         }
 
         // if source = native and destination = wrapped, wrap and return
         if (msg.value > 0 && tokenOut == wrappedToken) {
             IWETH(wrappedToken).deposit{value: msg.value}();
+            IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountIn);
             return true;
         }
 
@@ -1027,6 +1046,13 @@ abstract contract ExchangeWrapperCore is
         // Unwrap if required
         if (swapDetails.unwrap) {
             IWETH(wrappedToken).withdraw(amountOut);
+        }
+
+        // send token out back
+        if (swapDetails.unwrap) {
+            address(_msgSender()).transferEth(amountOut);
+        } else {
+            IERC20Upgradeable(tokenOut).transfer(_msgSender(), amountOut);
         }
 
         return true;

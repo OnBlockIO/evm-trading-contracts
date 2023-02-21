@@ -5,10 +5,6 @@ pragma solidity ^0.8.9;
 import "../../librairies/LibOrder.sol";
 import "../../librairies/LibDirectTransfer.sol";
 
-import {RoyaltiesRegistry} from "../../royalties-registry/RoyaltiesRegistry.sol";
-import {TransferProxy} from "../../transfer-proxy/TransferProxy.sol";
-import {ERC20TransferProxy} from "../../transfer-proxy/ERC20TransferProxy.sol";
-
 interface IExchangeV2 {
     function matchOrders(
         LibOrder.Order memory orderLeft,
