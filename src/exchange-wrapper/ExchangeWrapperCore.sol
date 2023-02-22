@@ -685,7 +685,7 @@ abstract contract ExchangeWrapperCore is
 
         if (isAvalanche) {
             try
-                uniswapRouterV2.swapTokensForExactTokens(
+                uniswapRouterV2.swapExactTokensForTokens(
                     swapDetails.amountIn, // amountIn
                     swapDetails.amountOutMinimum, // amountOutMinimum
                     swapDetails.binSteps, // binSteps
@@ -700,7 +700,7 @@ abstract contract ExchangeWrapperCore is
             }
         } else {
             try
-                uniswapRouterV2.swapTokensForExactTokens(
+                uniswapRouterV2.swapExactTokensForTokens(
                     swapDetails.amountIn, // amountIn
                     swapDetails.amountOutMinimum, // amountOutMinimum
                     swapDetails.path, // path
@@ -827,7 +827,10 @@ abstract contract ExchangeWrapperCore is
                 swapDetails.amountIn
             );
 
-            IWETH(wrappedToken).withdraw(swapDetails.amountIn);
+            try
+                IWETH(wrappedToken).withdraw(swapDetails.amountIn) {} catch {
+                return false;
+            }
         }
 
         // if source = native and destination = wrapped, wrap and return
@@ -841,30 +844,31 @@ abstract contract ExchangeWrapperCore is
         uint256 chainId = block.chainid;
         bool isAvalanche = chainId == 43114 || chainId == 43113;
         uint256 amountOut;
+        
         if (isAvalanche) {
             try
-                uniswapRouterV2.swapExactAVAXForTokens(
+                uniswapRouterV2.swapExactAVAXForTokens{value: swapDetails.amountIn}(
                     swapDetails.amountOutMinimum, // amountOutMinimum
                     swapDetails.binSteps, // binSteps
                     swapDetails.path, // path
                     address(this), // recipient
                     block.timestamp // deadline
                 )
-            returns (uint[] memory amounts) {
-                amountOut = amounts[0];
+            returns (uint amount) {
+                amountOut = amount;
             } catch {
                 return false;
             }
         } else {
             try
-                uniswapRouterV2.swapExactETHForTokens(
+                uniswapRouterV2.swapExactETHForTokens{value: swapDetails.amountIn}(
                     swapDetails.amountOutMinimum, // amountOutMinimum
                     swapDetails.path, // path
                     address(this), // recipient
                     block.timestamp // deadline
                 )
-            returns (uint[] memory amounts) {
-                amountOut = amounts[0];
+            returns (uint amount) {
+                 amountOut = amount;
             } catch {
                 return false;
             }

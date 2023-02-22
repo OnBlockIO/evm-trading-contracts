@@ -43,11 +43,8 @@ contract MockUniswapV2Router is ISwapRouterV2 {
         address[] calldata,
         address,
         uint
-    ) external payable override returns (uint[] memory amounts) {
-        uint[] memory amts = new uint[](1);
-        amts[0] = 0;
-
-        return amts;
+    ) external payable override returns (uint amountOut) {
+        return amountOut;
     }
 
     function swapTokensForExactETH(
@@ -132,11 +129,8 @@ contract MockUniswapV2Router is ISwapRouterV2 {
         address[] calldata,
         address,
         uint
-    ) external payable override returns (uint[] memory amounts) {
-        uint[] memory amts = new uint[](1);
-        amts[0] = 0;
-
-        return amts;
+    ) external payable override returns (uint amountOut) {
+        return amountOut;
     }
 
     function swapTokensForExactAVAX(
