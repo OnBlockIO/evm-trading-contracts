@@ -1,6 +1,6 @@
 # GhostMarket Exchange smart contracts
 
-[![codecov](https://codecov.io/github/OnBlockIO/evm-trading-contracts/branch/master/graph/badge.svg?token=GHZYA9CM2E)](https://codecov.io/github/OnBlockIO/evm-trading-contracts)
+[![codecov](https://codecov.io/github/OnBlockIO/evm-trading-contracts/branch/main/graph/badge.svg?token=GHZYA9CM2E)](https://codecov.io/github/OnBlockIO/evm-trading-contracts)
 
 ## Deployed Contracts on BSC:
 
@@ -18,15 +18,11 @@ https://bscscan.com/address/0x1073e1d5977002d5db4F9E776482E8BF113C745c#code
 
 #### AssetMatcherCollection
 
-https://bscscan.com/address/0xD55cA4003B07E692a25bA7EbcCaeC100ED7bf015#code
+https://bscscan.com/address/0xE6bbAfB291DD683E85520785CC3502CA9ce581A5#code
 
 #### ExchangeV2 Proxy
 
-https://bscscan.com/address/0x32E0C20421c96cA4B423a7806e151e953C647c48#code
-
-#### ExchangeWrapper Proxy
-
-https://bscscan.com/address/0x0C823CD09642864f495F0a474E1d26Dea9A516F9#code
+https://bscscan.com/address/0x388171F81FC91EfC7338E07E52555a90c7D87972#code
 
 
 ## Deployed Contracts on Avalanche:
@@ -45,15 +41,11 @@ https://snowtrace.io/address/0x913FbdC42a77edb0aEFFCEEAe00240C368d9B6b1#code
 
 #### AssetMatcherCollection
 
-https://snowtrace.io/address/0x113c8b438687DD1a9b04e7B5984d1fC00E176AD6#code
+https://snowtrace.io/address/0xF0ef7f0E9B95738924B9D92013FEAB39aa3Ba019#code
 
 #### ExchangeV2 Proxy
 
 https://snowtrace.io/address/0xEb4ABA7aeba732Fc2FC92a673585d950cCFC1de0#code
-
-#### ExchangeWrapper Proxy
-
-https://snowtrace.io/address/0x0C823CD09642864f495F0a474E1d26Dea9A516F9#code
 
 
 ## Deployed Contracts on Polygon:
@@ -72,15 +64,11 @@ https://polygonscan.com/address/0x7eD7Bff3bEfa9cEDf6A6d4768F4051fEd7fC1975#code
 
 #### AssetMatcherCollection
 
-https://polygonscan.com/address/0xAB8944314D0eA90fba56644A4989Dd9924F56748#code
+https://polygonscan.com/address/0xa100dCC8ce4328cDA39d29bcA537BBA15012d242#code
 
 #### ExchangeV2 Proxy
 
 https://polygonscan.com/address/0x3B48563237C32a1f886FD19DB6F5AFFD23855E2a#code
-
-#### ExchangeWrapper Proxy
-
-https://polygonscan.com/address/0x09236d6b740ac67dCa842D9dB6FA4D067a684E76#code
 
 
 ## Deployed Contracts on Ethereum:
@@ -99,7 +87,7 @@ https://etherscan.io/address/0x3dA0bD10dfD98E96E04fbAa8e0512b2c413b096A#code
 
 #### AssetMatcherCollection
 
-https://etherscan.io/address/0x468a6Bd8a5A440378f61ec09e4b4408c9Ba8E455#code
+https://etherscan.io/address/0x49CaC1f0564Ed70a30C2454F653a3A1058D6A9bA#code
 
 #### ExchangeV2 Proxy
 
@@ -107,7 +95,7 @@ https://etherscan.io/address/0xfB2F452639cBB0850B46b20D24DE7b0a9cCb665f#code
 
 #### ExchangeWrapper Proxy
 
-https://etherscan.io/address/0x2dEbB6CEd142197BEc08d76d3ECCE828b3B261ee#code
+https://etherscan.io/address/
 
 
 ## Audit

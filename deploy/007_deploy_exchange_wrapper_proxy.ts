@@ -1,6 +1,6 @@
 import {getSettings} from '../.config';
 import hre, {deployments, getNamedAccounts} from 'hardhat';
-import { ZERO } from '../test/utils/assets';
+import {ZERO} from '../test/utils/assets';
 
 async function main() {
   const {deploy} = deployments;
@@ -14,6 +14,7 @@ async function main() {
   const X2Y2 = getSettings(CHAIN)?.x2y2 || ZERO;
   const LOOKSRARE = getSettings(CHAIN)?.looksrare || ZERO;
   const SUDOSWAP = getSettings(CHAIN)?.sudoswap || ZERO;
+  const BLUR = getSettings(CHAIN)?.blur || ZERO;
   if (!GHOSTMARKET) return;
 
   console.log(`Exchange Wrapper deployment on ${CHAIN} start`);
@@ -27,7 +28,7 @@ async function main() {
       execute: {
         init: {
           methodName: '__ExchangeWrapper_init',
-          args: [GHOSTMARKET, RARIBLE, WYVERN, SEAPORT, X2Y2, LOOKSRARE, SUDOSWAP],
+          args: [GHOSTMARKET, RARIBLE, WYVERN, SEAPORT, X2Y2, LOOKSRARE, SUDOSWAP, BLUR],
         },
       },
     },

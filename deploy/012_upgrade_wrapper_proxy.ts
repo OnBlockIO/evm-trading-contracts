@@ -1,5 +1,5 @@
 import hre, {deployments, getNamedAccounts} from 'hardhat';
-import { getSettings } from '../.config';
+import {getSettings} from '../.config';
 
 async function main() {
   const {deploy} = deployments;

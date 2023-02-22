@@ -16,6 +16,7 @@ import {Ix2y2} from "../interfaces/Ix2y2.sol";
 import {LibLooksRare} from "../librairies/LibLooksRare.sol";
 import {ILooksRare} from "../interfaces/ILooksRare.sol";
 import {ILSSVMRouter} from "../interfaces/ILSSVMRouter.sol";
+import {LibBlur} from "../librairies/LibBlur.sol";
 
 interface IERC1155 {
     function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external;
@@ -284,5 +285,12 @@ contract WrapperHelper {
             nftRecipient,
             deadline
         );
+    }
+
+    function encodeDataBlur(
+        LibBlur.Input calldata buy,
+        LibBlur.Input calldata sell
+    ) external pure returns (bytes memory) {
+        return abi.encode(buy, sell);
     }
 }

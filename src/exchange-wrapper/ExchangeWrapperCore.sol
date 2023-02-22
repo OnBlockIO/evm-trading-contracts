@@ -10,12 +10,19 @@ import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 import "./interfaces/IWyvernExchange.sol";
 import "./interfaces/IExchangeV2.sol";
 import "./interfaces/ISeaPort.sol";
 import "./interfaces/Ix2y2.sol";
 import "./interfaces/ILooksRare.sol";
+import "./interfaces/IBlurExchange.sol";
+import "./interfaces/IWETH.sol";
+import "./interfaces/ISwapRouterV3.sol";
+import "./interfaces/ISwapRouterV2.sol";
+import "../interfaces/INftTransferProxy.sol";
+import "../interfaces/IERC20TransferProxy.sol";
 
 abstract contract ExchangeWrapperCore is
     Initializable,
@@ -26,6 +33,7 @@ abstract contract ExchangeWrapperCore is
 {
     using LibTransfer for address;
     using BpLibrary for uint;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     address public exchangeV2;
     address public rarible;
@@ -34,6 +42,11 @@ abstract contract ExchangeWrapperCore is
     address public x2y2;
     address public looksrare;
     address public sudoswap;
+    address public blur;
+    ISwapRouterV2 public uniswapRouterV2;
+    ISwapRouterV3 public uniswapRouterV3;
+    address public wrappedToken;
+    address public erc20TransferProxy;
 
     event Execution(bool result, address indexed sender);
 
@@ -44,7 +57,8 @@ abstract contract ExchangeWrapperCore is
         X2Y2,
         LooksRare,
         SudoSwap,
-        ExchangeV2
+        ExchangeV2,
+        Blur
     }
 
     enum AdditionalDataTypes {
@@ -79,6 +93,66 @@ abstract contract ExchangeWrapperCore is
         uint[] additionalRoyalties;
     }
 
+    /**
+        @notice struct for the swap in v3 data
+        @param path - tokenIn
+        @param amountOut - amountOut
+        @param amountInMaximum - amountInMaximum
+        @param unwrap - unwrap
+     */
+    struct SwapDetailsIn {
+        bytes path;
+        uint256 amountOut;
+        uint256 amountInMaximum;
+        bool unwrap;
+    }
+
+    /**
+        @notice struct for the swap out v3 data
+        @param path - path
+        @param amountIn - amountIn
+        @param amountOutMinimum - amountOutMinimum
+        @param unwrap - unwrap
+     */
+    struct SwapDetailsOut {
+        bytes path;
+        uint256 amountIn;
+        uint256 amountOutMinimum;
+        bool unwrap;
+    }
+
+    /**
+        @notice struct for the swap in v2 data
+        @param path - tokenIn
+        @param amountOut - amountOut
+        @param amountInMaximum - amountInMaximum
+        @param binSteps - binSteps
+        @param unwrap - unwrap
+     */
+    struct SwapV2DetailsIn {
+        address[] path;
+        uint256 amountOut;
+        uint256 amountInMaximum;
+        uint256[] binSteps;
+        bool unwrap;
+    }
+
+    /**
+        @notice struct for the swap out v2 data
+        @param path - tokenIn
+        @param amountIn - amountIn
+        @param amountOutMinimum - amountOutMinimum
+        @param binSteps - binSteps
+        @param unwrap - unwrap
+     */
+    struct SwapV2DetailsOut {
+        address[] path;
+        uint256 amountIn;
+        uint256 amountOutMinimum;
+        uint256[] binSteps;
+        bool unwrap;
+    }
+
     function __ExchangeWrapper_init_unchained(
         address _exchangeV2,
         address _rarible,
@@ -86,7 +160,8 @@ abstract contract ExchangeWrapperCore is
         address _seaport,
         address _x2y2,
         address _looksrare,
-        address _sudoswap
+        address _sudoswap,
+        address _blur
     ) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
@@ -95,6 +170,7 @@ abstract contract ExchangeWrapperCore is
         x2y2 = _x2y2;
         looksrare = _looksrare;
         sudoswap = _sudoswap;
+        blur = _blur;
     }
 
     /// @notice Pause the contract
@@ -107,6 +183,26 @@ abstract contract ExchangeWrapperCore is
         _unpause();
     }
 
+    /// @notice Set uniswap v2 router
+    function setUniswapV2(ISwapRouterV2 _uniswapRouterV2) external onlyOwner {
+        uniswapRouterV2 = _uniswapRouterV2;
+    }
+
+    /// @notice Set uniswap v3 router
+    function setUniswapV3(ISwapRouterV3 _uniswapRouterV3) external onlyOwner {
+        uniswapRouterV3 = _uniswapRouterV3;
+    }
+
+    /// @notice Set wrapped token
+    function setWrapped(address _wrappedToken) external onlyOwner {
+        wrappedToken = _wrappedToken;
+    }
+
+    /// @notice Set erc20 transfer proxy
+    function setTransferProxy(address _erc20TransferProxy) external onlyOwner {
+        erc20TransferProxy = _erc20TransferProxy;
+    }
+
     /**
         @notice executes a single purchase
         @param purchaseDetails - details about the purchase (more info in PurchaseDetails struct)
@@ -117,7 +213,7 @@ abstract contract ExchangeWrapperCore is
         PurchaseDetails memory purchaseDetails,
         address feeRecipientFirst,
         address feeRecipientSecond
-    ) external payable whenNotPaused {
+    ) public payable whenNotPaused {
         (bool success, uint feeAmountFirst, uint feeAmountSecond) = purchase(purchaseDetails, false);
         emit Execution(success, _msgSender());
 
@@ -125,6 +221,58 @@ abstract contract ExchangeWrapperCore is
         transferFee(feeAmountSecond, feeRecipientSecond);
 
         transferChange();
+    }
+
+    /**
+        @notice executes an array of purchases - with swap v2 - tokens for tokens or tokens for eth/weth
+        @param purchaseDetails - array of details about the purchases (more info in PurchaseDetails struct)
+        @param feeRecipientFirst - address of the first fee recipient
+        @param feeRecipientSecond - address of the second fee recipient
+        @param allowFail - true if fails while executing orders are allowed, false if fail of a single order means fail of the whole batch
+        @param swapDetails - swapDetails v2
+     */
+
+    function bulkPurchaseWithV2Swap(
+        PurchaseDetails[] memory purchaseDetails,
+        address feeRecipientFirst,
+        address feeRecipientSecond,
+        bool allowFail,
+        SwapV2DetailsIn memory swapDetails
+    ) public payable whenNotPaused {
+        address tokenOut = swapDetails.path[swapDetails.path.length - 1];
+        // tokens for eth or weth
+        if (tokenOut == wrappedToken) {
+            bool isSwapExecuted = swapV2TokensForExactETHOrWETH(swapDetails, true);
+            require(isSwapExecuted, "swap not successful");
+        }
+        // tokens for tokens
+        else {
+            bool isSwapExecuted = swapV2TokensForExactTokens(swapDetails, true);
+            require(isSwapExecuted, "swap not successful");
+        }
+
+        bulkPurchase(purchaseDetails, feeRecipientFirst, feeRecipientSecond, allowFail);
+    }
+
+    /**
+        @notice executes an array of purchases - with swap v3
+        @param purchaseDetails - array of details about the purchases (more info in PurchaseDetails struct)
+        @param feeRecipientFirst - address of the first fee recipient
+        @param feeRecipientSecond - address of the second fee recipient
+        @param allowFail - true if fails while executing orders are allowed, false if fail of a single order means fail of the whole batch
+        @param swapDetails - swapDetails v3
+     */
+
+    function bulkPurchaseWithSwap(
+        PurchaseDetails[] memory purchaseDetails,
+        address feeRecipientFirst,
+        address feeRecipientSecond,
+        bool allowFail,
+        SwapDetailsIn memory swapDetails
+    ) public payable whenNotPaused {
+        bool isSwapExecuted = swapTokensForExactTokens(swapDetails, true);
+        require(isSwapExecuted, "swap not successful");
+        bulkPurchase(purchaseDetails, feeRecipientFirst, feeRecipientSecond, allowFail);
     }
 
     /**
@@ -140,12 +288,13 @@ abstract contract ExchangeWrapperCore is
         address feeRecipientFirst,
         address feeRecipientSecond,
         bool allowFail
-    ) external payable whenNotPaused {
+    ) public payable whenNotPaused {
         uint sumFirstFees = 0;
         uint sumSecondFees = 0;
         bool result = false;
 
-        for (uint i = 0; i < purchaseDetails.length; i++) {
+        uint length = purchaseDetails.length;
+        for (uint i; i < length; ++i) {
             (bool success, uint firstFeeAmount, uint secondFeeAmount) = purchase(purchaseDetails[i], allowFail);
 
             result = result || success;
@@ -225,10 +374,11 @@ abstract contract ExchangeWrapperCore is
                 Ix2y2(x2y2).run{value: paymentAmount}(input);
             }
 
-            //for every element in input.details[] getting
+            // for every element in input.details[] getting
             // order = input.details[i].orderIdx
             // and from that order getting item = input.details[i].itemId
-            for (uint i = 0; i < input.details.length; i++) {
+            uint length = input.details.length;
+            for (uint i; i < length; ++i) {
                 uint orderId = input.details[i].orderIdx;
                 uint itemId = input.details[i].itemIdx;
                 bytes memory data = input.orders[orderId].items[itemId].data;
@@ -304,6 +454,15 @@ abstract contract ExchangeWrapperCore is
                 }
             } else {
                 require(success, "Purchase SudoSwap failed");
+            }
+        } else if (purchaseDetails.marketId == Markets.Blur) {
+            (bool success, ) = address(blur).call{value: paymentAmount}(marketData);
+            if (allowFail) {
+                if (!success) {
+                    return (false, 0, 0);
+                }
+            } else {
+                require(success, "Purchase blurio failed");
             }
         } else {
             revert("Unknown purchase details");
@@ -388,7 +547,8 @@ abstract contract ExchangeWrapperCore is
         @param _additionalRoyalties array uint256 (base point + royalty recipient address)
      */
     function transferAdditionalRoyalties(uint[] memory _additionalRoyalties, uint amount) internal {
-        for (uint i = 0; i < _additionalRoyalties.length; i++) {
+        uint length = _additionalRoyalties.length;
+        for (uint i; i < length; ++i) {
             if (_additionalRoyalties[i] > 0) {
                 address payable account = payable(address(uint160(_additionalRoyalties[i])));
                 uint basePoint = uint(_additionalRoyalties[i] >> 160);
@@ -403,7 +563,8 @@ abstract contract ExchangeWrapperCore is
         require(src.length == replacement.length);
         require(src.length == mask.length);
 
-        for (uint256 i = 0; i < src.length; i++) {
+        uint256 length = src.length;
+        for (uint256 i; i < length; ++i) {
             if (mask[i] != 0) {
                 src[i] = replacement[i];
             }
@@ -420,6 +581,470 @@ abstract contract ExchangeWrapperCore is
         }
 
         return false;
+    }
+
+    /**
+     * @notice swaps tokens for exact tokens - uniswap v2
+     * @param swapDetails swapDetails required
+     * @param combined combined swap + buy - if true funds are not sent back to sender buy kept for trade
+     */
+    function swapV2TokensForExactTokens(SwapV2DetailsIn memory swapDetails, bool combined) public returns (bool) {
+        // extract tokenIn from path
+        address tokenIn = swapDetails.path[0];
+
+        // Move tokenIn to contract
+        IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
+            IERC20Upgradeable(tokenIn),
+            _msgSender(),
+            address(this),
+            swapDetails.amountInMaximum
+        );
+
+        // Approve tokenIn on uniswap
+        uint256 allowance = IERC20Upgradeable(tokenIn).allowance(address(uniswapRouterV2), address(this));
+        if (allowance < swapDetails.amountInMaximum) {
+            IERC20Upgradeable(tokenIn).approve(address(uniswapRouterV2), type(uint256).max);
+        }
+
+        // Swap
+        uint256 chainId = block.chainid;
+        bool isAvalanche = chainId == 43114 || chainId == 43113;
+        uint256 amountIn;
+
+        if (isAvalanche) {
+            try
+                uniswapRouterV2.swapTokensForExactTokens(
+                    swapDetails.amountOut, // amountOut
+                    swapDetails.amountInMaximum, // amountInMaximum
+                    swapDetails.binSteps, // binSteps
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountIn = amounts[0];
+            } catch {
+                return false;
+            }
+        } else {
+            try
+                uniswapRouterV2.swapTokensForExactTokens(
+                    swapDetails.amountOut, // amountOut
+                    swapDetails.amountInMaximum, // amountInMaximum
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountIn = amounts[0];
+            } catch {
+                return false;
+            }
+        }
+
+        // Refund tokenIn left if any
+        if (amountIn < swapDetails.amountInMaximum) {
+            IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
+        }
+
+        if (!combined) {
+            address tokenOut = swapDetails.path[swapDetails.path.length - 1];
+            IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
+        }
+
+        return true;
+    }
+
+    /**
+     * @notice swaps exact tokens for tokens - uniswap v2
+     * @param swapDetails swapDetails required
+     */
+    function swapV2ExactTokensForTokens(SwapV2DetailsOut memory swapDetails) public returns (bool) {
+        // extract tokenIn / tokenOut from path
+        address tokenIn = swapDetails.path[0];
+        address tokenOut = swapDetails.path[swapDetails.path.length - 1];
+
+        // Move tokenIn to contract
+        IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
+            IERC20Upgradeable(tokenIn),
+            _msgSender(),
+            address(this),
+            swapDetails.amountIn
+        );
+
+        // Approve tokenIn on uniswap
+        uint256 allowance = IERC20Upgradeable(tokenIn).allowance(address(uniswapRouterV2), address(this));
+        if (allowance < swapDetails.amountIn) {
+            IERC20Upgradeable(tokenIn).approve(address(uniswapRouterV2), type(uint256).max);
+        }
+
+        // Swap
+        uint256 chainId = block.chainid;
+        bool isAvalanche = chainId == 43114 || chainId == 43113;
+        uint256 amountOut;
+
+        if (isAvalanche) {
+            try
+                uniswapRouterV2.swapTokensForExactTokens(
+                    swapDetails.amountIn, // amountIn
+                    swapDetails.amountOutMinimum, // amountOutMinimum
+                    swapDetails.binSteps, // binSteps
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountOut = amounts[0];
+            } catch {
+                return false;
+            }
+        } else {
+            try
+                uniswapRouterV2.swapTokensForExactTokens(
+                    swapDetails.amountIn, // amountIn
+                    swapDetails.amountOutMinimum, // amountOutMinimum
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountOut = amounts[0];
+            } catch {
+                return false;
+            }
+        }
+
+        // send token out back
+        IERC20Upgradeable(tokenOut).transfer(_msgSender(), amountOut);
+
+        return true;
+    }
+
+    /**
+     * @notice swaps tokens for exact ETH or WETH - uniswap v2
+     * @param swapDetails swapDetails required
+     * @param combined combined swap + buy - if true funds are not sent back to sender buy kept for trade
+     */
+    function swapV2TokensForExactETHOrWETH(SwapV2DetailsIn memory swapDetails, bool combined) public returns (bool) {
+        // extract tokenIn from path
+        address tokenIn = swapDetails.path[0];
+
+        // Move tokenIn to contract
+        IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
+            IERC20Upgradeable(tokenIn),
+            _msgSender(),
+            address(this),
+            swapDetails.amountInMaximum
+        );
+
+        // if source = wrapped and destination = native, unwrap and return
+        if (tokenIn == wrappedToken && swapDetails.unwrap) {
+            IWETH(wrappedToken).withdraw(swapDetails.amountInMaximum);
+            if (!combined) {
+                address(_msgSender()).transferEth(swapDetails.amountInMaximum);
+            }
+            return true;
+        }
+
+        // Approve tokenIn on uniswap
+        uint256 allowance = IERC20Upgradeable(tokenIn).allowance(address(uniswapRouterV2), address(this));
+        if (allowance < swapDetails.amountInMaximum) {
+            IERC20Upgradeable(tokenIn).approve(address(uniswapRouterV2), type(uint256).max);
+        }
+
+        // Swap
+        uint256 chainId = block.chainid;
+        bool isAvalanche = chainId == 43114 || chainId == 43113;
+        uint256 amountIn;
+        if (isAvalanche) {
+            try
+                uniswapRouterV2.swapTokensForExactAVAX(
+                    swapDetails.amountOut, // amountOut
+                    swapDetails.amountInMaximum, // amountInMaximum
+                    swapDetails.binSteps, // binSteps
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountIn = amounts[0];
+            } catch {
+                return false;
+            }
+        } else {
+            try
+                uniswapRouterV2.swapTokensForExactETH(
+                    swapDetails.amountOut, // amountOut
+                    swapDetails.amountInMaximum, // amountInMaximum
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountIn = amounts[0];
+            } catch {
+                return false;
+            }
+        }
+
+        // Refund tokenIn left if any
+        if (amountIn < swapDetails.amountInMaximum) {
+            IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
+        }
+
+        // Wrap if required
+        if (swapDetails.unwrap) {
+            IWETH(wrappedToken).deposit{value: swapDetails.amountOut}();
+        }
+
+        if (!combined) {
+            if (swapDetails.unwrap) {
+                address tokenOut = swapDetails.path[swapDetails.path.length - 1];
+                IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
+            } else {
+                address(_msgSender()).transferEth(swapDetails.amountOut);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @notice swaps exact ETH or WETH for tokens - uniswap v2
+     * @param swapDetails swapDetails required
+     */
+    function swapV2ExactETHOrWETHForTokens(SwapV2DetailsOut memory swapDetails) public payable returns (bool) {
+        // extract tokenIn / tokenOut from path
+        address tokenIn = swapDetails.path[0];
+        address tokenOut = swapDetails.path[swapDetails.path.length - 1];
+
+        // Move tokenIn to contract if ERC20
+        if (msg.value == 0) {
+            IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
+                IERC20Upgradeable(tokenIn),
+                _msgSender(),
+                address(this),
+                swapDetails.amountIn
+            );
+
+            IWETH(wrappedToken).withdraw(swapDetails.amountIn);
+        }
+
+        // if source = native and destination = wrapped, wrap and return
+        if (msg.value > 0 && tokenOut == wrappedToken) {
+            IWETH(wrappedToken).deposit{value: msg.value}();
+            IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountIn);
+            return true;
+        }
+
+        // Swap
+        uint256 chainId = block.chainid;
+        bool isAvalanche = chainId == 43114 || chainId == 43113;
+        uint256 amountOut;
+        if (isAvalanche) {
+            try
+                uniswapRouterV2.swapExactAVAXForTokens(
+                    swapDetails.amountOutMinimum, // amountOutMinimum
+                    swapDetails.binSteps, // binSteps
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountOut = amounts[0];
+            } catch {
+                return false;
+            }
+        } else {
+            try
+                uniswapRouterV2.swapExactETHForTokens(
+                    swapDetails.amountOutMinimum, // amountOutMinimum
+                    swapDetails.path, // path
+                    address(this), // recipient
+                    block.timestamp // deadline
+                )
+            returns (uint[] memory amounts) {
+                amountOut = amounts[0];
+            } catch {
+                return false;
+            }
+        }
+
+        // send token out back
+        IERC20Upgradeable(tokenOut).transfer(_msgSender(), amountOut);
+
+        return true;
+    }
+
+    /**
+     * @notice swaps tokens for exact tokens - uniswap v3
+     * @param swapDetails swapDetails required
+     * @param combined combined swap + buy - if true funds are not sent back to sender buy kept for trade
+     */
+    function swapTokensForExactTokens(SwapDetailsIn memory swapDetails, bool combined) public payable returns (bool) {
+        // extract tokenIn / tokenOut from path
+        address tokenIn;
+        address tokenOut;
+        bytes memory _path = swapDetails.path;
+        uint _start = _path.length - 20;
+        assembly {
+            tokenIn := div(mload(add(add(_path, 0x20), _start)), 0x1000000000000000000000000)
+            tokenOut := div(mload(add(add(_path, 0x20), 0)), 0x1000000000000000000000000)
+        }
+
+        // Move tokenIn to contract if ERC20
+        if (msg.value == 0) {
+            IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
+                IERC20Upgradeable(tokenIn),
+                _msgSender(),
+                address(this),
+                swapDetails.amountInMaximum
+            );
+        }
+
+        // if source = wrapped and destination = native, unwrap and return
+        if (tokenIn == wrappedToken && swapDetails.unwrap) {
+            IWETH(wrappedToken).withdraw(swapDetails.amountOut);
+            if (!combined) {
+                address(_msgSender()).transferEth(swapDetails.amountOut);
+            }
+            return true;
+        }
+
+        // if source = native and destination = wrapped, wrap and return
+        if (msg.value > 0 && tokenOut == wrappedToken) {
+            IWETH(wrappedToken).deposit{value: msg.value}();
+            if (!combined) {
+                IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
+            }
+            return true;
+        }
+
+        // Approve tokenIn on uniswap
+        uint256 allowance = IERC20Upgradeable(tokenIn).allowance(address(uniswapRouterV3), address(this));
+        if (allowance < swapDetails.amountInMaximum) {
+            IERC20Upgradeable(tokenIn).approve(address(uniswapRouterV3), type(uint256).max);
+        }
+
+        // Set the order parameters
+        ISwapRouterV3.ExactOutputParams memory params = ISwapRouterV3.ExactOutputParams(
+            swapDetails.path, // path
+            address(this), // recipient
+            block.timestamp, // deadline
+            swapDetails.amountOut, // amountOut
+            swapDetails.amountInMaximum // amountInMaximum
+        );
+
+        // Swap
+        uint256 amountIn;
+        try uniswapRouterV3.exactOutput(params) returns (uint256 amount) {
+            amountIn = amount;
+        } catch {
+            return false;
+        }
+
+        // Refund ETH from swap if any
+        uniswapRouterV3.refundETH();
+
+        // Unwrap if required
+        if (swapDetails.unwrap) {
+            IWETH(wrappedToken).withdraw(swapDetails.amountOut);
+        }
+
+        // Refund tokenIn left if any
+        if (amountIn < swapDetails.amountInMaximum) {
+            IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
+        }
+
+        if (!combined) {
+            if (swapDetails.unwrap) {
+                address(_msgSender()).transferEth(swapDetails.amountOut);
+            } else {
+                IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @notice swaps exact tokens for tokens - uniswap v3
+     * @param swapDetails swapDetails required
+     */
+    function swapExactTokensForTokens(SwapDetailsOut memory swapDetails) public payable returns (bool) {
+        // extract tokenIn / tokenOut from path
+        address tokenIn;
+        address tokenOut;
+        bytes memory _path = swapDetails.path;
+        uint _start = _path.length - 20;
+        assembly {
+            tokenIn := div(mload(add(add(_path, 0x20), _start)), 0x1000000000000000000000000)
+            tokenOut := div(mload(add(add(_path, 0x20), 0)), 0x1000000000000000000000000)
+        }
+
+        // Move tokenIn to contract if ERC20
+        if (msg.value == 0) {
+            IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
+                IERC20Upgradeable(tokenIn),
+                _msgSender(),
+                address(this),
+                swapDetails.amountIn
+            );
+        }
+
+        // if source = wrapped and destination = native, unwrap and return
+        if (tokenIn == wrappedToken && swapDetails.unwrap) {
+            IWETH(wrappedToken).withdraw(swapDetails.amountIn);
+            address(_msgSender()).transferEth(swapDetails.amountIn);
+            return true;
+        }
+
+        // if source = native and destination = wrapped, wrap and return
+        if (msg.value > 0 && tokenOut == wrappedToken) {
+            IWETH(wrappedToken).deposit{value: msg.value}();
+            IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountIn);
+            return true;
+        }
+
+        // Approve tokenIn on uniswap
+        uint256 allowance = IERC20Upgradeable(tokenIn).allowance(address(uniswapRouterV3), address(this));
+        if (allowance < swapDetails.amountIn) {
+            IERC20Upgradeable(tokenIn).approve(address(uniswapRouterV3), type(uint256).max);
+        }
+
+        // Set the order parameters
+        ISwapRouterV3.ExactInputParams memory params = ISwapRouterV3.ExactInputParams(
+            swapDetails.path, // path
+            address(this), // recipient
+            block.timestamp, // deadline
+            swapDetails.amountIn, // amountIn
+            swapDetails.amountOutMinimum // amountOutMinimum
+        );
+
+        // Swap
+        uint256 amountOut;
+        try uniswapRouterV3.exactInput(params) returns (uint256 amount) {
+            amountOut = amount;
+        } catch {
+            return false;
+        }
+
+        // Refund ETH from swap if any
+        uniswapRouterV3.refundETH();
+
+        // Unwrap if required
+        if (swapDetails.unwrap) {
+            IWETH(wrappedToken).withdraw(amountOut);
+        }
+
+        // send token out back
+        if (swapDetails.unwrap) {
+            address(_msgSender()).transferEth(amountOut);
+        } else {
+            IERC20Upgradeable(tokenOut).transfer(_msgSender(), amountOut);
+        }
+
+        return true;
     }
 
     receive() external payable {}
