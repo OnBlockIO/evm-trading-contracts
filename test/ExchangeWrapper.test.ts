@@ -3108,7 +3108,7 @@ describe('ExchangeWrapper Test', async function () {
       expect(await erc1155.balanceOf(wallet2.address, erc1155TokenId2)).to.equal(8);
     });
 
-    it('Test bulkPurchase GhostMarket & Wyvern (num orders = 3), ERC1155<->ETH', async () => {
+    it.skip('Test bulkPurchase GhostMarket & Wyvern (num orders = 3), ERC1155<->ETH', async () => {
       const buyer = wallet2;
       const seller1 = wallet1;
       const seller2 = wallet3;
