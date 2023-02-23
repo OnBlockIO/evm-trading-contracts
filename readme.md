@@ -24,6 +24,10 @@ https://bscscan.com/address/0xE6bbAfB291DD683E85520785CC3502CA9ce581A5#code
 
 https://bscscan.com/address/0x388171F81FC91EfC7338E07E52555a90c7D87972#code
 
+#### ExchangeWrapper Proxy
+
+https://bscscan.com/address/0x32E0C20421c96cA4B423a7806e151e953C647c48#code
+
 
 ## Deployed Contracts on Avalanche:
 
@@ -47,6 +51,10 @@ https://snowtrace.io/address/0xF0ef7f0E9B95738924B9D92013FEAB39aa3Ba019#code
 
 https://snowtrace.io/address/0xEb4ABA7aeba732Fc2FC92a673585d950cCFC1de0#code
 
+#### ExchangeWrapper Proxy
+
+https://snowtrace.io/address/0x0C823CD09642864f495F0a474E1d26Dea9A516F9#code
+
 
 ## Deployed Contracts on Polygon:
 
@@ -69,6 +77,10 @@ https://polygonscan.com/address/0xa100dCC8ce4328cDA39d29bcA537BBA15012d242#code
 #### ExchangeV2 Proxy
 
 https://polygonscan.com/address/0x3B48563237C32a1f886FD19DB6F5AFFD23855E2a#code
+
+#### ExchangeWrapper Proxy
+
+https://polygonscan.com/address/0x09236d6b740ac67dCa842D9dB6FA4D067a684E76#code
 
 
 ## Deployed Contracts on Ethereum:
@@ -95,7 +107,7 @@ https://etherscan.io/address/0xfB2F452639cBB0850B46b20D24DE7b0a9cCb665f#code
 
 #### ExchangeWrapper Proxy
 
-https://etherscan.io/address/
+https://etherscan.io/address/0x2dEbB6CEd142197BEc08d76d3ECCE828b3B261ee#code
 
 
 ## Audit
