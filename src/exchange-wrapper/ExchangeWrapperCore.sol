@@ -739,7 +739,7 @@ abstract contract ExchangeWrapperCore is
         uint256 chainId = block.chainid;
         bool isAvalanche = chainId == 43114 || chainId == 43113;
         uint256 amountIn;
-        uint256 amountOut;
+        uint256 balanceEthBefore = address(this).balance;
 
         if (isAvalanche) {
             uint[] memory amounts = uniswapRouterV2.swapTokensForExactAVAX(
@@ -751,7 +751,6 @@ abstract contract ExchangeWrapperCore is
                     block.timestamp // deadline
                 );
             amountIn = amounts[0];
-            amountOut = amounts[amounts.length - 1];
         } else {
             uint[] memory amounts = uniswapRouterV2.swapTokensForExactETH(
                     swapDetails.amountOut, // amountOut
@@ -761,8 +760,9 @@ abstract contract ExchangeWrapperCore is
                     block.timestamp // deadline
                 );
             amountIn = amounts[0];
-            amountOut = amounts[amounts.length - 1];
         }
+
+        uint256 balanceEthAfter = address(this).balance;
 
         // Refund tokenIn left if any
         if (amountIn < swapDetails.amountInMaximum) {
@@ -772,7 +772,7 @@ abstract contract ExchangeWrapperCore is
         // Wrap if required
         if (swapDetails.unwrap) {
             try
-                IWETH(wrappedToken).deposit{value: amountOut}() {} catch {
+                IWETH(wrappedToken).deposit{value: balanceEthAfter - balanceEthBefore}() {} catch {
                 return false;
             }
         }
@@ -780,9 +780,9 @@ abstract contract ExchangeWrapperCore is
         if (!combined) {
             if (swapDetails.unwrap) {
                 address tokenOut = swapDetails.path[swapDetails.path.length - 1];
-                IERC20Upgradeable(tokenOut).transfer(_msgSender(), amountOut);
+                IERC20Upgradeable(tokenOut).transfer(_msgSender(), balanceEthAfter - balanceEthBefore);
             } else {
-                address(_msgSender()).transferEth(amountOut);
+                address(_msgSender()).transferEth(balanceEthAfter - balanceEthBefore);
             }
         }
 
@@ -824,10 +824,10 @@ abstract contract ExchangeWrapperCore is
         // Swap
         uint256 chainId = block.chainid;
         bool isAvalanche = chainId == 43114 || chainId == 43113;
-        uint256 amountOut;
+        uint256 balanceEthBefore = address(this).balance;
 
         if (isAvalanche) {
-            uint[] memory amounts = uniswapRouterV2.swapExactTokensForAVAX(
+            uniswapRouterV2.swapExactTokensForAVAX(
                     swapDetails.amountIn, // amountInMaximum
                     swapDetails.amountOutMinimum, // amountOut
                     swapDetails.binSteps, // binSteps
@@ -835,31 +835,31 @@ abstract contract ExchangeWrapperCore is
                     payable(address(this)), // recipient
                     block.timestamp // deadline
                 );
-            amountOut = amounts[amounts.length - 1];
         } else {
-            uint[] memory amounts = uniswapRouterV2.swapExactTokensForETH(
+            uniswapRouterV2.swapExactTokensForETH(
                     swapDetails.amountIn, // amountInMaximum
                     swapDetails.amountOutMinimum, // amountOut
                     swapDetails.path, // path
                     payable(address(this)), // recipient
                     block.timestamp // deadline
                 );
-            amountOut = amounts[amounts.length - 1];
         }
+
+        uint256 balanceEthAfter = address(this).balance;
 
         // Wrap if required
         if (swapDetails.unwrap) {
             try
-                IWETH(wrappedToken).deposit{value: amountOut}() {} catch {
+                IWETH(wrappedToken).deposit{value: balanceEthAfter - balanceEthBefore}() {} catch {
                 return false;
             }
         }
 
         if (swapDetails.unwrap) {
             address tokenOut = swapDetails.path[swapDetails.path.length - 1];
-            IERC20Upgradeable(tokenOut).transfer(_msgSender(), amountOut);
+            IERC20Upgradeable(tokenOut).transfer(_msgSender(), balanceEthAfter - balanceEthBefore);
         } else {
-            address(_msgSender()).transferEth(amountOut);
+            address(_msgSender()).transferEth(balanceEthAfter - balanceEthBefore);
         }
 
         return true;
