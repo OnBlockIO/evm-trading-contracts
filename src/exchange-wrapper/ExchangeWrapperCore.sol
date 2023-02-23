@@ -739,6 +739,7 @@ abstract contract ExchangeWrapperCore is
         uint256 chainId = block.chainid;
         bool isAvalanche = chainId == 43114 || chainId == 43113;
         uint256 amountIn;
+        uint256 amountOut;
 
         if (isAvalanche) {
             uint[] memory amounts = uniswapRouterV2.swapTokensForExactAVAX(
@@ -750,6 +751,7 @@ abstract contract ExchangeWrapperCore is
                     block.timestamp // deadline
                 );
             amountIn = amounts[0];
+            amountOut = amounts[amounts.length - 1];
         } else {
             uint[] memory amounts = uniswapRouterV2.swapTokensForExactETH(
                     swapDetails.amountOut, // amountOut
@@ -759,6 +761,7 @@ abstract contract ExchangeWrapperCore is
                     block.timestamp // deadline
                 );
             amountIn = amounts[0];
+            amountOut = amounts[amounts.length - 1];
         }
 
         // Refund tokenIn left if any
@@ -769,7 +772,7 @@ abstract contract ExchangeWrapperCore is
         // Wrap if required
         if (swapDetails.unwrap) {
             try
-                IWETH(wrappedToken).deposit{value: swapDetails.amountOut}() {} catch {
+                IWETH(wrappedToken).deposit{value: amountOut}() {} catch {
                 return false;
             }
         }
@@ -777,9 +780,9 @@ abstract contract ExchangeWrapperCore is
         if (!combined) {
             if (swapDetails.unwrap) {
                 address tokenOut = swapDetails.path[swapDetails.path.length - 1];
-                IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountOut);
+                IERC20Upgradeable(tokenOut).transfer(_msgSender(), amountOut);
             } else {
-                address(_msgSender()).transferEth(swapDetails.amountOut);
+                address(_msgSender()).transferEth(amountOut);
             }
         }
 
