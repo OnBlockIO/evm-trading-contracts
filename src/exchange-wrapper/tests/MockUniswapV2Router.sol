@@ -51,7 +51,7 @@ contract MockUniswapV2Router is ISwapRouterV2 {
         uint amountOut,
         uint amountInMaximum,
         address[] calldata path,
-        address,
+        address payable,
         uint
     ) external override returns (uint[] memory amounts) {
         address tokenIn = path[0];
@@ -138,7 +138,7 @@ contract MockUniswapV2Router is ISwapRouterV2 {
         uint amountInMaximum,
         uint[] calldata,
         address[] calldata path,
-        address,
+        address payable,
         uint
     ) external override returns (uint[] memory amounts) {
         address tokenIn = path[0];

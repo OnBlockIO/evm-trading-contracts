@@ -33,7 +33,7 @@ interface ISwapRouterV2 {
         uint amountOut,
         uint amountInMaximum,
         address[] calldata path,
-        address to,
+        address payable to,
         uint deadline
     ) external returns (uint[] memory amounts);
 
@@ -84,7 +84,7 @@ interface ISwapRouterV2 {
         uint amountInMaximum,
         uint[] calldata binSteps,
         address[] calldata path,
-        address to,
+        address payable to,
         uint deadline
     ) external returns (uint[] memory amounts);
 
