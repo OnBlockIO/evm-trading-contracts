@@ -15,7 +15,7 @@ async function main() {
   const ERC1155_LAZY_MINT_PROXY = getSettings(CHAIN).erc1155LazyMintTransferProxy;
   const ROYALTIES_PROXY = getSettings(CHAIN).royalties_proxy;
   const CUSTOM_MATCHER = getSettings(CHAIN).customMatcher;
-  if (!FEES || !TRANSFER_PROXY || !ERC20_TRANSFER_PROXY || !ROYALTIES_PROXY) return;
+  if (!TRANSFER_PROXY || !ERC20_TRANSFER_PROXY || !ROYALTIES_PROXY) return;
 
   console.log(`ExchangeV2 deployment on ${CHAIN} start`);
 
@@ -36,8 +36,10 @@ async function main() {
   });
 
   // add ExchangeV2 proxy address to the the allowed operators of transferProxy & erc20TransferProxy
-  await TRANSFER_PROXY.addOperator(exchange_proxy.address);
-  await ERC20_TRANSFER_PROXY.addOperator(exchange_proxy.address);
+  const proxyNFTContract = await ethers.getContractAt('TransferProxy', TRANSFER_PROXY);
+  await proxyNFTContract.addOperator(exchange_proxy.address);
+  const proxyERC20Contract = await ethers.getContractAt('ERC20TransferProxy', ERC20_TRANSFER_PROXY);
+  await proxyERC20Contract.addOperator(exchange_proxy.address);
 
   // if required, set lazy mint proxies
   if (ERC721_LAZY_MINT_PROXY && ERC1155_LAZY_MINT_PROXY) {
@@ -49,8 +51,10 @@ async function main() {
   // if required, set collection asset matcher
   if (CUSTOM_MATCHER) {
     const exchangeV2Contract = await ethers.getContractAt('ExchangeV2', exchange_proxy.address);
-    await exchangeV2Contract.setAssetMatcher(COLLECTION, CUSTOM_MATCHER.address);
+    await exchangeV2Contract.setAssetMatcher(COLLECTION, CUSTOM_MATCHER);
   }
+
+  console.log('ExchangeV2 deployed at: ', exchange_proxy.address);
 }
 
 main().catch((error) => {
