@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
             runs: 100,
           },
         },
-      },
+      }
     ],
   },
   namedAccounts: {
@@ -76,6 +76,18 @@ const config: HardhatUserConfig = {
       accounts: MAINNET_PRIVATE_KEY,
       saveDeployments: true,
       tags: ['mainnet'],
+    },
+    shardeum_testnet: {
+      url: ETH_NODE_URI,
+      accounts: TESTNET_PRIVATE_KEY,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
+    base_testnet: {
+      url: ETH_NODE_URI,
+      accounts: TESTNET_PRIVATE_KEY,
+      saveDeployments: true,
+      tags: ['testnet'],
     },
     polygon_testnet: {
       url: ETH_NODE_URI,

@@ -129,6 +129,36 @@ const bsc_testnet = {
   uniswapV3: '',
 };
 
+const shardeum_testnet = {
+  fees: 0,
+  transferProxy: '',
+  erc20TransferProxy: '',
+  erc721LazyMintTransferProxy: '',
+  erc1155LazyMintTransferProxy: '',
+  royalties_proxy: '',
+  exchange_proxy: '',
+  exchange_wrapper_proxy: '',
+  customMatcher: '',
+  wrapped: '',
+  uniswapV2: '',
+  uniswapV3: '',
+};
+
+const base_testnet = {
+  fees: 0,
+  transferProxy: '0xA28341F3Aec303Fbcc142a8bbF40ED1745400283',
+  erc20TransferProxy: '0x76FFb975cA6c3F0f9E036561824c542374885e95',
+  erc721LazyMintTransferProxy: '0x7aa199E2D5cFf1E6275A33c8dCE3c6085E393781',
+  erc1155LazyMintTransferProxy: '0x34A40153C91a411b0a94eEa4506733e59d523495',
+  royalties_proxy: '0xca1284B5EEb97c31cc693c4b182C8E1075Dc57f9',
+  exchange_proxy: '0x92682fE7884a63e6EB91458E06382fE195823177',
+  exchange_wrapper_proxy: '0x53A166616893AAFF432Bc23B5515D2EE862042C5',
+  customMatcher: '0xb64860896eD161b28eB21863225B6268f1688733',
+  wrapped: '',
+  uniswapV2: '',
+  uniswapV3: '',
+};
+
 let settings = {
   ethereum_mainnet: ethereum_mainnet,
   ethereum_testnet: ethereum_testnet,
@@ -138,6 +168,8 @@ let settings = {
   polygon_testnet: polygon_testnet,
   bsc_mainnet: bsc_mainnet,
   bsc_testnet: bsc_testnet,
+  shardeum_testnet: shardeum_testnet,
+  base_testnet: base_testnet,
 };
 
 function getSettings(network) {
