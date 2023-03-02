@@ -203,6 +203,8 @@ abstract contract ExchangeWrapperCore is
         } else {
             transferFeeToken(purchaseDetails.paymentToken, feeAmountFirst, feeRecipientFirst);
             transferFeeToken(purchaseDetails.paymentToken, feeAmountSecond, feeRecipientSecond);
+
+            transferFeeChange(purchaseDetails.paymentToken);
         }
 
         transferChange();
@@ -299,6 +301,8 @@ abstract contract ExchangeWrapperCore is
             else {
                 transferFeeToken(purchaseDetails[i].paymentToken, firstFeeAmount, feeRecipientFirst);
                 transferFeeToken(purchaseDetails[i].paymentToken, secondFeeAmount, feeRecipientSecond);
+
+                transferFeeChange(purchaseDetails[i].paymentToken);
             }
         }
 
@@ -331,19 +335,26 @@ abstract contract ExchangeWrapperCore is
 
         // purchase with ERC20
         if (purchaseDetails.paymentToken != address(0)) {
-            // set native value to 0 for ERC20
+            
+            // Set native value to 0 for ERC20
             nativeAmountToSend = 0;
+
+            // Check balance in contract as there might be some from swap
+            uint currentBalance = IERC20Upgradeable(purchaseDetails.paymentToken).balanceOf(address(this));
 
             // set token value to amount + fees
             uint tokenAmountToSend = purchaseDetails.amount + firstFeeAmount + secondFeeAmount;
 
-            // Move tokenIn to contract
-            IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
-                IERC20Upgradeable(purchaseDetails.paymentToken),
-                _msgSender(),
-                address(this),
-                tokenAmountToSend
-            );
+            // Move tokenIn to contract and move what's missing if any
+            if (tokenAmountToSend > currentBalance)
+            {
+                IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
+                    IERC20Upgradeable(purchaseDetails.paymentToken),
+                    _msgSender(),
+                    address(this),
+                    tokenAmountToSend - currentBalance
+                );
+            }
 
             // Approve tokenIn on market proxy
             address marketProxy = getMarketProxy(purchaseDetails.marketId);
@@ -529,12 +540,22 @@ abstract contract ExchangeWrapperCore is
     }
 
     /**
-        @notice transfers change back to sender
+        @notice transfers change native back to sender
      */
     function transferChange() internal {
         uint ethAmount = address(this).balance;
         if (ethAmount > 0) {
             address(msg.sender).transferEth(ethAmount);
+        }
+    }
+
+    /**
+        @notice transfers change fee back to sender
+     */
+    function transferFeeChange(address paymentToken) internal {
+        uint tokenAmount = IERC20Upgradeable(paymentToken).balanceOf(address(this));
+        if (tokenAmount > 0) {
+            IERC20Upgradeable(paymentToken).transfer(_msgSender(), tokenAmount);
         }
     }
 
