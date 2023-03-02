@@ -5900,7 +5900,7 @@ describe('ExchangeWrapper Test', async function () {
         gasPrice: 0,
       });
 
-      expect(await erc202.balanceOf(uniswapV3Router.address)).to.equal(priceHigher);
+      expect(await erc202.balanceOf(uniswapV2Router.address)).to.equal(priceHigher);
       expect(await erc202.balanceOf(buyer.address)).to.equal('9999999967167100'); // minted - priceHigher
       expect(await erc20.balanceOf(seller1.address)).to.equal(price);
       expect(await erc721.balanceOf(seller1.address)).to.equal(0);
