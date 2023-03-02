@@ -15,6 +15,6 @@ module.exports = {
     'legacy/',
     'librairies/LibERC721LazyMint.sol', // tested in other repo
     'librairies/LibERC1155LazyMint.sol', // tested in other repo
-    'royalties/GhostMarketRoyalties.sol', // abstract which will be dropped once we had proper 2981
+    'royalties/GhostMarketRoyalties.sol', // abstract which will be dropped once we add proper 2981
   ],
 };

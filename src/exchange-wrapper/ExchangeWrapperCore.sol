@@ -48,6 +48,9 @@ abstract contract ExchangeWrapperCore is
     address public wrappedToken;
     address public erc20TransferProxy;
 
+    // mapping market id <> market erc20 proxy
+    mapping(Markets => address) public proxies;
+
     event Execution(bool result, address indexed sender);
 
     enum Markets {
@@ -70,6 +73,7 @@ abstract contract ExchangeWrapperCore is
         @notice struct for the purchase data
         @param marketId - market key from Markets enum (what market to use)
         @param amount - eth price (amount of eth that needs to be send to the marketplace)
+        @param paymentToken - payment token required for the order
         @param fees - 2 fees (in base points) that are going to be taken on top of order amount encoded in 1 uint256
                         bytes (27,28) used for dataType
                         bytes (29,30) used for the first value (goes to feeRecipientFirst)
@@ -79,6 +83,7 @@ abstract contract ExchangeWrapperCore is
     struct PurchaseDetails {
         Markets marketId;
         uint256 amount;
+        address paymentToken;
         uint fees;
         bytes data;
     }
@@ -173,6 +178,11 @@ abstract contract ExchangeWrapperCore is
         erc20TransferProxy = _erc20TransferProxy;
     }
 
+    /// @notice Set erc20 proxy for market
+    function setMarketProxy(Markets marketId, address proxy) external onlyOwner {
+        proxies[marketId] = proxy;
+    }
+
     /**
         @notice executes a single purchase
         @param purchaseDetails - details about the purchase (more info in PurchaseDetails struct)
@@ -187,8 +197,15 @@ abstract contract ExchangeWrapperCore is
         (bool success, uint feeAmountFirst, uint feeAmountSecond) = purchase(purchaseDetails, false);
         emit Execution(success, _msgSender());
 
-        transferFee(feeAmountFirst, feeRecipientFirst);
-        transferFee(feeAmountSecond, feeRecipientSecond);
+        if (purchaseDetails.paymentToken == address(0)) {
+            transferFee(feeAmountFirst, feeRecipientFirst);
+            transferFee(feeAmountSecond, feeRecipientSecond);
+        } else {
+            transferFeeToken(purchaseDetails.paymentToken, feeAmountFirst, feeRecipientFirst);
+            transferFeeToken(purchaseDetails.paymentToken, feeAmountSecond, feeRecipientSecond);
+
+            transferFeeChange(purchaseDetails.paymentToken);
+        }
 
         transferChange();
     }
@@ -276,8 +293,17 @@ abstract contract ExchangeWrapperCore is
             result = result || success;
             emit Execution(success, _msgSender());
 
-            sumFirstFees = sumFirstFees + (firstFeeAmount);
-            sumSecondFees = sumSecondFees + (secondFeeAmount);
+            if (purchaseDetails[i].paymentToken == address(0)) {
+                sumFirstFees = sumFirstFees + (firstFeeAmount);
+                sumSecondFees = sumSecondFees + (secondFeeAmount);
+            }
+            // erc20 fees transferred right after each purchase to avoid having to store total
+            else {
+                transferFeeToken(purchaseDetails[i].paymentToken, firstFeeAmount, feeRecipientFirst);
+                transferFeeToken(purchaseDetails[i].paymentToken, secondFeeAmount, feeRecipientSecond);
+
+                transferFeeChange(purchaseDetails[i].paymentToken);
+            }
         }
 
         require(result, "no successful executions");
@@ -302,9 +328,42 @@ abstract contract ExchangeWrapperCore is
             purchaseDetails.fees,
             purchaseDetails.marketId
         );
-        uint paymentAmount = purchaseDetails.amount;
+
+        uint nativeAmountToSend = purchaseDetails.amount;
+
+        (uint firstFeeAmount, uint secondFeeAmount) = getFees(purchaseDetails.fees, purchaseDetails.amount);
+
+        // purchase with ERC20
+        if (purchaseDetails.paymentToken != address(0)) {
+            // Set native value to 0 for ERC20
+            nativeAmountToSend = 0;
+
+            // Check balance in contract as there might be some from swap
+            uint currentBalance = IERC20Upgradeable(purchaseDetails.paymentToken).balanceOf(address(this));
+
+            // set token value to amount + fees
+            uint tokenAmountToSend = purchaseDetails.amount + firstFeeAmount + secondFeeAmount;
+
+            // Move tokenIn to contract and move what's missing if any
+            if (tokenAmountToSend > currentBalance) {
+                IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
+                    IERC20Upgradeable(purchaseDetails.paymentToken),
+                    _msgSender(),
+                    address(this),
+                    tokenAmountToSend - currentBalance
+                );
+            }
+
+            // Approve tokenIn on market proxy
+            address marketProxy = getMarketProxy(purchaseDetails.marketId);
+            uint256 allowance = IERC20Upgradeable(purchaseDetails.paymentToken).allowance(marketProxy, address(this));
+            if (allowance < tokenAmountToSend) {
+                IERC20Upgradeable(purchaseDetails.paymentToken).approve(address(marketProxy), type(uint256).max);
+            }
+        }
+
         if (purchaseDetails.marketId == Markets.SeaPort) {
-            (bool success, ) = address(seaport).call{value: paymentAmount}(marketData);
+            (bool success, ) = address(seaport).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
@@ -312,8 +371,9 @@ abstract contract ExchangeWrapperCore is
             } else {
                 require(success, "Purchase Seaport failed");
             }
-        } else if (purchaseDetails.marketId == Markets.Wyvern) {
-            (bool success, ) = address(wyvern).call{value: paymentAmount}(marketData);
+        }
+        /* else if (purchaseDetails.marketId == Markets.Wyvern) {
+            (bool success, ) = address(wyvern).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
@@ -321,8 +381,9 @@ abstract contract ExchangeWrapperCore is
             } else {
                 require(success, "Purchase Wyvern failed");
             }
-        } else if (purchaseDetails.marketId == Markets.ExchangeV2) {
-            (bool success, ) = address(exchangeV2).call{value: paymentAmount}(marketData);
+        } */
+        else if (purchaseDetails.marketId == Markets.ExchangeV2) {
+            (bool success, ) = address(exchangeV2).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
@@ -331,7 +392,7 @@ abstract contract ExchangeWrapperCore is
                 require(success, "Purchase GhostMarket failed");
             }
         } else if (purchaseDetails.marketId == Markets.Rarible) {
-            (bool success, ) = address(rarible).call{value: paymentAmount}(marketData);
+            (bool success, ) = address(rarible).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
@@ -343,11 +404,11 @@ abstract contract ExchangeWrapperCore is
             Ix2y2.RunInput memory input = abi.decode(marketData, (Ix2y2.RunInput));
 
             if (allowFail) {
-                try Ix2y2(x2y2).run{value: paymentAmount}(input) {} catch {
+                try Ix2y2(x2y2).run{value: nativeAmountToSend}(input) {} catch {
                     return (false, 0, 0);
                 }
             } else {
-                Ix2y2(x2y2).run{value: paymentAmount}(input);
+                Ix2y2(x2y2).run{value: nativeAmountToSend}(input);
             }
 
             // for every element in input.details[] getting
@@ -395,7 +456,7 @@ abstract contract ExchangeWrapperCore is
                 .decode(marketData, (LibLooksRare.TakerOrder, LibLooksRare.MakerOrder, bytes4));
             if (allowFail) {
                 try
-                    ILooksRare(looksrare).matchAskWithTakerBidUsingETHAndWETH{value: paymentAmount}(
+                    ILooksRare(looksrare).matchAskWithTakerBidUsingETHAndWETH{value: nativeAmountToSend}(
                         takerOrder,
                         makerOrder
                     )
@@ -403,7 +464,10 @@ abstract contract ExchangeWrapperCore is
                     return (false, 0, 0);
                 }
             } else {
-                ILooksRare(looksrare).matchAskWithTakerBidUsingETHAndWETH{value: paymentAmount}(takerOrder, makerOrder);
+                ILooksRare(looksrare).matchAskWithTakerBidUsingETHAndWETH{value: nativeAmountToSend}(
+                    takerOrder,
+                    makerOrder
+                );
             }
             if (typeNft == LibAsset.ERC721_ASSET_CLASS) {
                 IERC721Upgradeable(makerOrder.collection).safeTransferFrom(
@@ -423,7 +487,7 @@ abstract contract ExchangeWrapperCore is
                 revert("Unknown token type");
             }
         } else if (purchaseDetails.marketId == Markets.SudoSwap) {
-            (bool success, ) = address(sudoswap).call{value: paymentAmount}(marketData);
+            (bool success, ) = address(sudoswap).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
@@ -432,7 +496,7 @@ abstract contract ExchangeWrapperCore is
                 require(success, "Purchase SudoSwap failed");
             }
         } else if (purchaseDetails.marketId == Markets.Blur) {
-            (bool success, ) = address(blur).call{value: paymentAmount}(marketData);
+            (bool success, ) = address(blur).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
@@ -447,12 +511,11 @@ abstract contract ExchangeWrapperCore is
         //transferring royalties
         transferAdditionalRoyalties(additionalRoyalties, purchaseDetails.amount);
 
-        (uint firstFeeAmount, uint secondFeeAmount) = getFees(purchaseDetails.fees, purchaseDetails.amount);
         return (true, firstFeeAmount, secondFeeAmount);
     }
 
     /**
-        @notice transfers fee to feeRecipient
+        @notice transfers fee native to feeRecipient
         @param feeAmount - amount to be transfered
         @param feeRecipient - address of the recipient
      */
@@ -463,13 +526,44 @@ abstract contract ExchangeWrapperCore is
     }
 
     /**
-        @notice transfers change back to sender
+        @notice transfers fee token to feeRecipient
+        @param paymentToken - token to be transfered
+        @param feeAmount - amount to be transfered
+        @param feeRecipient - address of the recipient
+     */
+    function transferFeeToken(address paymentToken, uint feeAmount, address feeRecipient) internal {
+        if (feeAmount > 0 && feeRecipient != address(0)) {
+            IERC20Upgradeable(paymentToken).transfer(feeRecipient, feeAmount);
+        }
+    }
+
+    /**
+        @notice transfers change native back to sender
      */
     function transferChange() internal {
         uint ethAmount = address(this).balance;
         if (ethAmount > 0) {
             address(msg.sender).transferEth(ethAmount);
         }
+    }
+
+    /**
+        @notice transfers change fee back to sender
+     */
+    function transferFeeChange(address paymentToken) internal {
+        uint tokenAmount = IERC20Upgradeable(paymentToken).balanceOf(address(this));
+        if (tokenAmount > 0) {
+            IERC20Upgradeable(paymentToken).transfer(_msgSender(), tokenAmount);
+        }
+    }
+
+    /**
+        @notice return market proxy based on market id
+        @param marketId market id
+        @return address market proxy address
+     */
+    function getMarketProxy(Markets marketId) internal view returns (address) {
+        return proxies[marketId];
     }
 
     /**
@@ -588,22 +682,22 @@ abstract contract ExchangeWrapperCore is
 
         if (isAvalanche) {
             uint[] memory amounts = uniswapRouterV2.swapTokensForExactTokens(
-                    swapDetails.amountOut, // amountOut
-                    swapDetails.amountInMaximum, // amountInMaximum
-                    swapDetails.binSteps, // binSteps
-                    swapDetails.path, // path
-                    address(this), // recipient
-                    block.timestamp // deadline
-                );
+                swapDetails.amountOut, // amountOut
+                swapDetails.amountInMaximum, // amountInMaximum
+                swapDetails.binSteps, // binSteps
+                swapDetails.path, // path
+                address(this), // recipient
+                block.timestamp // deadline
+            );
             amountIn = amounts[0];
         } else {
             uint[] memory amounts = uniswapRouterV2.swapTokensForExactTokens(
-                    swapDetails.amountOut, // amountOut
-                    swapDetails.amountInMaximum, // amountInMaximum
-                    swapDetails.path, // path
-                    address(this), // recipient
-                    block.timestamp // deadline
-                );
+                swapDetails.amountOut, // amountOut
+                swapDetails.amountInMaximum, // amountInMaximum
+                swapDetails.path, // path
+                address(this), // recipient
+                block.timestamp // deadline
+            );
             amountIn = amounts[0];
         }
 
@@ -633,8 +727,7 @@ abstract contract ExchangeWrapperCore is
 
         // if source = wrapped and destination = native, unwrap and return
         if (tokenIn == wrappedToken && swapDetails.unwrap) {
-            try
-                IWETH(wrappedToken).withdraw(swapDetails.amountInMaximum) {} catch {
+            try IWETH(wrappedToken).withdraw(swapDetails.amountInMaximum) {} catch {
                 return false;
             }
             return true;
@@ -654,22 +747,22 @@ abstract contract ExchangeWrapperCore is
 
         if (isAvalanche) {
             uint[] memory amounts = uniswapRouterV2.swapTokensForExactAVAX(
-                    swapDetails.amountOut, // amountOut
-                    swapDetails.amountInMaximum, // amountInMaximum
-                    swapDetails.binSteps, // binSteps
-                    swapDetails.path, // path
-                    payable(address(this)), // recipient
-                    block.timestamp // deadline
-                );
+                swapDetails.amountOut, // amountOut
+                swapDetails.amountInMaximum, // amountInMaximum
+                swapDetails.binSteps, // binSteps
+                swapDetails.path, // path
+                payable(address(this)), // recipient
+                block.timestamp // deadline
+            );
             amountIn = amounts[0];
         } else {
             uint[] memory amounts = uniswapRouterV2.swapTokensForExactETH(
-                    swapDetails.amountOut, // amountOut
-                    swapDetails.amountInMaximum, // amountInMaximum
-                    swapDetails.path, // path
-                    payable(address(this)), // recipient
-                    block.timestamp // deadline
-                );
+                swapDetails.amountOut, // amountOut
+                swapDetails.amountInMaximum, // amountInMaximum
+                swapDetails.path, // path
+                payable(address(this)), // recipient
+                block.timestamp // deadline
+            );
             amountIn = amounts[0];
         }
 
@@ -682,8 +775,7 @@ abstract contract ExchangeWrapperCore is
 
         // Wrap if required
         if (swapDetails.unwrap) {
-            try
-                IWETH(wrappedToken).deposit{value: balanceEthAfter - balanceEthBefore}() {} catch {
+            try IWETH(wrappedToken).deposit{value: balanceEthAfter - balanceEthBefore}() {} catch {
                 return false;
             }
         }
@@ -709,16 +801,14 @@ abstract contract ExchangeWrapperCore is
                 swapDetails.amountInMaximum
             );
 
-            try
-                IWETH(wrappedToken).withdraw(swapDetails.amountInMaximum) {} catch {
+            try IWETH(wrappedToken).withdraw(swapDetails.amountInMaximum) {} catch {
                 return false;
             }
         }
 
         // if source = native and destination = wrapped, wrap and return
         if (msg.value > 0 && tokenOut == wrappedToken) {
-            try
-                IWETH(wrappedToken).deposit{value: msg.value}() {} catch {
+            try IWETH(wrappedToken).deposit{value: msg.value}() {} catch {
                 return false;
             }
             IERC20Upgradeable(tokenOut).transfer(_msgSender(), swapDetails.amountInMaximum);
@@ -728,27 +818,26 @@ abstract contract ExchangeWrapperCore is
         // Swap
         uint256 chainId = block.chainid;
         bool isAvalanche = chainId == 43114 || chainId == 43113;
-        
+
         if (isAvalanche) {
             uniswapRouterV2.swapAVAXForExactTokens{value: swapDetails.amountInMaximum}(
-                    swapDetails.amountOut, // amountOutMinimum
-                    swapDetails.binSteps, // binSteps
-                    swapDetails.path, // path
-                    address(this), // recipient
-                    block.timestamp // deadline
-                );
+                swapDetails.amountOut, // amountOutMinimum
+                swapDetails.binSteps, // binSteps
+                swapDetails.path, // path
+                address(this), // recipient
+                block.timestamp // deadline
+            );
         } else {
             uniswapRouterV2.swapETHForExactTokens{value: swapDetails.amountInMaximum}(
-                    swapDetails.amountOut, // amountOutMinimum
-                    swapDetails.path, // path
-                    address(this), // recipient
-                    block.timestamp // deadline
-                );
+                swapDetails.amountOut, // amountOutMinimum
+                swapDetails.path, // path
+                address(this), // recipient
+                block.timestamp // deadline
+            );
         }
 
         return true;
     }
-
 
     /**
      * @notice swaps tokens for exact tokens - uniswap v3
@@ -777,8 +866,7 @@ abstract contract ExchangeWrapperCore is
 
         // if source = wrapped and destination = native, unwrap and return
         if (tokenIn == wrappedToken && swapDetails.unwrap) {
-            try
-                IWETH(wrappedToken).withdraw(swapDetails.amountOut) {} catch {
+            try IWETH(wrappedToken).withdraw(swapDetails.amountOut) {} catch {
                 return false;
             }
             return true;
@@ -786,8 +874,7 @@ abstract contract ExchangeWrapperCore is
 
         // if source = native and destination = wrapped, wrap and return
         if (msg.value > 0 && tokenOut == wrappedToken) {
-            try
-                IWETH(wrappedToken).deposit{value: msg.value}() {} catch {
+            try IWETH(wrappedToken).deposit{value: msg.value}() {} catch {
                 return false;
             }
             return true;
@@ -821,8 +908,7 @@ abstract contract ExchangeWrapperCore is
 
         // Unwrap if required
         if (swapDetails.unwrap) {
-            try
-                IWETH(wrappedToken).withdraw(swapDetails.amountOut) {} catch {
+            try IWETH(wrappedToken).withdraw(swapDetails.amountOut) {} catch {
                 return false;
             }
         }
