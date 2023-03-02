@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
             runs: 100,
           },
         },
-      }
+      },
     ],
   },
   namedAccounts: {
@@ -130,14 +130,14 @@ const config: HardhatUserConfig = {
     apiKey: ETHERSCAN_API_KEY,
     customChains: [
       {
-        network: "base-goerli",
+        network: 'base-goerli',
         chainId: 84531,
         urls: {
-         apiURL: "https://api-goerli.basescan.org/api",
-         browserURL: "https://goerli.basescan.org"
-        }
-      }
-    ]
+          apiURL: 'https://api-goerli.basescan.org/api',
+          browserURL: 'https://goerli.basescan.org',
+        },
+      },
+    ],
   },
   paths: {
     sources: 'src',

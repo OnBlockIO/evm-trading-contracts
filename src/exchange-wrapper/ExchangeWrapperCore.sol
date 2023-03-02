@@ -335,7 +335,6 @@ abstract contract ExchangeWrapperCore is
 
         // purchase with ERC20
         if (purchaseDetails.paymentToken != address(0)) {
-            
             // Set native value to 0 for ERC20
             nativeAmountToSend = 0;
 
@@ -346,8 +345,7 @@ abstract contract ExchangeWrapperCore is
             uint tokenAmountToSend = purchaseDetails.amount + firstFeeAmount + secondFeeAmount;
 
             // Move tokenIn to contract and move what's missing if any
-            if (tokenAmountToSend > currentBalance)
-            {
+            if (tokenAmountToSend > currentBalance) {
                 IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
                     IERC20Upgradeable(purchaseDetails.paymentToken),
                     _msgSender(),

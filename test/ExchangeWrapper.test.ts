@@ -5659,7 +5659,7 @@ describe('ExchangeWrapper Test', async function () {
       const seller1 = wallet2;
       const price = '123';
       const priceHigher = '32832900';
-      const minted = '10000000000000000'
+      const minted = '10000000000000000';
 
       await erc721.mint(seller1.address, erc721TokenId1);
       await erc721.connect(seller1).setApprovalForAll(transferProxy.address, true, {from: seller1.address});
@@ -5826,7 +5826,7 @@ describe('ExchangeWrapper Test', async function () {
       const seller1 = wallet2;
       const price = '123';
       const priceHigher = '32832900';
-      const minted = '10000000000000000'
+      const minted = '10000000000000000';
 
       await erc721.mint(seller1.address, erc721TokenId1);
       await erc721.connect(seller1).setApprovalForAll(transferProxy.address, true, {from: seller1.address});
