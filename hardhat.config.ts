@@ -130,7 +130,7 @@ const config: HardhatUserConfig = {
     apiKey: ETHERSCAN_API_KEY,
     customChains: [
       {
-        network: 'base-goerli',
+        network: 'base_testnet',
         chainId: 84531,
         urls: {
           apiURL: 'https://api-goerli.basescan.org/api',
