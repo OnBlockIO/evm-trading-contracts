@@ -725,8 +725,9 @@ abstract contract ExchangeWrapperCore is
      * @param swapDetails swapDetails required
      */
     function swapV2TokensForExactETHOrWETH(SwapV2DetailsIn memory swapDetails) internal returns (bool) {
-        // extract tokenIn from path
+        // extract tokenIn / tokenOut from path
         address tokenIn = swapDetails.path[0];
+        address tokenOut = swapDetails.path[swapDetails.path.length - 1];
 
         // Move tokenIn to contract
         IERC20TransferProxy(erc20TransferProxy).erc20safeTransferFrom(
@@ -739,6 +740,14 @@ abstract contract ExchangeWrapperCore is
         // if source = wrapped and destination = native, unwrap and return
         if (tokenIn == wrappedToken && swapDetails.unwrap) {
             try IWETH(wrappedToken).withdraw(swapDetails.amountInMaximum) {} catch {
+                return false;
+            }
+            return true;
+        }
+
+        // if source = native and destination = wrapped, wrap and return
+        if (msg.value > 0 && tokenOut == wrappedToken) {
+            try IWETH(wrappedToken).deposit{value: msg.value}() {} catch {
                 return false;
             }
             return true;
