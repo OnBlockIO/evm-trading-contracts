@@ -301,8 +301,6 @@ abstract contract ExchangeWrapperCore is
             else {
                 transferFeeToken(purchaseDetails[i].paymentToken, firstFeeAmount, feeRecipientFirst);
                 transferFeeToken(purchaseDetails[i].paymentToken, secondFeeAmount, feeRecipientSecond);
-
-                transferFeeChange(purchaseDetails[i].paymentToken);
             }
         }
 
@@ -311,6 +309,7 @@ abstract contract ExchangeWrapperCore is
         transferFee(sumFirstFees, feeRecipientFirst);
         transferFee(sumSecondFees, feeRecipientSecond);
 
+        transferFeeChange(purchaseDetails);
         transferChange();
     }
 
@@ -554,6 +553,18 @@ abstract contract ExchangeWrapperCore is
         uint tokenAmount = IERC20Upgradeable(paymentToken).balanceOf(address(this));
         if (tokenAmount > 0) {
             IERC20Upgradeable(paymentToken).transfer(_msgSender(), tokenAmount);
+        }
+    }
+
+    /**
+        @notice transfers change fees back to sender
+     */
+    function transferFeeChange(PurchaseDetails[] memory purchaseDetails) internal {
+        uint length = purchaseDetails.length;
+        for (uint i; i < length; ++i) {
+            if (purchaseDetails[i].paymentToken != address(0)) {
+                transferFeeChange(purchaseDetails[i].paymentToken);
+            }
         }
     }
 
