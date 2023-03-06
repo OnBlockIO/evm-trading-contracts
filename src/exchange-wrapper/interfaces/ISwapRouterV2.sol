@@ -27,13 +27,13 @@ interface ISwapRouterV2 {
         address[] calldata path,
         address to,
         uint deadline
-    ) external payable returns (uint[] memory amounts);
+    ) external payable returns (uint amountOut);
 
     function swapTokensForExactETH(
         uint amountOut,
         uint amountInMaximum,
         address[] calldata path,
-        address to,
+        address payable to,
         uint deadline
     ) external returns (uint[] memory amounts);
 
@@ -77,14 +77,14 @@ interface ISwapRouterV2 {
         address[] calldata path,
         address to,
         uint deadline
-    ) external payable returns (uint[] memory amounts);
+    ) external payable returns (uint amountOut);
 
     function swapTokensForExactAVAX(
         uint amountOut,
         uint amountInMaximum,
         uint[] calldata binSteps,
         address[] calldata path,
-        address to,
+        address payable to,
         uint deadline
     ) external returns (uint[] memory amounts);
 

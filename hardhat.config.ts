@@ -77,6 +77,18 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       tags: ['mainnet'],
     },
+    shardeum_testnet: {
+      url: ETH_NODE_URI,
+      accounts: TESTNET_PRIVATE_KEY,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
+    base_testnet: {
+      url: ETH_NODE_URI,
+      accounts: TESTNET_PRIVATE_KEY,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
     polygon_testnet: {
       url: ETH_NODE_URI,
       accounts: TESTNET_PRIVATE_KEY,
@@ -116,6 +128,16 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: ETHERSCAN_API_KEY,
+    customChains: [
+      {
+        network: 'base_testnet',
+        chainId: 84531,
+        urls: {
+          apiURL: 'https://api-goerli.basescan.org/api',
+          browserURL: 'https://goerli.basescan.org',
+        },
+      },
+    ],
   },
   paths: {
     sources: 'src',

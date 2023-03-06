@@ -74,7 +74,7 @@
     "@openzeppelin/contracts-upgradeable": "4.7.3",
     "@openzeppelin/hardhat-upgrades": "^1.8.2",
     "ethereumjs-util": "^7.1.5",
-    "hardhat-deploy": "^0.9.2",
+    "hardhat-deploy": "^0.11.24",
     "web3": "^1.8.1"
   }
 }
