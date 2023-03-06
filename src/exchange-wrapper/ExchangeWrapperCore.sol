@@ -917,7 +917,7 @@ abstract contract ExchangeWrapperCore is
 
         // Swap
         uint256 amountIn;
-        try uniswapRouterV3.exactOutput(params) returns (uint256 amount) {
+        try uniswapRouterV3.exactOutput{ value: msg.value }(params) returns (uint256 amount) {
             amountIn = amount;
         } catch {
             return false;
@@ -935,7 +935,10 @@ abstract contract ExchangeWrapperCore is
 
         // Refund tokenIn left if any
         if (amountIn < swapDetails.amountInMaximum) {
-            IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
+            if (msg.value == 0)
+            {
+                IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
+            }
         }
 
         return true;
