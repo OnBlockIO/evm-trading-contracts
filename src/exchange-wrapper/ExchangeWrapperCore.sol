@@ -182,6 +182,11 @@ abstract contract ExchangeWrapperCore is
         proxies[marketId] = proxy;
     }
 
+    /// @notice set seaport 1.4 - temporary to remove
+    function setSeaport(address _seaport) external onlyOwner {
+        seaport_1_4 = _seaport;
+    }
+
     /**
         @notice executes a single purchase
         @param purchaseDetails - details about the purchase (more info in PurchaseDetails struct)
