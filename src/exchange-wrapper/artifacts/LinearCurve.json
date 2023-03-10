@@ -1,180 +1,166 @@
 {
-    "contractName": "ExponentialCurve",
-    "abi": [
-      {
-        "inputs": [],
-        "name": "MIN_PRICE",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function",
-        "constant": true
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint128",
-            "name": "delta",
-            "type": "uint128"
-          }
-        ],
-        "name": "validateDelta",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "pure",
-        "type": "function",
-        "constant": true
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint128",
-            "name": "newSpotPrice",
-            "type": "uint128"
-          }
-        ],
-        "name": "validateSpotPrice",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "pure",
-        "type": "function",
-        "constant": true
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint128",
-            "name": "spotPrice",
-            "type": "uint128"
-          },
-          {
-            "internalType": "uint128",
-            "name": "delta",
-            "type": "uint128"
-          },
-          {
-            "internalType": "uint256",
-            "name": "numItems",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "feeMultiplier",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "protocolFeeMultiplier",
-            "type": "uint256"
-          }
-        ],
-        "name": "getBuyInfo",
-        "outputs": [
-          {
-            "internalType": "enum CurveErrorCodes.Error",
-            "name": "error",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint128",
-            "name": "newSpotPrice",
-            "type": "uint128"
-          },
-          {
-            "internalType": "uint128",
-            "name": "newDelta",
-            "type": "uint128"
-          },
-          {
-            "internalType": "uint256",
-            "name": "inputValue",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "protocolFee",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "pure",
-        "type": "function",
-        "constant": true
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint128",
-            "name": "spotPrice",
-            "type": "uint128"
-          },
-          {
-            "internalType": "uint128",
-            "name": "delta",
-            "type": "uint128"
-          },
-          {
-            "internalType": "uint256",
-            "name": "numItems",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "feeMultiplier",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "protocolFeeMultiplier",
-            "type": "uint256"
-          }
-        ],
-        "name": "getSellInfo",
-        "outputs": [
-          {
-            "internalType": "enum CurveErrorCodes.Error",
-            "name": "error",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint128",
-            "name": "newSpotPrice",
-            "type": "uint128"
-          },
-          {
-            "internalType": "uint128",
-            "name": "newDelta",
-            "type": "uint128"
-          },
-          {
-            "internalType": "uint256",
-            "name": "outputValue",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "protocolFee",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "pure",
-        "type": "function",
-        "constant": true
-      }
-    ],
-    "bytecode": "0x608060405234801561001057600080fd5b506105da806100206000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c8063097cc63d1461005c5780630ae67ccc146100895780637ca542ac146100bf578063a1bbb2e8146100d2578063ad9f20a6146100f5575b600080fd5b61006f61006a3660046104a6565b61010e565b6040516100809594939291906104f3565b60405180910390f35b6100af61009736600461053d565b670de0b6b3a76400006001600160801b039091161190565b6040519015158152602001610080565b61006f6100cd3660046104a6565b610244565b6100af6100e036600461053d565b633b9aca006001600160801b03909116101590565b610100633b9aca0081565b604051908152602001610080565b6000808080808761012e5750600193506000925082915081905080610237565b600061014c670de0b6b3a76400006001600160801b038c168161038e565b90506000610163828b670de0b6b3a76400006103b1565b90506101816001600160801b038d1682670de0b6b3a764000061046f565b9550633b9aca00866001600160801b031610156101a057633b9aca0095505b6101eb6101d26101b884670de0b6b3a7640000610575565b670de0b6b3a76400006101cb8582610575565b919061038e565b6001600160801b038e1690670de0b6b3a764000061046f565b93506102008489670de0b6b3a764000061046f565b9250610215848a670de0b6b3a764000061046f565b61021f9085610575565b935061022b8385610575565b93508a94506000965050505b9550955095509550959050565b600080808080876102645750600193506000925082915081905080610237565b60006102826001600160801b038b168a670de0b6b3a76400006103b1565b905060006102a26001600160801b038d1683670de0b6b3a764000061046f565b90506001600160801b038111156102cc576002600080600080965096509650965096505050610237565b94508460006102f06001600160801b038e8116908e16670de0b6b3a764000061046f565b9050610338610328670de0b6b3a76400008e6001600160801b03166103159190610575565b670de0b6b3a76400006101cb8188610575565b8290670de0b6b3a764000061046f565b945061034d858a670de0b6b3a764000061046f565b9350610362858b670de0b6b3a764000061046f565b61036c908661058c565b9450610378848661058c565b60009e979d509a50929850949650505050505050565b828102821584158583048414171517156103a757600080fd5b9190910492915050565b6000838015610451576001841680156103cc578592506103d0565b8392505b50600283046002850494505b841561044b5785860286878204146103f357600080fd5b8181018181101561040357600080fd5b859004965050600185161561044057858302838782041415871515161561042957600080fd5b8181018181101561043957600080fd5b8590049350505b6002850494506103dc565b50610467565b8380156104615760009250610465565b8392505b505b509392505050565b828202831584820484141761048357600080fd5b0492915050565b80356001600160801b03811681146104a157600080fd5b919050565b600080600080600060a086880312156104be57600080fd5b6104c78661048a565b94506104d56020870161048a565b94979496505050506040830135926060810135926080909101359150565b60a081016003871061051557634e487b7160e01b600052602160045260246000fd5b9581526001600160801b03948516602082015292909316604083015260608201526080015290565b60006020828403121561054f57600080fd5b6105588261048a565b9392505050565b634e487b7160e01b600052601160045260246000fd5b6000828210156105875761058761055f565b500390565b6000821982111561059f5761059f61055f565b50019056fea2646970667358221220fae8990be5b831c59b9a448b678aea1a5c61c5236dd4fd02fe31575100e399e764736f6c634300080b0033"
-  }
+  "contractName": "LinearCurve",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint128",
+          "name": "",
+          "type": "uint128"
+        }
+      ],
+      "name": "validateDelta",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "valid",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint128",
+          "name": "",
+          "type": "uint128"
+        }
+      ],
+      "name": "validateSpotPrice",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint128",
+          "name": "spotPrice",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint128",
+          "name": "delta",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint256",
+          "name": "numItems",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "feeMultiplier",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "protocolFeeMultiplier",
+          "type": "uint256"
+        }
+      ],
+      "name": "getBuyInfo",
+      "outputs": [
+        {
+          "internalType": "enum CurveErrorCodes.Error",
+          "name": "error",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint128",
+          "name": "newSpotPrice",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint128",
+          "name": "newDelta",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint256",
+          "name": "inputValue",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "protocolFee",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint128",
+          "name": "spotPrice",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint128",
+          "name": "delta",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint256",
+          "name": "numItems",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "feeMultiplier",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "protocolFeeMultiplier",
+          "type": "uint256"
+        }
+      ],
+      "name": "getSellInfo",
+      "outputs": [
+        {
+          "internalType": "enum CurveErrorCodes.Error",
+          "name": "error",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint128",
+          "name": "newSpotPrice",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint128",
+          "name": "newDelta",
+          "type": "uint128"
+        },
+        {
+          "internalType": "uint256",
+          "name": "outputValue",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "protocolFee",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function",
+      "constant": true
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50610538806100206000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c8063097cc63d146100515780630ae67ccc1461007e5780637ca542ac146100a2578063a1bbb2e81461007e575b600080fd5b61006461005f366004610342565b6100b5565b60405161007595949392919061038f565b60405180910390f35b61009261008c3660046103d9565b50600190565b6040519015158152602001610075565b6100646100b0366004610342565b6101e0565b600080808080876100d557506001935060009250829150819050806101d3565b60006100ea896001600160801b038c16610411565b9050808b6001600160801b0316101561012957600094508461010c8b8d610446565b61011790600161046c565b6001600160801b031699506101369050565b610133818c610497565b94505b60026001600160801b038b1661014d60018c6104bf565b610157908c610411565b6101619190610411565b61016b91906104d6565b61017e6001600160801b038d168b610411565b61018891906104bf565b925061019d8388670de0b6b3a764000061030b565b91506101b28389670de0b6b3a764000061030b565b6101bc90846104bf565b92506101c882846104bf565b925089935060009550505b9550955095509550959050565b6000808080808761020057506001935060009250829150819050806101d3565b6000610215896001600160801b038c16610411565b610228906001600160801b038d166104ea565b90506001600160801b0381111561025157600260008060008095509550955095509550506101d3565b93508360006102608b8d61046c565b6001600160801b0316905060028b6001600160801b031660018c61028491906104bf565b61028e908d610411565b6102989190610411565b6102a291906104d6565b6102ac828c610411565b6102b691906104ea565b93506102cb8489670de0b6b3a764000061030b565b92506102e0848a670de0b6b3a764000061030b565b6102ea90856104ea565b93506102f683856104ea565b60009d969c5099509197509395505050505050565b828202831584820484141761031f57600080fd5b0492915050565b80356001600160801b038116811461033d57600080fd5b919050565b600080600080600060a0868803121561035a57600080fd5b61036386610326565b945061037160208701610326565b94979496505050506040830135926060810135926080909101359150565b60a08101600387106103b157634e487b7160e01b600052602160045260246000fd5b9581526001600160801b03948516602082015292909316604083015260608201526080015290565b6000602082840312156103eb57600080fd5b6103f482610326565b9392505050565b634e487b7160e01b600052601160045260246000fd5b600081600019048311821515161561042b5761042b6103fb565b500290565b634e487b7160e01b600052601260045260246000fd5b60006001600160801b038084168061046057610460610430565b92169190910492915050565b60006001600160801b0380831681851680830382111561048e5761048e6103fb565b01949350505050565b60006001600160801b03838116908316818110156104b7576104b76103fb565b039392505050565b6000828210156104d1576104d16103fb565b500390565b6000826104e5576104e5610430565b500490565b600082198211156104fd576104fd6103fb565b50019056fea2646970667358221220ad523b814bac59455235a53ec6f36f3e89dbffbf0ec16fa4157db88fa63ae86064736f6c634300080b0033"
+}

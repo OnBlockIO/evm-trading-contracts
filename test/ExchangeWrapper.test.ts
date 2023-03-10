@@ -157,6 +157,7 @@ describe('ExchangeWrapper Test', async function () {
   const erc721TokenId2 = '56';
   const erc721TokenId3 = '57';
   const erc721TokenId4 = '58';
+  const erc721TokenId5 = '59';
   const erc1155TokenId1 = '55';
   const erc1155TokenId2 = '56';
   const erc1155TokenId3 = '57';
@@ -3538,31 +3539,31 @@ describe('ExchangeWrapper Test', async function () {
     });
   });
 
-  describe.skip('Sudoswap orders', () => {
+  describe('Sudoswap orders', () => {
     it('Test singlePurchase Sudoswap, ERC721<->ETH', async () => {
       const seller = wallet1;
       const buyer = wallet2;
 
-      await factorySudo.deployed();
-      await routerSudo.deployed();
-      await linSudo.deployed();
+      const fact = await factorySudo.deployed();
+      const lin = await linSudo.deployed();
 
       await erc721.mint(seller.address, tokenId);
-      await erc721.connect(seller).setApprovalForAll(factorySudo.address, true, {from: seller.address});
+      await erc721.connect(seller).setApprovalForAll(fact.address, true, {from: seller.address});
 
-      const input = [erc721.address, linSudo.address, seller.address, 1, '100', 0, '1000', [tokenId]];
+      const input = [erc721.address, lin.address, seller.address, 1, '100', 0, '1000', [tokenId]];
 
       const tx = await (await factorySudo.connect(seller).createPairETH(...input, {from: seller.address})).wait();
 
-      let pair;
-      inReceipt(tx, 'NewPair', (ev: any) => {
-        pair = ev.poolAddress;
-        return true;
+      const ev = inReceipt(tx, 'NewPair', (ev: any) => {
+        return ev;
       });
+
+      const pair = ev.args.poolAddress
+
       expect(await erc721.ownerOf(tokenId)).to.equal(pair);
 
       const input2 = [
-        [{pair: pair, nftIds: [tokenId]}] as any,
+        [{pair, nftIds: [tokenId]}] as any,
         buyer.address,
         buyer.address,
         '99999999999999',
@@ -3576,21 +3577,143 @@ describe('ExchangeWrapper Test', async function () {
         await wrapperHelper.encodeSudoSwapCall(...input2)
       );
 
-      const tx2 = await bulkExchange.singlePurchase(tradeData, ZERO, ZERO, {from: buyer.address, value: 1105});
+      const tx2 = await bulkExchange.connect(buyer).singlePurchase(tradeData, ZERO, ZERO, {from: buyer.address, value: 1105});
       const receipt = await tx2.wait();
       // console.log('X2Y2:', receipt.gasUsed.toString());
 
       expect(await erc721.ownerOf(tokenId)).to.equal(buyer.address);
     });
 
-    it('Test singlePurchase Sudoswap, ERC1155<->ETH', async () => {});
+    it('Test singlePurchase Sudoswap + royalties, ERC721<->ETH', async () => {
+      const seller = wallet1;
+      const buyer = wallet2;
+      const royaltyAccount1 = wallet4;
+      const royaltyAccount2 = wallet5;
 
-    it('Test bulkPurchase Sudoswap (num orders = 2), ERC721<->ETH', async () => {});
+      const fact = await factorySudo.deployed();
+      const lin = await linSudo.deployed();
 
-    it('Test bulkPurchase Sudoswap (num orders = 2), ERC1155<->ETH', async () => {});
+      await erc721.mint(seller.address, tokenId);
+      await erc721.connect(seller).setApprovalForAll(fact.address, true, {from: seller.address});
 
-    // combined gm + sudo
-    // combined all with sudo
+      const input = [erc721.address, lin.address, seller.address, 1, '100', 0, '1000', [tokenId]];
+
+      const tx = await (await factorySudo.connect(seller).createPairETH(...input, {from: seller.address})).wait();
+
+      const ev = inReceipt(tx, 'NewPair', (ev: any) => {
+        return ev;
+      });
+
+      const pair = ev.args.poolAddress
+
+      expect(await erc721.ownerOf(tokenId)).to.equal(pair);
+
+      const input2 = [
+        [{pair, nftIds: [tokenId]}] as any,
+        buyer.address,
+        buyer.address,
+        '99999999999999',
+      ] as const;
+
+      const dataSudoSwap = await wrapperHelper.encodeSudoSwapCall(...input2);
+      //two different royalties recipients
+      const additionalRoyalties = [await encodeBpPlusAccountTest(1000, royaltyAccount1.address), await encodeBpPlusAccountTest(2000, royaltyAccount2.address)];
+      //single royalty recipient
+      const dataPlusAdditionalRoyaltiesStruct = {
+        data: dataSudoSwap,
+        additionalRoyalties: additionalRoyalties
+      };
+      const dataPlusAdditionalRoyalties = await wrapperHelper.encodeDataPlusRoyalties(dataPlusAdditionalRoyaltiesStruct);
+
+      const tradeData = PurchaseData(MARKET_ID_SUDOSWAP, '1105', ZERO, await encodeDataTypeAndFees(1, 1000, 0), dataPlusAdditionalRoyalties)
+
+      await verifyBalanceChange(buyer.address, 1546, async () =>
+      	verifyBalanceChange(seller.address, -1100, async () =>
+      		verifyBalanceChange(royaltyAccount1.address, -110, () =>
+      		  verifyBalanceChange(royaltyAccount2.address, -221, () =>
+              verifyBalanceChange(feeRecipienterUP.address, -110, () =>
+                verifyBalanceChange(factorySudo.address, -5, () =>
+                  verifyBalanceChange(bulkExchange.address, 0, () =>
+                    bulkExchange.connect(buyer).singlePurchase(tradeData, feeRecipienterUP.address, ZERO, {from: buyer.address, value: 1546, gasPrice: 0})
+                  )
+                )
+              )
+      		  )
+      		)
+      	)
+      );
+
+      expect(await erc721.ownerOf(tokenId)).to.equal(buyer.address);
+    });
+
+    it('Test bulkPurchase Sudoswap (num orders = 2), ERC721<->ETH', async () => {
+      const seller = wallet1;
+      const buyer = wallet2;
+
+      const fact = await factorySudo.deployed();
+      const lin = await linSudo.deployed();
+
+      await erc721.mint(seller.address, tokenId);
+      await erc721.mint(seller.address, tokenId2);
+      await erc721.connect(seller).setApprovalForAll(fact.address, true, {from: seller.address});
+
+      const input = [erc721.address, lin.address, seller.address, 1, '100', 0, '1000', [tokenId]];
+      const input2 = [erc721.address, lin.address, seller.address, 1, '100', 0, '1000', [tokenId2]];
+
+      const tx = await (await factorySudo.connect(seller).createPairETH(...input, {from: seller.address})).wait();
+      const tx2 = await (await factorySudo.connect(seller).createPairETH(...input2, {from: seller.address})).wait();
+
+      const ev = inReceipt(tx, 'NewPair', (ev: any) => {
+        return ev;
+      });
+
+      const pair = ev.args.poolAddress
+
+      expect(await erc721.ownerOf(tokenId)).to.equal(pair);
+
+      const ev2 = inReceipt(tx2, 'NewPair', (ev: any) => {
+        return ev;
+      });
+
+      const pair2 = ev2.args.poolAddress
+
+      expect(await erc721.ownerOf(tokenId2)).to.equal(pair2);
+
+      const inp = [
+        [{pair, nftIds: [tokenId]}] as any,
+        buyer.address,
+        buyer.address,
+        '99999999999999',
+      ] as const;
+
+      const tradeData = PurchaseData(
+        MARKET_ID_SUDOSWAP,
+        '1105',
+        ZERO,
+        '0',
+        await wrapperHelper.encodeSudoSwapCall(...inp)
+      );
+
+      const inp2 = [
+        [{pair2, nftIds: [tokenId2]}] as any,
+        buyer.address,
+        buyer.address,
+        '99999999999999',
+      ] as const;
+
+      const tradeData2 = PurchaseData(
+        MARKET_ID_SUDOSWAP,
+        '1105',
+        ZERO,
+        '0',
+        await wrapperHelper.encodeSudoSwapCall(...inp2)
+      );
+
+      await bulkExchange.connect(buyer).bulkPurchase([tradeData, tradeData2], ZERO, ZERO, false, {from: buyer.address, value: 2210});
+
+      expect(await erc721.ownerOf(tokenId)).to.equal(buyer.address);
+      expect(await erc721.ownerOf(tokenId2)).to.equal(buyer.address);
+    });
   });
 
   describe.skip('Blur orders', () => {
@@ -4317,6 +4440,102 @@ describe('ExchangeWrapper Test', async function () {
       expect(await weth.balanceOf(seller1.address)).to.equal(10000);
     });
 
+    it('Test bulkPurchase GhostMarket & SudoSwap (num orders = 2), ERC721<->ETH', async () => {
+      const buyer = wallet2;
+      const seller1 = wallet1;
+      const seller2 = wallet3;
+
+      const erc721TokenIdLocal1 = '5';
+      await erc721.mint(seller1.address, erc721TokenIdLocal1);
+      await erc721.connect(seller1).setApprovalForAll(transferProxy.address, true, {from: seller1.address});
+
+      const fact = await factorySudo.deployed();
+      const lin = await linSudo.deployed();
+
+      await erc721.mint(seller1.address, tokenId);
+      await erc721.connect(seller1).setApprovalForAll(fact.address, true, {from: seller1.address});
+
+      const encDataLeft = await encDataV2([[], [], false]);
+      const encDataRight = await encDataV2([[[buyer.address, 10000]], [], false]);
+
+      const left = Order(
+        seller1.address,
+        Asset(ERC721, enc(erc721.address, erc721TokenIdLocal1), '1'),
+        ZERO,
+        Asset(ETH, '0x', '100'),
+        '1',
+        0,
+        0,
+        ORDER_DATA_V2,
+        encDataLeft
+      );
+      const signatureLeft = await getSignature(left, seller1.address, exchangeV2Proxy.address);
+
+      const directPurchaseParams = {
+        sellOrderMaker: seller1.address,
+        sellOrderNftAmount: 1,
+        nftAssetClass: ERC721,
+        nftData: enc(erc721.address, erc721TokenIdLocal1),
+        sellOrderPaymentAmount: 100,
+        paymentToken: ZERO,
+        sellOrderSalt: 1,
+        sellOrderStart: 0,
+        sellOrderEnd: 0,
+        sellOrderDataType: ORDER_DATA_V2,
+        sellOrderData: encDataLeft,
+        sellOrderSignature: signatureLeft,
+        buyOrderPaymentAmount: 100,
+        buyOrderNftAmount: 1,
+        buyOrderData: encDataRight,
+      };
+
+      const dataForExchCallGhostMarket = await wrapperHelper.getDataDirectPurchase(directPurchaseParams);
+      const tradeDataGhostMarket = PurchaseData(
+        MARKET_ID_GHOSTMARKET,
+        '100',
+        ZERO,
+        await encodeFees(1500),
+        dataForExchCallGhostMarket
+      );
+
+      const input = [erc721.address, lin.address, seller1.address, 1, '100', 0, '1000', [tokenId]];
+
+      const tx = await (await factorySudo.connect(seller1).createPairETH(...input, {from: seller1.address})).wait();
+
+      const ev = inReceipt(tx, 'NewPair', (ev: any) => {
+        return ev;
+      });
+
+      const pair = ev.args.poolAddress
+
+      expect(await erc721.ownerOf(tokenId)).to.equal(pair);
+
+      const input2 = [
+        [{pair, nftIds: [tokenId]}] as any,
+        buyer.address,
+        buyer.address,
+        '99999999999999',
+      ] as const;
+
+      const tradeDataSudoSwap = PurchaseData(
+        MARKET_ID_SUDOSWAP,
+        '1105',
+        ZERO,
+        '0',
+        await wrapperHelper.encodeSudoSwapCall(...input2)
+      );
+
+      await bulkExchange.connect(buyer).bulkPurchase([tradeDataGhostMarket, tradeDataSudoSwap], ZERO, ZERO, false, {
+        from: buyer.address,
+        value: 1400,
+        gasPrice: 0,
+      });
+
+      expect(await erc721.balanceOf(seller1.address)).to.equal(0);
+      expect(await erc721.balanceOf(seller2.address)).to.equal(0);
+      expect(await erc721.balanceOf(buyer.address)).to.equal(2);
+    });
+
     it('Test bulkPurchase 3 ETH - 3 ERC20 (ExchangeV2 V2, Rarible V3, Seaport)', async () => {
       const seller = wallet1;
       const buyer = wallet2;
@@ -4667,7 +4886,7 @@ describe('ExchangeWrapper Test', async function () {
       expect(await erc721.ownerOf(tokenId)).to.equal(buyer.address);
     });
 
-    it('Test bulkPurchase 5%+10% fees for all (ExchangeV2 V2, Rarible V3, Seaport, X2Y2, Looksrare)', async () => {
+    it('Test bulkPurchase 5%+10% fees for all (ExchangeV2 V2, Rarible V3, Seaport, X2Y2, Looksrare, SudoSwap)', async () => {
       const seller = wallet1;
       const buyer = wallet2;
       const feeRecipientSecond = wallet7;
@@ -4930,19 +5149,53 @@ describe('ExchangeWrapper Test', async function () {
         dataForLooksRare
       );
 
+      //sudoSwapOrder
+      const fact = await factorySudo.deployed();
+      const lin = await linSudo.deployed();
+
+      await erc721.mint(seller.address, erc721TokenId5);
+      await erc721.connect(seller).setApprovalForAll(fact.address, true, {from: seller.address});
+
+      const inp = [erc721.address, lin.address, seller.address, 1, '100', 0, '1000', [erc721TokenId5]];
+
+      const suTx = await (await factorySudo.connect(seller).createPairETH(...inp, {from: seller.address})).wait();
+
+      const ev = inReceipt(suTx, 'NewPair', (ev: any) => {
+        return ev;
+      });
+
+      const pair = ev.args.poolAddress
+
+      expect(await erc721.ownerOf(erc721TokenId5)).to.equal(pair);
+
+      const input2 = [
+        [{pair, nftIds: [erc721TokenId5]}] as any,
+        buyer.address,
+        buyer.address,
+        '99999999999999',
+      ] as const;
+
+      const tradeDataSudoSwap = PurchaseData(
+        MARKET_ID_SUDOSWAP,
+        '1105',
+        ZERO,
+        '0',
+        await wrapperHelper.encodeSudoSwapCall(...input2)
+      );
+
       const tx = await (
-        await verifyBalanceChangeReturnTx(buyer.address, 1610, async () =>
-          verifyBalanceChangeReturnTx(seller.address, -1295, async () =>
+        await verifyBalanceChangeReturnTx(buyer.address, 2715, async () =>
+          verifyBalanceChangeReturnTx(seller.address, -2395, async () =>
             verifyBalanceChangeReturnTx(feeRecipienterUP.address, -70, () =>
               verifyBalanceChangeReturnTx(feeRecipientSecond.address, -140, () =>
                 bulkExchange
                   .connect(buyer)
                   .bulkPurchase(
-                    [tradeData, tradeData1, tradeDataSeaPort, tradeDataX2Y2, tradeDataLooksRare],
+                    [tradeData, tradeData1, tradeDataSeaPort, tradeDataX2Y2, tradeDataLooksRare, tradeDataSudoSwap],
                     feeRecipienterUP.address,
                     feeRecipientSecond.address,
                     false,
-                    {from: buyer.address, value: 2680, gasPrice: 0}
+                    {from: buyer.address, value: 3785, gasPrice: 0}
                   )
               )
             )
@@ -4959,7 +5212,7 @@ describe('ExchangeWrapper Test', async function () {
       expect(await erc721.ownerOf(tokenId)).to.equal(buyer.address);
     });
 
-    it('Test bulkPurchase 5%+10% fees for all (ExchangeV2 V2, Rarible V3, Seaport, X2Y2, Looksrare), 1 fail', async () => {
+    it('Test bulkPurchase 5%+10% fees for all (ExchangeV2 V2, Rarible V3, Seaport, X2Y2, Looksrare, SudoSwap), 1 fail', async () => {
       const seller = wallet1;
       const buyer = wallet2;
       const zoneAddr = wallet2;
@@ -5216,12 +5469,46 @@ describe('ExchangeWrapper Test', async function () {
         dataForLooksRare
       );
 
+      //sudoSwapOrder
+      const fact = await factorySudo.deployed();
+      const lin = await linSudo.deployed();
+
+      await erc721.mint(seller.address, erc721TokenId5);
+      await erc721.connect(seller).setApprovalForAll(fact.address, true, {from: seller.address});
+
+      const inp = [erc721.address, lin.address, seller.address, 1, '100', 0, '1000', [erc721TokenId5]];
+
+      const suTx = await (await factorySudo.connect(seller).createPairETH(...inp, {from: seller.address})).wait();
+
+      const ev = inReceipt(suTx, 'NewPair', (ev: any) => {
+        return ev;
+      });
+
+      const pair = ev.args.poolAddress
+
+      expect(await erc721.ownerOf(erc721TokenId5)).to.equal(pair);
+
+      const input2 = [
+        [{pair, nftIds: [erc721TokenId5]}] as any,
+        buyer.address,
+        buyer.address,
+        '99999999999999',
+      ] as const;
+
+      const tradeDataSudoSwap = PurchaseData(
+        MARKET_ID_SUDOSWAP,
+        '1105',
+        ZERO,
+        '0',
+        await wrapperHelper.encodeSudoSwapCall(...input2)
+      );
+
       //fails with allowFail = false
       await expect(
         bulkExchange
           .connect(buyer)
           .bulkPurchase(
-            [tradeData, tradeData1, tradeDataSeaPort, tradeDataX2Y2, tradeDataLooksRare],
+            [tradeData, tradeData1, tradeDataSeaPort, tradeDataX2Y2, tradeDataLooksRare, tradeDataSudoSwap],
             feeRecipienterUP.address,
             feeRecipientSecond.address,
             false,
@@ -5230,18 +5517,18 @@ describe('ExchangeWrapper Test', async function () {
       ).to.be.revertedWith('Strategy: Execution invalid');
 
       const tx = await (
-        await verifyBalanceChangeReturnTx(buyer.address, 1345, async () =>
-          verifyBalanceChangeReturnTx(seller.address, -1295, async () =>
+        await verifyBalanceChangeReturnTx(buyer.address, 2450, async () =>
+          verifyBalanceChangeReturnTx(seller.address, -2395, async () =>
             verifyBalanceChangeReturnTx(feeRecipienterUP.address, -15, () =>
               verifyBalanceChangeReturnTx(feeRecipientSecond.address, -30, () =>
                 bulkExchange
                   .connect(buyer)
                   .bulkPurchase(
-                    [tradeData, tradeData1, tradeDataSeaPort, tradeDataX2Y2, tradeDataLooksRare],
+                    [tradeData, tradeData1, tradeDataSeaPort, tradeDataX2Y2, tradeDataLooksRare, tradeDataSudoSwap],
                     feeRecipienterUP.address,
                     feeRecipientSecond.address,
                     true,
-                    {from: buyer.address, value: 1565, gasPrice: 0}
+                    {from: buyer.address, value: 2670, gasPrice: 0}
                   )
               )
             )
@@ -5261,10 +5548,11 @@ describe('ExchangeWrapper Test', async function () {
       expect(await erc721.ownerOf(erc721TokenId1)).to.equal(buyer.address);
       expect(await erc721.ownerOf(erc721TokenId2)).to.equal(buyer.address);
       expect(await erc721.ownerOf(erc721TokenId4)).to.equal(buyer.address);
+      expect(await erc721.ownerOf(erc721TokenId5)).to.equal(buyer.address);
       expect(await erc721.ownerOf(tokenId)).to.equal(buyer.address);
     });
 
-    it('Test bulkPurchase 5%+10% fees for all (ExchangeV2 V2, Rarible V3, Seaport, X2Y2, Looksrare), all fail = revert', async () => {
+    it('Test bulkPurchase 5%+10% fees for all (ExchangeV2 V2, Rarible V3, Seaport, X2Y2, Looksrare, SudoSwap), all fail = revert', async () => {
       const seller = wallet1;
       const buyer = wallet2;
       const zoneAddr = wallet2;
@@ -5521,12 +5809,46 @@ describe('ExchangeWrapper Test', async function () {
         dataForLooksRare
       );
 
+      //sudoSwapOrder
+      const fact = await factorySudo.deployed();
+      const lin = await linSudo.deployed();
+
+      await erc721.mint(seller.address, erc721TokenId5);
+      await erc721.connect(seller).setApprovalForAll(fact.address, true, {from: seller.address});
+
+      const inp = [erc721.address, lin.address, seller.address, 1, '100', 0, '1000', [erc721TokenId5]];
+
+      const suTx = await (await factorySudo.connect(seller).createPairETH(...inp, {from: seller.address})).wait();
+
+      const ev = inReceipt(suTx, 'NewPair', (ev: any) => {
+        return ev;
+      });
+
+      const pair = ev.args.poolAddress
+
+      expect(await erc721.ownerOf(erc721TokenId5)).to.equal(pair);
+
+      const input2 = [
+        [{pair, nftIds: [erc721TokenId5]}] as any,
+        buyer.address,
+        buyer.address,
+        '99999999999999',
+      ] as const;
+
+      const tradeDataSudoSwap = PurchaseData(
+        MARKET_ID_SUDOSWAP,
+        '115',  // should be 1105 - forced to make trade fail
+        ZERO,
+        '0',
+        await wrapperHelper.encodeSudoSwapCall(...input2)
+      );
+
       //fails with allowFail = false
       await expect(
         bulkExchange
           .connect(buyer)
           .bulkPurchase(
-            [tradeData, tradeData1, tradeDataSeaPort, tradeDataLooksRare],
+            [tradeData, tradeData1, tradeDataSeaPort, tradeDataX2Y2, tradeDataLooksRare, tradeDataSudoSwap],
             feeRecipienterUP.address,
             feeRecipientSecond.address,
             false,
@@ -5539,11 +5861,11 @@ describe('ExchangeWrapper Test', async function () {
         bulkExchange
           .connect(buyer)
           .bulkPurchase(
-            [tradeData, tradeData1, tradeDataSeaPort, tradeDataX2Y2, tradeDataLooksRare],
+            [tradeData, tradeData1, tradeDataSeaPort, tradeDataX2Y2, tradeDataLooksRare, tradeDataSudoSwap],
             feeRecipienterUP.address,
             feeRecipientSecond.address,
             true,
-            {from: buyer.address, value: 2580, gasPrice: 0}
+            {from: buyer.address, value: 3580, gasPrice: 0}
           )
       ).to.be.revertedWith('no successful execution');
     });
