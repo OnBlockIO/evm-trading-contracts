@@ -1,6 +1,6 @@
 import hre, {ethers} from 'hardhat';
 import {getSettings} from '../.config';
-import { MARKET_ID_GHOSTMARKET, MARKET_ID_RARIBLE, MARKET_ID_SEAPORT, MARKET_ID_LOOKSRARE, MARKET_ID_X2Y2 } from '../test/utils/constants';
+import { MARKET_ID_GHOSTMARKET, MARKET_ID_RARIBLE, MARKET_ID_SEAPORT_1_1, MARKET_ID_SEAPORT_1_4, MARKET_ID_LOOKSRARE, MARKET_ID_X2Y2 } from '../test/utils/constants';
 
 async function main() {
   const CHAIN = hre.network.name;
@@ -8,7 +8,8 @@ async function main() {
   const WRAPPER = getSettings(CHAIN).exchange_wrapper_proxy;
   const WRAPPED_TOKEN = getSettings(CHAIN).wrapped;
   // const RARIBLE_ERC20_TRANSFER_PROXY = ZERO; // CUSTOM ERC20 PROXY
-  // const OPENSEA_ERC20_TRANSFER_PROXY = getSettings(CHAIN).seaport;
+  // const OPENSEA_1_1_ERC20_TRANSFER_PROXY = getSettings(CHAIN).seaport_1_1;
+  // const OPENSEA_1_4_ERC20_TRANSFER_PROXY = getSettings(CHAIN).seaport_1_4;
   // const LOOKSRARE_ERC20_TRANSFER_PROXY = getSettings(CHAIN).looksrare;
   // const X2Y2_ERC20_TRANSFER_PROXY = getSettings(CHAIN).x2y2;
   // const UNISWAP_V2 = getSettings(CHAIN).uniswapV2;
@@ -31,7 +32,8 @@ async function main() {
 
   // set other erc20 transfer proxy on wrapper
   // await wrapperContract.setMarketProxy(MARKET_ID_RARIBLE, RARIBLE_ERC20_TRANSFER_PROXY);
-  // await wrapperContract.setMarketProxy(MARKET_ID_SEAPORT, OPENSEA_ERC20_TRANSFER_PROXY);
+  // await wrapperContract.setMarketProxy(MARKET_ID_SEAPORT_1_1, OPENSEA_1_1_ERC20_TRANSFER_PROXY);
+  // await wrapperContract.setMarketProxy(MARKET_ID_SEAPORT_1_4, OPENSEA_1_4_ERC20_TRANSFER_PROXY);
   // await wrapperContract.setMarketProxy(MARKET_ID_LOOKSRARE, LOOKSRARE_ERC20_TRANSFER_PROXY);
   // await wrapperContract.setMarketProxy(MARKET_ID_X2Y2, X2Y2_ERC20_TRANSFER_PROXY);
 

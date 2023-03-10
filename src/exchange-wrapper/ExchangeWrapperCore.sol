@@ -12,7 +12,6 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
-import "./interfaces/IWyvernExchange.sol";
 import "./interfaces/IExchangeV2.sol";
 import "./interfaces/ISeaPort.sol";
 import "./interfaces/Ix2y2.sol";
@@ -37,8 +36,8 @@ abstract contract ExchangeWrapperCore is
 
     address public exchangeV2;
     address public rarible;
-    address public wyvern;
-    address public seaport;
+    address public seaport_1_4;
+    address public seaport_1_1;
     address public x2y2;
     address public looksrare;
     address public sudoswap;
@@ -55,8 +54,8 @@ abstract contract ExchangeWrapperCore is
 
     enum Markets {
         Rarible,
-        Wyvern,
-        SeaPort,
+        SeaPort_1_4,
+        SeaPort_1_1,
         X2Y2,
         LooksRare,
         SudoSwap,
@@ -131,8 +130,8 @@ abstract contract ExchangeWrapperCore is
     function __ExchangeWrapper_init_unchained(
         address _exchangeV2,
         address _rarible,
-        address _wyvern,
-        address _seaport,
+        address _seaport_1_4,
+        address _seaport_1_1,
         address _x2y2,
         address _looksrare,
         address _sudoswap,
@@ -140,8 +139,8 @@ abstract contract ExchangeWrapperCore is
     ) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
-        wyvern = _wyvern;
-        seaport = _seaport;
+        seaport_1_4 = _seaport_1_4;
+        seaport_1_1 = _seaport_1_1;
         x2y2 = _x2y2;
         looksrare = _looksrare;
         sudoswap = _sudoswap;
@@ -361,26 +360,26 @@ abstract contract ExchangeWrapperCore is
             }
         }
 
-        if (purchaseDetails.marketId == Markets.SeaPort) {
-            (bool success, ) = address(seaport).call{value: nativeAmountToSend}(marketData);
+        if (purchaseDetails.marketId == Markets.SeaPort_1_1) {
+            (bool success, ) = address(seaport_1_1).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
                 }
             } else {
-                require(success, "Purchase Seaport failed");
+                require(success, "Purchase SeaPort_1_1 failed");
             }
         }
-        /* else if (purchaseDetails.marketId == Markets.Wyvern) {
-            (bool success, ) = address(wyvern).call{value: nativeAmountToSend}(marketData);
+        else if (purchaseDetails.marketId == Markets.SeaPort_1_4) {
+            (bool success, ) = address(seaport_1_4).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
                 }
             } else {
-                require(success, "Purchase Wyvern failed");
+                require(success, "Purchase SeaPort_1_4 failed");
             }
-        } */
+        }
         else if (purchaseDetails.marketId == Markets.ExchangeV2) {
             (bool success, ) = address(exchangeV2).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
