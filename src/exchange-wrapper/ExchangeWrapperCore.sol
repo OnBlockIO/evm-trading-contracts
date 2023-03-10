@@ -89,7 +89,7 @@ abstract contract ExchangeWrapperCore is
     }
 
     /**
-        @notice struct for the data with additional Ddta
+        @notice struct for the data with additional data
         @param data - data for market call
         @param additionalRoyalties - array additional Royalties (in base points plus address Royalty recipient)
      */
@@ -653,8 +653,8 @@ abstract contract ExchangeWrapperCore is
     }
 
     /**
-        @notice returns true if this contract supports additional royalties for the marketpale
-        now royalties support only for marketId = sudoswap
+        @notice returns true if this contract supports additional royalties for the marketplace
+        now royalties support only for marketId = sudoswap & looksrare
     */
     function supportsRoyalties(Markets marketId) internal pure returns (bool) {
         if (marketId == Markets.SudoSwap || marketId == Markets.LooksRare) {
