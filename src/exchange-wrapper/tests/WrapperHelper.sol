@@ -29,10 +29,59 @@ interface IERC721 {
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
 }
 
+interface IMatchERC721 {
+    function matchERC721UsingCriteria(
+        address from,
+        address to,
+        IERC721 token,
+        uint256 tokenId,
+        bytes32 root,
+        bytes32[] calldata proof
+    ) external returns (bool);
+}
+
+interface IMatchERC1155 {
+    function matchERC1155UsingCriteria(
+        address from,
+        address to,
+        IERC1155 token,
+        uint256 tokenId,
+        uint256 amount,
+        bytes32 root,
+        bytes32[] calldata proof
+    ) external returns (bool);
+}
+
 contract WrapperHelper {
     struct AdditionalData {
         bytes data;
         uint[] additionalRoyalties;
+    }
+
+    function getDataERC721UsingCriteria(
+        address from,
+        address to,
+        IERC721Upgradeable token,
+        uint256 tokenId
+    ) external pure returns (bytes memory _data) {
+        _data = abi.encodeWithSelector(IMatchERC721.matchERC721UsingCriteria.selector, from, to, token, tokenId);
+    }
+
+    function getDataERC1155UsingCriteria(
+        address from,
+        address to,
+        IERC1155Upgradeable token,
+        uint256 tokenId,
+        uint256 amount
+    ) external pure returns (bytes memory _data) {
+        _data = abi.encodeWithSelector(
+            IMatchERC1155.matchERC1155UsingCriteria.selector,
+            from,
+            to,
+            token,
+            tokenId,
+            amount
+        );
     }
 
     function encodeOriginFeeIntoUint(address account, uint96 value) external pure returns (uint) {
