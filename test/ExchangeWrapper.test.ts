@@ -3695,7 +3695,7 @@ describe('ExchangeWrapper Test', async function () {
       );
 
       const inp2 = [
-        [{pair2, nftIds: [tokenId2]}] as any,
+        [{pair: pair2, nftIds: [tokenId2]}] as any,
         buyer.address,
         buyer.address,
         '99999999999999',
