@@ -57,7 +57,6 @@ const config: HardhatUserConfig = {
       //accounts: accounts(),
       saveDeployments: true,
       tags: ['local'],
-      //gasPrice: 0,
     },
     testnet_nodeploy: {
       url: ETH_NODE_URI,
@@ -78,6 +77,7 @@ const config: HardhatUserConfig = {
       tags: ['mainnet'],
     },
     shardeum_testnet: {
+      chainId: 8081,
       url: ETH_NODE_URI,
       accounts: TESTNET_PRIVATE_KEY,
       saveDeployments: true,
