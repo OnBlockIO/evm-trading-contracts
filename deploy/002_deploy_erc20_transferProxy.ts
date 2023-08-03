@@ -11,6 +11,10 @@ async function main() {
   const erc20TransferProxy = await deploy('ERC20TransferProxy', {
     from: deployer,
     log: true,
+    skipIfAlreadyDeployed: false,
+    deterministicDeployment: false,
+    estimatedGasLimit: 10000000,
+    estimateGasExtra: 10000000
   });
 
   await execute('ERC20TransferProxy', {from: deployer, log: true}, '__ERC20TransferProxy_init');
