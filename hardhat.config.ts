@@ -89,6 +89,12 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       tags: ['testnet'],
     },
+    base_mainnet: {
+      url: ETH_NODE_URI,
+      accounts: MAINNET_PRIVATE_KEY,
+      saveDeployments: true,
+      tags: ['mainnet'],
+    },
     polygon_testnet: {
       url: ETH_NODE_URI,
       accounts: TESTNET_PRIVATE_KEY,

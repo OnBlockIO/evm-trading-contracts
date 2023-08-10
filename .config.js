@@ -162,6 +162,21 @@ const base_testnet = {
   uniswapV3: '',
 };
 
+const base_mainnet = {
+  fees: 0,
+  transferProxy: '0x31681e95A89034612926908F48A5E1Aa734EBf05',
+  erc20TransferProxy: '0xE98E9D752d6104aDa0520988cd1834035762C8c7',
+  erc721LazyMintTransferProxy: '0x3d7e2A3ecb2AE2a516465c611DFf813d7B9297f8',
+  erc1155LazyMintTransferProxy: '0x3417E77e81Cf31bb210c2364883EB83E5077f0Dd',
+  royalties_proxy: '0x92E20C3534535db17D4c7c622538eB0930544230',
+  exchange_proxy: '0x31E02e8d1Fbb0bdeC82f46336BD3eb1759D44B3d',
+  exchange_wrapper_proxy: '0x4B077688Be301427b68E8e9C1Dac7BC6a1a74Ccc',
+  customMatcher: '0xC852372E60067f5bE1E96BBB038218a5081A9807',
+  wrapped: '0x4200000000000000000000000000000000000006',
+  uniswapV2: '',
+  uniswapV3: '',
+};
+
 let settings = {
   ethereum_mainnet: ethereum_mainnet,
   ethereum_testnet: ethereum_testnet,
@@ -173,6 +188,7 @@ let settings = {
   bsc_testnet: bsc_testnet,
   shardeum_testnet: shardeum_testnet,
   base_testnet: base_testnet,
+  base_mainnet: base_mainnet,
 };
 
 function getSettings(network) {
