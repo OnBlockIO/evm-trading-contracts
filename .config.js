@@ -147,6 +147,21 @@ const shardeum_testnet = {
   uniswapV3: '',
 };
 
+const neoevm_testnet = {
+  fees: 0,
+  transferProxy: '0x55F02AcD0ba21AFaC507c8C79cF5Bc25A92A6754',
+  erc20TransferProxy: '0x92E20C3534535db17D4c7c622538eB0930544230',
+  erc721LazyMintTransferProxy: '0x31E02e8d1Fbb0bdeC82f46336BD3eb1759D44B3d',
+  erc1155LazyMintTransferProxy: '0xC881B96b13da75ccBd35Dad5443238ae982e479b',
+  royalties_proxy: '0xC61F536aa86b84c042349BB88bE3c87E5daC9f75',
+  exchange_proxy: '0x7B1B9c24A04f45C7FB7A8f9aD90b909443dEeCbD',
+  exchange_wrapper_proxy: '0x67cA3f0135457FfB2F967bFf912536304E1E4f4C',
+  customMatcher: '0x7e303d1cCDA88e6b3d5528B1D98533Fdf8d102fC',
+  wrapped: '',
+  uniswapV2: '',
+  uniswapV3: '',
+};
+
 const base_testnet = {
   fees: 0,
   transferProxy: '0xA28341F3Aec303Fbcc142a8bbF40ED1745400283',
@@ -172,9 +187,11 @@ const base_mainnet = {
   exchange_proxy: '0x31E02e8d1Fbb0bdeC82f46336BD3eb1759D44B3d',
   exchange_wrapper_proxy: '0x4B077688Be301427b68E8e9C1Dac7BC6a1a74Ccc',
   customMatcher: '0xC852372E60067f5bE1E96BBB038218a5081A9807',
+  seaport_1_1: '0x00000000006c3852cbEf3e08E8dF289169EdE581',
+  seaport_1_4: '0x00000000000001ad428e4906aE43D8F9852d0dD6',
   wrapped: '0x4200000000000000000000000000000000000006',
   uniswapV2: '',
-  uniswapV3: '',
+  uniswapV3: '0x2626664c2603336E57B271c5C0b26F421741e481',
 };
 
 let settings = {
@@ -187,6 +204,7 @@ let settings = {
   bsc_mainnet: bsc_mainnet,
   bsc_testnet: bsc_testnet,
   shardeum_testnet: shardeum_testnet,
+  neoevm_testnet: neoevm_testnet,
   base_testnet: base_testnet,
   base_mainnet: base_mainnet,
 };

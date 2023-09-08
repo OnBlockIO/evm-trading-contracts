@@ -24,7 +24,7 @@ async function main() {
 
   const wrapperContract = await ethers.getContractAt('ExchangeWrapper', WRAPPER);
   // set wrapped token on wrapper
-  await wrapperContract.setWrapped(WRAPPED_TOKEN);
+  // await wrapperContract.setWrapped(WRAPPED_TOKEN);
   // set erc20 transfer proxy for wrapper
   await wrapperContract.setTransferProxy(ERC20_TRANSFER_PROXY);
   // set ghostmarket erc20 transfer proxy on wrapper
