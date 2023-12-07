@@ -527,13 +527,21 @@ abstract contract ExchangeWrapperCore is
                 require(success, "Purchase SudoSwap failed");
             }
         } else if (purchaseDetails.marketId == Markets.Blur) {
-            (bool success, ) = address(blur).call{value: nativeAmountToSend}(marketData);
+            (IBlur.Input memory sell, IBlur.Input memory buy, bytes4 typeNft) = abi.decode(marketData, (IBlur.Input, IBlur.Input, bytes4));
             if (allowFail) {
-                if (!success) {
+                try IBlur(blur).execute{value : nativeAmountToSend}(sell, buy) {
+                }   catch {
                     return (false, 0, 0);
                 }
             } else {
-                require(success, "Purchase blurio failed");
+                IBlur(blur).execute{value : nativeAmountToSend}(sell, buy);
+            }
+            if (typeNft == LibAsset.ERC721_ASSET_CLASS) {
+                IERC721Upgradeable(sell.order.collection).safeTransferFrom(address(this), _msgSender(), sell.order.tokenId);
+            } else if (typeNft == LibAsset.ERC1155_ASSET_CLASS) {
+                IERC1155Upgradeable(sell.order.collection).safeTransferFrom(address(this), _msgSender(), sell.order.tokenId, sell.order.amount, "");
+            } else {
+                revert("Unknown token type");
             }
         } else {
             revert("Unknown purchase details");
