@@ -3409,24 +3409,22 @@ describe('ExchangeWrapper Test', async function () {
       );
 
       await verifyBalanceChange(seller.address, -800, async () =>
-      verifyBalanceChange(buyer.address, 1200, async () =>
-        verifyBalanceChange(feeFromBuyer.address, 0, () =>
-          verifyBalanceChange(feeFromSeller.address, -200, () =>
-            verifyBalanceChange(feeFirst.address, -150, () =>
-              verifyBalanceChange(feeSecond.address, -50, () =>
-                  bulkExchange
-                    .connect(buyer)
-                    .singlePurchase(tradeData, feeFirst.address, feeSecond.address, {
-                      from: buyer.address,
-                      value: 2000,
-                      gasPrice: 0,
-                    })
+        verifyBalanceChange(buyer.address, 1200, async () =>
+          verifyBalanceChange(feeFromBuyer.address, 0, () =>
+            verifyBalanceChange(feeFromSeller.address, -200, () =>
+              verifyBalanceChange(feeFirst.address, -150, () =>
+                verifyBalanceChange(feeSecond.address, -50, () =>
+                  bulkExchange.connect(buyer).singlePurchase(tradeData, feeFirst.address, feeSecond.address, {
+                    from: buyer.address,
+                    value: 2000,
+                    gasPrice: 0,
+                  })
                 )
+              )
             )
           )
         )
-      )
-    );
+      );
 
       expect(await erc721.ownerOf(tokenId)).to.equal(buyer.address);
     });
@@ -5448,7 +5446,7 @@ describe('ExchangeWrapper Test', async function () {
           tokenId: tokenId,
           amount: 1,
           paymentToken: ZERO,
-          price: '1',  // should be 1000 - forced to make trade fail
+          price: '1', // should be 1000 - forced to make trade fail
           listingTime: '168181880',
           expirationTime: '16813091771',
           fees: [],
@@ -5470,7 +5468,7 @@ describe('ExchangeWrapper Test', async function () {
         ZERO,
         await encodeCurrencyAndDataTypeAndFees(0, 0, 1500, 500),
         await wrapperHelper.encodeDataBlur(sellOrder, buyOrder, ERC721)
-      )
+      );
 
       //fails with allowFail = false
       await expect(
@@ -5490,7 +5488,15 @@ describe('ExchangeWrapper Test', async function () {
         bulkExchange
           .connect(buyer)
           .bulkPurchase(
-            [tradeData, tradeData1, tradeDataSeaPort, tradeDataX2Y2, tradeDataLooksRare, tradeDataSudoSwap, tradeDataBlur],
+            [
+              tradeData,
+              tradeData1,
+              tradeDataSeaPort,
+              tradeDataX2Y2,
+              tradeDataLooksRare,
+              tradeDataSudoSwap,
+              tradeDataBlur,
+            ],
             feeRecipienterUP.address,
             feeRecipientSecond.address,
             true,
