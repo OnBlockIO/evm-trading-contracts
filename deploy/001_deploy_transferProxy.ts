@@ -14,7 +14,7 @@ async function main() {
     skipIfAlreadyDeployed: false,
     deterministicDeployment: false,
     estimatedGasLimit: 10000000,
-    estimateGasExtra: 10000000
+    estimateGasExtra: 10000000,
   });
 
   await execute('TransferProxy', {from: deployer, log: true}, '__TransferProxy_init');

@@ -15,7 +15,7 @@ import {Ix2y2} from "../interfaces/Ix2y2.sol";
 import {LibLooksRare} from "../librairies/LibLooksRare.sol";
 import {ILooksRare} from "../interfaces/ILooksRare.sol";
 import {ILSSVMRouter} from "../interfaces/ILSSVMRouter.sol";
-import {LibBlur} from "../librairies/LibBlur.sol";
+import {IBlur} from "../interfaces/IBlurExchange.sol";
 
 interface IERC1155 {
     function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external;
@@ -131,6 +131,19 @@ contract WrapperHelper {
         return (uint(uint16(dataType)) << 32) + (uint(uint16(first)) << 16) + uint(uint16(second));
     }
 
+    function encodeCurrencyAndDataTypeAndFees(
+        uint currency,
+        uint dataType,
+        uint first,
+        uint second
+    ) external pure returns (uint) {
+        return
+            (uint(uint16(currency)) << 48) +
+            (uint(uint16(dataType)) << 32) +
+            (uint(uint16(first)) << 16) +
+            uint(uint16(second));
+    }
+
     function encodeDataPlusRoyalties(AdditionalData calldata data) external pure returns (bytes memory) {
         return abi.encode(data);
     }
@@ -161,9 +174,10 @@ contract WrapperHelper {
     }
 
     function encodeDataBlur(
-        LibBlur.Input calldata buy,
-        LibBlur.Input calldata sell
-    ) external pure returns (bytes memory) {
-        return abi.encode(buy, sell);
+        IBlur.Input memory sell,
+        IBlur.Input memory buy,
+        bytes4 typeNft
+    ) external pure returns (bytes memory _data) {
+        _data = abi.encode(sell, buy, typeNft);
     }
 }

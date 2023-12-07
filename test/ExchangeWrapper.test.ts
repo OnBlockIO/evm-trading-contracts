@@ -73,7 +73,7 @@ import {
   MARKET_ID_GHOSTMARKET,
   MARKET_ID_LOOKSRARE,
   MARKET_ID_RARIBLE,
-  MARKET_ID_SEAPORT_1_1,
+  MARKET_ID_SEAPORT_1_5,
   MARKET_ID_SEAPORT_1_4,
   MARKET_ID_X2Y2,
   MARKET_ID_SUDOSWAP,
@@ -93,7 +93,7 @@ describe('ExchangeWrapper Test', async function () {
   let royaltiesRegistryProxy: RoyaltiesRegistry;
   let testHelper: TestHelper;
   let wrapperHelper: WrapperHelper;
-  let seaport_1_1: any;
+  let seaport_1_5: any;
   let seaport_1_4: any;
   let conduitController: any;
   let currencyManager: any;
@@ -298,7 +298,7 @@ describe('ExchangeWrapper Test', async function () {
     );
 
     conduitController = await ConduitController.deploy();
-    seaport_1_1 = await Seaport.deploy(conduitController.address);
+    seaport_1_5 = await Seaport.deploy(conduitController.address);
     seaport_1_4 = await Seaport.deploy(conduitController.address);
 
     currencyManager = await CurrencyManager.deploy();
@@ -353,24 +353,17 @@ describe('ExchangeWrapper Test', async function () {
     await factorySudo.setBondingCurveAllowed(expSudo.address, true);
     await factorySudo.setBondingCurveAllowed(linSudo.address, true);
 
-    standardPolicyNoOracleERC721 = await StandardPolicyNoOracleERC721.deploy();
+    // standardPolicyNoOracleERC721 = await StandardPolicyNoOracleERC721.deploy();
     standardPolicyERC721 = await StandardPolicyERC721.deploy();
-    safeCollectionBidPolicyERC721 = await SafeCollectionBidPolicyERC721.deploy();
+    // safeCollectionBidPolicyERC721 = await SafeCollectionBidPolicyERC721.deploy();
     policyManager = await PolicyManager.deploy();
-    await policyManager.addPolicy(standardPolicyNoOracleERC721.address);
+    // await policyManager.addPolicy(standardPolicyNoOracleERC721.address);
     await policyManager.addPolicy(standardPolicyERC721.address);
-    await policyManager.addPolicy(safeCollectionBidPolicyERC721.address);
+    // await policyManager.addPolicy(safeCollectionBidPolicyERC721.address);
     executionDelegate = await ExecutionDelegate.deploy();
-    blurPool = await BlurPool.deploy();
+    // blurPool = await BlurPool.deploy();
     blurExchange = await BlurExchange.deploy();
-    blurExchange.initialize(
-      weth.address,
-      blurPool.address,
-      executionDelegate.address,
-      policyManager.address,
-      wallet0.address,
-      125
-    );
+    blurExchange.initialize(executionDelegate.address, policyManager.address, ZERO, 50);
     await executionDelegate.approveContract(blurExchange.address);
 
     await transferProxy.addOperator(exchangeV2Proxy.address);
@@ -396,7 +389,7 @@ describe('ExchangeWrapper Test', async function () {
           exchangeV2Proxy.address,
           rarible.address,
           seaport_1_4.address,
-          seaport_1_1.address,
+          seaport_1_5.address,
           x2y2.address,
           looksRareExchange.address,
           routerSudo.address,
@@ -1982,7 +1975,7 @@ describe('ExchangeWrapper Test', async function () {
       const zoneAddr = wallet2;
 
       await erc721.mint(seller.address, tokenId);
-      await erc721.connect(seller).setApprovalForAll(seaport_1_1.address, true, {from: seller.address});
+      await erc721.connect(seller).setApprovalForAll(seaport_1_5.address, true, {from: seller.address});
 
       const considerationItemLeft = {
         itemType: 0,
@@ -2036,7 +2029,7 @@ describe('ExchangeWrapper Test', async function () {
         _fulfillerConduitKey,
         _recipient.address
       );
-      const tradeDataSeaPort = PurchaseData(MARKET_ID_SEAPORT_1_1, '100', ZERO, '0', dataForSeaportWithSelector);
+      const tradeDataSeaPort = PurchaseData(MARKET_ID_SEAPORT_1_5, '100', ZERO, '0', dataForSeaportWithSelector);
 
       const tx = await bulkExchange
         .connect(buyerLocal1)
@@ -2053,7 +2046,7 @@ describe('ExchangeWrapper Test', async function () {
       const zoneAddr = wallet2;
 
       await erc721.mint(seller.address, tokenId);
-      await erc721.connect(seller).setApprovalForAll(seaport_1_1.address, true, {from: seller.address});
+      await erc721.connect(seller).setApprovalForAll(seaport_1_5.address, true, {from: seller.address});
 
       const erc20 = await prepareERC20(buyerLocal1, '1000000');
 
@@ -2062,7 +2055,7 @@ describe('ExchangeWrapper Test', async function () {
       // set erc20 transfer proxy
       await bulkExchange.setTransferProxy(erc20TransferProxy.address);
       // set exchange v2 transfer proxy
-      await bulkExchange.setMarketProxy(MARKET_ID_SEAPORT_1_1, seaport_1_1.address);
+      await bulkExchange.setMarketProxy(MARKET_ID_SEAPORT_1_5, seaport_1_5.address);
 
       const considerationItemLeft = {
         itemType: 1,
@@ -2116,7 +2109,13 @@ describe('ExchangeWrapper Test', async function () {
         _fulfillerConduitKey,
         _recipient.address
       );
-      const tradeDataSeaPort = PurchaseData(MARKET_ID_SEAPORT_1_1, '1000', erc20.address, '0', dataForSeaportWithSelector);
+      const tradeDataSeaPort = PurchaseData(
+        MARKET_ID_SEAPORT_1_5,
+        '1000',
+        erc20.address,
+        '0',
+        dataForSeaportWithSelector
+      );
 
       const tx = await bulkExchange
         .connect(buyerLocal1)
@@ -2135,7 +2134,7 @@ describe('ExchangeWrapper Test', async function () {
       const zoneAddr = wallet2;
 
       await erc721.mint(seller.address, tokenId);
-      await erc721.connect(seller).setApprovalForAll(seaport_1_1.address, true, {from: seller.address});
+      await erc721.connect(seller).setApprovalForAll(seaport_1_5.address, true, {from: seller.address});
 
       const considerationItemLeft = {
         itemType: 0,
@@ -2199,7 +2198,7 @@ describe('ExchangeWrapper Test', async function () {
         _maximumFulfilled
       );
 
-      const tradeDataSeaPort = PurchaseData(MARKET_ID_SEAPORT_1_1, '100', ZERO, '0', dataForSeaportWithSelector);
+      const tradeDataSeaPort = PurchaseData(MARKET_ID_SEAPORT_1_5, '100', ZERO, '0', dataForSeaportWithSelector);
 
       const tx = await bulkExchange
         .connect(buyerLocal1)
@@ -2216,7 +2215,7 @@ describe('ExchangeWrapper Test', async function () {
       const zoneAddr = wallet2;
 
       await erc721.mint(seller.address, tokenId);
-      await erc721.connect(seller).setApprovalForAll(seaport_1_1.address, true, {from: seller.address});
+      await erc721.connect(seller).setApprovalForAll(seaport_1_5.address, true, {from: seller.address});
 
       const erc20 = await prepareERC20(buyerLocal1, '1000000');
 
@@ -2225,7 +2224,7 @@ describe('ExchangeWrapper Test', async function () {
       // set erc20 transfer proxy
       await bulkExchange.setTransferProxy(erc20TransferProxy.address);
       // set exchange v2 transfer proxy
-      await bulkExchange.setMarketProxy(MARKET_ID_SEAPORT_1_1, seaport_1_1.address);
+      await bulkExchange.setMarketProxy(MARKET_ID_SEAPORT_1_5, seaport_1_5.address);
 
       const considerationItemLeft = {
         itemType: 1,
@@ -2289,7 +2288,13 @@ describe('ExchangeWrapper Test', async function () {
         _maximumFulfilled
       );
 
-      const tradeDataSeaPort = PurchaseData(MARKET_ID_SEAPORT_1_1, '1000', erc20.address, '0', dataForSeaportWithSelector);
+      const tradeDataSeaPort = PurchaseData(
+        MARKET_ID_SEAPORT_1_5,
+        '1000',
+        erc20.address,
+        '0',
+        dataForSeaportWithSelector
+      );
 
       const tx = await bulkExchange
         .connect(buyerLocal1)
@@ -3187,16 +3192,11 @@ describe('ExchangeWrapper Test', async function () {
         return ev;
       });
 
-      const pair = ev.args.poolAddress
+      const pair = ev.args.poolAddress;
 
       expect(await erc721.ownerOf(tokenId)).to.equal(pair);
 
-      const input2 = [
-        [{pair, nftIds: [tokenId]}] as any,
-        buyer.address,
-        buyer.address,
-        '99999999999999',
-      ] as const;
+      const input2 = [[{pair, nftIds: [tokenId]}] as any, buyer.address, buyer.address, '99999999999999'] as const;
 
       const tradeData = PurchaseData(
         MARKET_ID_SUDOSWAP,
@@ -3206,7 +3206,9 @@ describe('ExchangeWrapper Test', async function () {
         await wrapperHelper.encodeSudoSwapCall(...input2)
       );
 
-      const tx2 = await bulkExchange.connect(buyer).singlePurchase(tradeData, ZERO, ZERO, {from: buyer.address, value: 1105});
+      const tx2 = await bulkExchange
+        .connect(buyer)
+        .singlePurchase(tradeData, ZERO, ZERO, {from: buyer.address, value: 1105});
       const receipt = await tx2.wait();
       // console.log('X2Y2:', receipt.gasUsed.toString());
 
@@ -3233,43 +3235,53 @@ describe('ExchangeWrapper Test', async function () {
         return ev;
       });
 
-      const pair = ev.args.poolAddress
+      const pair = ev.args.poolAddress;
 
       expect(await erc721.ownerOf(tokenId)).to.equal(pair);
 
-      const input2 = [
-        [{pair, nftIds: [tokenId]}] as any,
-        buyer.address,
-        buyer.address,
-        '99999999999999',
-      ] as const;
+      const input2 = [[{pair, nftIds: [tokenId]}] as any, buyer.address, buyer.address, '99999999999999'] as const;
 
       const dataSudoSwap = await wrapperHelper.encodeSudoSwapCall(...input2);
       //two different royalties recipients
-      const additionalRoyalties = [await encodeBpPlusAccountTest(1000, royaltyAccount1.address), await encodeBpPlusAccountTest(2000, royaltyAccount2.address)];
+      const additionalRoyalties = [
+        await encodeBpPlusAccountTest(1000, royaltyAccount1.address),
+        await encodeBpPlusAccountTest(2000, royaltyAccount2.address),
+      ];
       //single royalty recipient
       const dataPlusAdditionalRoyaltiesStruct = {
         data: dataSudoSwap,
-        additionalRoyalties: additionalRoyalties
+        additionalRoyalties: additionalRoyalties,
       };
-      const dataPlusAdditionalRoyalties = await wrapperHelper.encodeDataPlusRoyalties(dataPlusAdditionalRoyaltiesStruct);
+      const dataPlusAdditionalRoyalties = await wrapperHelper.encodeDataPlusRoyalties(
+        dataPlusAdditionalRoyaltiesStruct
+      );
 
-      const tradeData = PurchaseData(MARKET_ID_SUDOSWAP, '1105', ZERO, await encodeDataTypeAndFees(1, 1000, 0), dataPlusAdditionalRoyalties)
+      const tradeData = PurchaseData(
+        MARKET_ID_SUDOSWAP,
+        '1105',
+        ZERO,
+        await encodeDataTypeAndFees(1, 1000, 0),
+        dataPlusAdditionalRoyalties
+      );
 
       await verifyBalanceChange(buyer.address, 1546, async () =>
-      	verifyBalanceChange(seller.address, -1100, async () =>
-      		verifyBalanceChange(royaltyAccount1.address, -110, () =>
-      		  verifyBalanceChange(royaltyAccount2.address, -221, () =>
+        verifyBalanceChange(seller.address, -1100, async () =>
+          verifyBalanceChange(royaltyAccount1.address, -110, () =>
+            verifyBalanceChange(royaltyAccount2.address, -221, () =>
               verifyBalanceChange(feeRecipienterUP.address, -110, () =>
                 verifyBalanceChange(factorySudo.address, -5, () =>
                   verifyBalanceChange(bulkExchange.address, 0, () =>
-                    bulkExchange.connect(buyer).singlePurchase(tradeData, feeRecipienterUP.address, ZERO, {from: buyer.address, value: 1546, gasPrice: 0})
+                    bulkExchange.connect(buyer).singlePurchase(tradeData, feeRecipienterUP.address, ZERO, {
+                      from: buyer.address,
+                      value: 1546,
+                      gasPrice: 0,
+                    })
                   )
                 )
               )
-      		  )
-      		)
-      	)
+            )
+          )
+        )
       );
 
       expect(await erc721.ownerOf(tokenId)).to.equal(buyer.address);
@@ -3296,7 +3308,7 @@ describe('ExchangeWrapper Test', async function () {
         return ev;
       });
 
-      const pair = ev.args.poolAddress
+      const pair = ev.args.poolAddress;
 
       expect(await erc721.ownerOf(tokenId)).to.equal(pair);
 
@@ -3304,16 +3316,11 @@ describe('ExchangeWrapper Test', async function () {
         return ev;
       });
 
-      const pair2 = ev2.args.poolAddress
+      const pair2 = ev2.args.poolAddress;
 
       expect(await erc721.ownerOf(tokenId2)).to.equal(pair2);
 
-      const inp = [
-        [{pair, nftIds: [tokenId]}] as any,
-        buyer.address,
-        buyer.address,
-        '99999999999999',
-      ] as const;
+      const inp = [[{pair, nftIds: [tokenId]}] as any, buyer.address, buyer.address, '99999999999999'] as const;
 
       const tradeData = PurchaseData(
         MARKET_ID_SUDOSWAP,
@@ -3338,15 +3345,17 @@ describe('ExchangeWrapper Test', async function () {
         await wrapperHelper.encodeSudoSwapCall(...inp2)
       );
 
-      await bulkExchange.connect(buyer).bulkPurchase([tradeData, tradeData2], ZERO, ZERO, false, {from: buyer.address, value: 2210});
+      await bulkExchange
+        .connect(buyer)
+        .bulkPurchase([tradeData, tradeData2], ZERO, ZERO, false, {from: buyer.address, value: 2210});
 
       expect(await erc721.ownerOf(tokenId)).to.equal(buyer.address);
       expect(await erc721.ownerOf(tokenId2)).to.equal(buyer.address);
     });
   });
 
-  describe.skip('Blur orders', () => {
-    it('Test singlePurchase Blur, ERC721<->ERC20', async () => {
+  describe('Blur orders', () => {
+    it('Test singlePurchase Blur, ERC721<->ETH', async () => {
       const seller = wallet1;
       const buyer = wallet2;
 
@@ -3361,57 +3370,88 @@ describe('ExchangeWrapper Test', async function () {
           collection: erc721.address,
           tokenId: tokenId,
           amount: 1,
-          paymentToken: weth.address,
-          fees: [],
-          salt: 0,
-          extraParams: '0x01',
+          paymentToken: ZERO,
           price: '1000',
-          listingTime: '100',
-          expirationTime: '16757909942000',
+          listingTime: '168381879',
+          expirationTime: '16814068278',
+          fees: [
+            {
+              rate: 2000,
+              recipient: wallet3.address,
+            },
+          ],
+          salt: '65994309200663161530037748276946816666',
+          extraParams: '0x01',
         },
         v: 27,
-        r: '0xd233a46410387ec0bc310b3d974606d643368ae73b88c48a0b971b573d534c60',
-        s: '0x6f532bbb29ca86832ee0cd56ba3cfb0483d90438eb2c0e3a9a4ac658ab6053ee',
-        extraSignature: '0x',
+        r: '0x5b93882de02b8f11485053f2487586e2dcef8843d1cdf4077caa6da821c2596b',
+        s: '0x0b0460243d87d8e53d85ea1615b200c85bb9a50ad7387e1a8915e5a3c7d631bb',
+        extraSignature:
+          '0x000000000000000000000000000000000000000000000000000000000000001b7fd6e717aed61bfb988ac35b0b07a3c81b2a7834f9314ccd8c9bcf4201d714c35657cd9099297524e93874b62fee5671aaed42d3795a86d6ebe93daf0e7dae9d',
         signatureVersion: 0,
-        blockNumber: 30,
+        blockNumber: 17038489,
       };
 
       const buyOrder = {
         order: {
-          trader: buyer.address,
+          trader: bulkExchange.address,
           side: 0,
           matchingPolicy: standardPolicyERC721.address,
           collection: erc721.address,
           tokenId: tokenId,
           amount: 1,
-          paymentToken: weth.address,
-          fees: [],
-          salt: 0,
-          extraParams: '0x01',
+          paymentToken: ZERO,
           price: '1000',
-          listingTime: '100',
-          expirationTime: '16757909942000',
+          listingTime: '168181880',
+          expirationTime: '16813091771',
+          fees: [],
+          salt: '261913853562470622716597177488189472368',
+          extraParams: '0x01',
         },
-        v: 27,
-        r: '0xd233a46410387ec0bc310b3d974606d643368ae73b88c48a0b971b573d534c60',
-        s: '0x6f532bbb29ca86832ee0cd56ba3cfb0483d90438eb2c0e3a9a4ac658ab6053ee',
-        extraSignature: '0x',
+        v: 0,
+        r: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        s: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        extraSignature:
+          '0x000000000000000000000000000000000000000000000000000000000000001cd474b10997153521d1b3571c148d6b7d813da537f8b8f9cc0f0959677fca93a30b1ebf4a15c0ed01d692b9dcfef6d251b147b259b20f14d8f383324d35414994',
         signatureVersion: 0,
-        blockNumber: 30,
+        blockNumber: 17038489,
       };
 
-      // await token.connect(seller).setApprovalForAll(executionDelegate.address, true);
-      // await token.connect(buyer).setApprovalForAll(executionDelegate.address, true);
-      // await weth9.connect(seller).approve(executionDelegate.address, eth("10000"));
-      // await weth9.connect(buyer).approve(executionDelegate.address, eth("10000"));
-      // await weth9.connect(seller).approve("0x6c888f487a5a97768dee6303faf281c6efdc6203", 100000000);
-
-      // const tradeData = PurchaseData(MARKET_ID_BLUR, '1000', '0', await wrapperHelper.encodeDataBlur(sellOrder, buyOrder))
-      // const tx = await bulkExchange.singlePurchase(tradeData, ZERO, ZERO, {from: buyer.address, value: 1000})
-      // const receipt = await tx.wait();
+      const dataTypePlusFees = await encodeCurrencyAndDataTypeAndFees(0, 0, 1500, 500);
+      const tradeData = PurchaseData(
+        MARKET_ID_BLUR,
+        '1000',
+        ZERO,
+        dataTypePlusFees,
+        await wrapperHelper.encodeDataBlur(sellOrder, buyOrder, ERC721)
+      );
+      const tx = await bulkExchange
+        .connect(buyer)
+        .singlePurchase(tradeData, ZERO, ZERO, {from: buyer.address, value: 2000});
+      const receipt = await tx.wait();
       // console.log('Blur order:', receipt.gasUsed.toString());
-      await blurExchange.connect(buyer).execute(buyOrder, sellOrder, {from: buyer.address, value: 1000});
+
+      /* await verifyBalanceChange(buyer.address, 1546, async () =>
+      verifyBalanceChange(seller.address, -1100, async () =>
+        verifyBalanceChange(feeFromSeller.address, -110, () =>
+          verifyBalanceChange(feeFromBuyer.address, -221, () =>
+            verifyBalanceChange(feeFirst.address, -110, () =>
+              verifyBalanceChange(feeSecond.address, -5, () =>
+                verifyBalanceChange(bulkExchange.address, 0, () =>
+                  bulkExchange
+                    .connect(buyer)
+                    .singlePurchase(tradeData, feeRecipienterUP.address, ZERO, {
+                      from: buyer.address,
+                      value: 1546,
+                      gasPrice: 0,
+                    })
+                )
+              )
+            )
+          )
+        )
+      )
+    );*/
 
       expect(await erc721.ownerOf(tokenId)).to.equal(buyer);
     });
@@ -3616,7 +3656,7 @@ describe('ExchangeWrapper Test', async function () {
       await erc721.connect(seller1).setApprovalForAll(transferProxy.address, true, {from: seller1.address});
 
       await erc721.mint(seller2.address, tokenId);
-      await erc721.connect(seller2).setApprovalForAll(seaport_1_1.address, true, {from: seller2.address});
+      await erc721.connect(seller2).setApprovalForAll(seaport_1_5.address, true, {from: seller2.address});
 
       const encDataLeft = await encDataV2([[], [], false]);
       const encDataRight = await encDataV2([[[buyer.address, 10000]], [], false]);
@@ -3713,7 +3753,7 @@ describe('ExchangeWrapper Test', async function () {
         _fulfillerConduitKey,
         _recipient.address
       );
-      const tradeDataSeaPort = PurchaseData(MARKET_ID_SEAPORT_1_1, '100', ZERO, '0', dataForSeaportWithSelector);
+      const tradeDataSeaPort = PurchaseData(MARKET_ID_SEAPORT_1_5, '100', ZERO, '0', dataForSeaportWithSelector);
 
       await bulkExchange.connect(buyer).bulkPurchase([tradeDataGhostMarket, tradeDataSeaPort], ZERO, ZERO, false, {
         from: buyer.address,
@@ -4021,16 +4061,11 @@ describe('ExchangeWrapper Test', async function () {
         return ev;
       });
 
-      const pair = ev.args.poolAddress
+      const pair = ev.args.poolAddress;
 
       expect(await erc721.ownerOf(tokenId)).to.equal(pair);
 
-      const input2 = [
-        [{pair, nftIds: [tokenId]}] as any,
-        buyer.address,
-        buyer.address,
-        '99999999999999',
-      ] as const;
+      const input2 = [[{pair, nftIds: [tokenId]}] as any, buyer.address, buyer.address, '99999999999999'] as const;
 
       const tradeDataSudoSwap = PurchaseData(
         MARKET_ID_SUDOSWAP,
@@ -4235,7 +4270,7 @@ describe('ExchangeWrapper Test', async function () {
 
       //seaport order - eth
       await erc721.mint(seller.address, tokenId);
-      await erc721.connect(seller).setApprovalForAll(seaport_1_1.address, true, {from: seller.address});
+      await erc721.connect(seller).setApprovalForAll(seaport_1_5.address, true, {from: seller.address});
 
       const considerationItemLeft = {
         itemType: 0,
@@ -4291,7 +4326,7 @@ describe('ExchangeWrapper Test', async function () {
       );
 
       const tradeDataSeaPort = PurchaseData(
-        MARKET_ID_SEAPORT_1_1,
+        MARKET_ID_SEAPORT_1_5,
         '100',
         ZERO,
         await encodeFees(500, 1000),
@@ -4300,14 +4335,14 @@ describe('ExchangeWrapper Test', async function () {
 
       //seaport order - erc20
       await erc721.mint(seller.address, tokenId2);
-      await erc721.connect(seller).setApprovalForAll(seaport_1_1.address, true, {from: seller.address});
+      await erc721.connect(seller).setApprovalForAll(seaport_1_5.address, true, {from: seller.address});
 
       // add wrapper as an operator of erc20 transfer proxy
       await erc20TransferProxy.addOperator(bulkExchange.address);
       // set erc20 transfer proxy
       await bulkExchange.setTransferProxy(erc20TransferProxy.address);
       // set exchange v2 transfer proxy
-      await bulkExchange.setMarketProxy(MARKET_ID_SEAPORT_1_1, seaport_1_1.address);
+      await bulkExchange.setMarketProxy(MARKET_ID_SEAPORT_1_5, seaport_1_5.address);
 
       const considerationItemLeft2 = {
         itemType: 1,
@@ -4363,7 +4398,7 @@ describe('ExchangeWrapper Test', async function () {
       );
 
       const tradeDataSeaPort2 = PurchaseData(
-        MARKET_ID_SEAPORT_1_1,
+        MARKET_ID_SEAPORT_1_5,
         '1000',
         erc20.address,
         await encodeFees(500, 1000),
@@ -4489,7 +4524,7 @@ describe('ExchangeWrapper Test', async function () {
 
       //seaport ORDER
       await erc721.mint(seller.address, tokenId);
-      await erc721.connect(seller).setApprovalForAll(seaport_1_1.address, true, {from: seller.address});
+      await erc721.connect(seller).setApprovalForAll(seaport_1_5.address, true, {from: seller.address});
 
       const considerationItemLeft = {
         itemType: 0,
@@ -4545,7 +4580,7 @@ describe('ExchangeWrapper Test', async function () {
       );
 
       const tradeDataSeaPort = PurchaseData(
-        MARKET_ID_SEAPORT_1_1,
+        MARKET_ID_SEAPORT_1_5,
         '100',
         ZERO,
         await encodeFees(500, 1000),
@@ -4679,7 +4714,7 @@ describe('ExchangeWrapper Test', async function () {
         return ev;
       });
 
-      const pair = ev.args.poolAddress
+      const pair = ev.args.poolAddress;
 
       expect(await erc721.ownerOf(erc721TokenId5)).to.equal(pair);
 
@@ -4815,7 +4850,7 @@ describe('ExchangeWrapper Test', async function () {
 
       //Seaport order
       await erc721.mint(seller.address, tokenId);
-      await erc721.connect(seller).setApprovalForAll(seaport_1_1.address, true, {from: seller.address});
+      await erc721.connect(seller).setApprovalForAll(seaport_1_5.address, true, {from: seller.address});
 
       const considerationItemLeft = {
         itemType: 0,
@@ -4871,7 +4906,7 @@ describe('ExchangeWrapper Test', async function () {
       );
 
       const tradeDataSeaPort = PurchaseData(
-        MARKET_ID_SEAPORT_1_1,
+        MARKET_ID_SEAPORT_1_5,
         '100',
         ZERO,
         await encodeFees(500, 1000),
@@ -4999,7 +5034,7 @@ describe('ExchangeWrapper Test', async function () {
         return ev;
       });
 
-      const pair = ev.args.poolAddress
+      const pair = ev.args.poolAddress;
 
       expect(await erc721.ownerOf(erc721TokenId5)).to.equal(pair);
 
@@ -5155,7 +5190,7 @@ describe('ExchangeWrapper Test', async function () {
 
       //Seaport order
       await erc721.mint(seller.address, tokenId);
-      await erc721.connect(seller).setApprovalForAll(seaport_1_1.address, true, {from: seller.address});
+      await erc721.connect(seller).setApprovalForAll(seaport_1_5.address, true, {from: seller.address});
 
       const considerationItemLeft = {
         itemType: 0,
@@ -5211,7 +5246,7 @@ describe('ExchangeWrapper Test', async function () {
       );
 
       const tradeDataSeaPort = PurchaseData(
-        MARKET_ID_SEAPORT_1_1,
+        MARKET_ID_SEAPORT_1_5,
         '100',
         ZERO,
         await encodeFees(500, 1000),
@@ -5339,7 +5374,7 @@ describe('ExchangeWrapper Test', async function () {
         return ev;
       });
 
-      const pair = ev.args.poolAddress
+      const pair = ev.args.poolAddress;
 
       expect(await erc721.ownerOf(erc721TokenId5)).to.equal(pair);
 
@@ -5352,7 +5387,7 @@ describe('ExchangeWrapper Test', async function () {
 
       const tradeDataSudoSwap = PurchaseData(
         MARKET_ID_SUDOSWAP,
-        '115',  // should be 1105 - forced to make trade fail
+        '115', // should be 1105 - forced to make trade fail
         ZERO,
         '0',
         await wrapperHelper.encodeSudoSwapCall(...input2)
@@ -5780,6 +5815,11 @@ describe('ExchangeWrapper Test', async function () {
 
   async function encodeDataTypeAndFees(dataType = 0, first = 0, second = 0) {
     const result = await wrapperHelper.encodeFeesPlusDataType(dataType, first, second);
+    return result.toString();
+  }
+
+  async function encodeCurrencyAndDataTypeAndFees(currency = 0, dataType = 0, first = 0, second = 0) {
+    const result = await wrapperHelper.encodeCurrencyAndDataTypeAndFees(currency, dataType, first, second);
     return result.toString();
   }
 

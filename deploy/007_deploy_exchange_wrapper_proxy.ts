@@ -9,7 +9,7 @@ async function main() {
   const CHAIN = hre.network.name;
   const GHOSTMARKET = getSettings(CHAIN).exchange_proxy;
   const RARIBLE = getSettings(CHAIN)?.rarible || ZERO;
-  const SEAPORT_1_1 = getSettings(CHAIN)?.seaport_1_1 || ZERO;
+  const SEAPORT_1_5 = getSettings(CHAIN)?.seaport_1_5 || ZERO;
   const SEAPORT_1_4 = getSettings(CHAIN)?.seaport_1_4 || ZERO;
   const X2Y2 = getSettings(CHAIN)?.x2y2 || ZERO;
   const LOOKSRARE = getSettings(CHAIN)?.looksrare || ZERO;
@@ -28,7 +28,7 @@ async function main() {
       execute: {
         init: {
           methodName: '__ExchangeWrapper_init',
-          args: [GHOSTMARKET, RARIBLE, SEAPORT_1_4, SEAPORT_1_1, X2Y2, LOOKSRARE, SUDOSWAP, BLUR],
+          args: [GHOSTMARKET, RARIBLE, SEAPORT_1_4, SEAPORT_1_5, X2Y2, LOOKSRARE, SUDOSWAP, BLUR],
         },
       },
     },

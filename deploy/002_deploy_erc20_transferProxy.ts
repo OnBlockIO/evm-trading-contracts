@@ -14,7 +14,7 @@ async function main() {
     skipIfAlreadyDeployed: false,
     deterministicDeployment: false,
     estimatedGasLimit: 10000000,
-    estimateGasExtra: 10000000
+    estimateGasExtra: 10000000,
   });
 
   await execute('ERC20TransferProxy', {from: deployer, log: true}, '__ERC20TransferProxy_init');

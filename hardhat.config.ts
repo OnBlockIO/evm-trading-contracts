@@ -151,13 +151,13 @@ const config: HardhatUserConfig = {
         },
       },
       {
-        network: "base-mainnet",
+        network: 'base-mainnet',
         chainId: 8453,
         urls: {
-         apiURL: "https://api.basescan.org/api",
-         browserURL: "https://basescan.org"
-        }
-      }
+          apiURL: 'https://api.basescan.org/api',
+          browserURL: 'https://basescan.org',
+        },
+      },
     ],
   },
   paths: {
