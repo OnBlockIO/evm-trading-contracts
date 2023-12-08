@@ -22,6 +22,10 @@ async function main() {
       },
     },
     log: true,
+    skipIfAlreadyDeployed: false,
+    deterministicDeployment: false,
+    estimatedGasLimit: 10000000,
+    estimateGasExtra: 10000000,
   });
   console.log('Royalties Proxy deployed at: ', royalties_proxy.address);
 }

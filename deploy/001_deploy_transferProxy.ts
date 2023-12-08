@@ -11,6 +11,10 @@ async function main() {
   const transferProxy = await deploy('TransferProxy', {
     from: deployer,
     log: true,
+    skipIfAlreadyDeployed: false,
+    deterministicDeployment: false,
+    estimatedGasLimit: 10000000,
+    estimateGasExtra: 10000000,
   });
 
   await execute('TransferProxy', {from: deployer, log: true}, '__TransferProxy_init');

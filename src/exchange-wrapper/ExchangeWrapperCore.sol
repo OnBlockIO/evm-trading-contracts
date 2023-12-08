@@ -12,7 +12,6 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
-import "./interfaces/IWyvernExchange.sol";
 import "./interfaces/IExchangeV2.sol";
 import "./interfaces/ISeaPort.sol";
 import "./interfaces/Ix2y2.sol";
@@ -37,8 +36,8 @@ abstract contract ExchangeWrapperCore is
 
     address public exchangeV2;
     address public rarible;
-    address public wyvern;
-    address public seaport;
+    address public seaport_1_4;
+    address public seaport_1_5;
     address public x2y2;
     address public looksrare;
     address public sudoswap;
@@ -55,8 +54,8 @@ abstract contract ExchangeWrapperCore is
 
     enum Markets {
         Rarible,
-        Wyvern,
-        SeaPort,
+        SeaPort_1_4,
+        SeaPort_1_5,
         X2Y2,
         LooksRare,
         SudoSwap,
@@ -89,7 +88,7 @@ abstract contract ExchangeWrapperCore is
     }
 
     /**
-        @notice struct for the data with additional Ddta
+        @notice struct for the data with additional data
         @param data - data for market call
         @param additionalRoyalties - array additional Royalties (in base points plus address Royalty recipient)
      */
@@ -131,8 +130,8 @@ abstract contract ExchangeWrapperCore is
     function __ExchangeWrapper_init_unchained(
         address _exchangeV2,
         address _rarible,
-        address _wyvern,
-        address _seaport,
+        address _seaport_1_4,
+        address _seaport_1_5,
         address _x2y2,
         address _looksrare,
         address _sudoswap,
@@ -140,8 +139,8 @@ abstract contract ExchangeWrapperCore is
     ) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
-        wyvern = _wyvern;
-        seaport = _seaport;
+        seaport_1_4 = _seaport_1_4;
+        seaport_1_5 = _seaport_1_5;
         x2y2 = _x2y2;
         looksrare = _looksrare;
         sudoswap = _sudoswap;
@@ -181,6 +180,41 @@ abstract contract ExchangeWrapperCore is
     /// @notice Set erc20 proxy for market
     function setMarketProxy(Markets marketId, address proxy) external onlyOwner {
         proxies[marketId] = proxy;
+    }
+
+    /// @notice set seaport 1.4 - temporary to remove
+    function setSeaport14(address _seaport) external onlyOwner {
+        seaport_1_4 = _seaport;
+    }
+
+    /// @notice set seaport 1.5 - temporary to remove
+    function setSeaport15(address _seaport) external onlyOwner {
+        seaport_1_5 = _seaport;
+    }
+
+    /// @notice set blur - temporary to remove
+    function setBlur(address _blur) external onlyOwner {
+        blur = _blur;
+    }
+
+    /// @notice set looksrare - temporary to remove
+    function setLooksRare(address _looksrare) external onlyOwner {
+        looksrare = _looksrare;
+    }
+
+    /// @notice set rarible - temporary to remove
+    function setRarible(address _rarible) external onlyOwner {
+        rarible = _rarible;
+    }
+
+    /// @notice set sudoswap - temporary to remove
+    function setSudoSwap(address _sudoswap) external onlyOwner {
+        sudoswap = _sudoswap;
+    }
+
+    /// @notice set x2y2 - temporary to remove
+    function setX2Y2(address _x2y2) external onlyOwner {
+        x2y2 = _x2y2;
     }
 
     /**
@@ -361,27 +395,25 @@ abstract contract ExchangeWrapperCore is
             }
         }
 
-        if (purchaseDetails.marketId == Markets.SeaPort) {
-            (bool success, ) = address(seaport).call{value: nativeAmountToSend}(marketData);
+        if (purchaseDetails.marketId == Markets.SeaPort_1_5) {
+            (bool success, ) = address(seaport_1_5).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
                 }
             } else {
-                require(success, "Purchase Seaport failed");
+                require(success, "Purchase SeaPort_1_5 failed");
             }
-        }
-        /* else if (purchaseDetails.marketId == Markets.Wyvern) {
-            (bool success, ) = address(wyvern).call{value: nativeAmountToSend}(marketData);
+        } else if (purchaseDetails.marketId == Markets.SeaPort_1_4) {
+            (bool success, ) = address(seaport_1_4).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
                 }
             } else {
-                require(success, "Purchase Wyvern failed");
+                require(success, "Purchase SeaPort_1_4 failed");
             }
-        } */
-        else if (purchaseDetails.marketId == Markets.ExchangeV2) {
+        } else if (purchaseDetails.marketId == Markets.ExchangeV2) {
             (bool success, ) = address(exchangeV2).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
@@ -495,13 +527,33 @@ abstract contract ExchangeWrapperCore is
                 require(success, "Purchase SudoSwap failed");
             }
         } else if (purchaseDetails.marketId == Markets.Blur) {
-            (bool success, ) = address(blur).call{value: nativeAmountToSend}(marketData);
+            (IBlur.Input memory sell, IBlur.Input memory buy, bytes4 typeNft) = abi.decode(
+                marketData,
+                (IBlur.Input, IBlur.Input, bytes4)
+            );
             if (allowFail) {
-                if (!success) {
+                try IBlur(blur).execute{value: nativeAmountToSend}(sell, buy) {} catch {
                     return (false, 0, 0);
                 }
             } else {
-                require(success, "Purchase blurio failed");
+                IBlur(blur).execute{value: nativeAmountToSend}(sell, buy);
+            }
+            if (typeNft == LibAsset.ERC721_ASSET_CLASS) {
+                IERC721Upgradeable(sell.order.collection).safeTransferFrom(
+                    address(this),
+                    _msgSender(),
+                    sell.order.tokenId
+                );
+            } else if (typeNft == LibAsset.ERC1155_ASSET_CLASS) {
+                IERC1155Upgradeable(sell.order.collection).safeTransferFrom(
+                    address(this),
+                    _msgSender(),
+                    sell.order.tokenId,
+                    sell.order.amount,
+                    ""
+                );
+            } else {
+                revert("Unknown token type");
             }
         } else {
             revert("Unknown purchase details");
@@ -653,8 +705,8 @@ abstract contract ExchangeWrapperCore is
     }
 
     /**
-        @notice returns true if this contract supports additional royalties for the marketpale
-        now royalties support only for marketId = sudoswap
+        @notice returns true if this contract supports additional royalties for the marketplace
+        now royalties support only for marketId = sudoswap & looksrare
     */
     function supportsRoyalties(Markets marketId) internal pure returns (bool) {
         if (marketId == Markets.SudoSwap || marketId == Markets.LooksRare) {
@@ -917,7 +969,7 @@ abstract contract ExchangeWrapperCore is
 
         // Swap
         uint256 amountIn;
-        try uniswapRouterV3.exactOutput{ value: msg.value }(params) returns (uint256 amount) {
+        try uniswapRouterV3.exactOutput{value: msg.value}(params) returns (uint256 amount) {
             amountIn = amount;
         } catch {
             return false;
@@ -935,8 +987,7 @@ abstract contract ExchangeWrapperCore is
 
         // Refund tokenIn left if any
         if (amountIn < swapDetails.amountInMaximum) {
-            if (msg.value == 0)
-            {
+            if (msg.value == 0) {
                 IERC20Upgradeable(tokenIn).transfer(_msgSender(), swapDetails.amountInMaximum - amountIn);
             }
         }

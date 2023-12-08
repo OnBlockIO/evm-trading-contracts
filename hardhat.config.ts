@@ -57,7 +57,6 @@ const config: HardhatUserConfig = {
       //accounts: accounts(),
       saveDeployments: true,
       tags: ['local'],
-      //gasPrice: 0,
     },
     testnet_nodeploy: {
       url: ETH_NODE_URI,
@@ -78,6 +77,14 @@ const config: HardhatUserConfig = {
       tags: ['mainnet'],
     },
     shardeum_testnet: {
+      chainId: 8081,
+      url: ETH_NODE_URI,
+      accounts: TESTNET_PRIVATE_KEY,
+      saveDeployments: true,
+      tags: ['testnet'],
+    },
+    neoevm_testnet: {
+      chainId: 2970385,
       url: ETH_NODE_URI,
       accounts: TESTNET_PRIVATE_KEY,
       saveDeployments: true,
@@ -88,6 +95,12 @@ const config: HardhatUserConfig = {
       accounts: TESTNET_PRIVATE_KEY,
       saveDeployments: true,
       tags: ['testnet'],
+    },
+    base_mainnet: {
+      url: ETH_NODE_URI,
+      accounts: MAINNET_PRIVATE_KEY,
+      saveDeployments: true,
+      tags: ['mainnet'],
     },
     polygon_testnet: {
       url: ETH_NODE_URI,
@@ -135,6 +148,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api-goerli.basescan.org/api',
           browserURL: 'https://goerli.basescan.org',
+        },
+      },
+      {
+        network: 'base-mainnet',
+        chainId: 8453,
+        urls: {
+          apiURL: 'https://api.basescan.org/api',
+          browserURL: 'https://basescan.org',
         },
       },
     ],

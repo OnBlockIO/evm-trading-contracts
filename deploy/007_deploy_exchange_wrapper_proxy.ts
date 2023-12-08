@@ -9,8 +9,8 @@ async function main() {
   const CHAIN = hre.network.name;
   const GHOSTMARKET = getSettings(CHAIN).exchange_proxy;
   const RARIBLE = getSettings(CHAIN)?.rarible || ZERO;
-  const WYVERN = getSettings(CHAIN)?.wyvern || ZERO;
-  const SEAPORT = getSettings(CHAIN)?.seaport || ZERO;
+  const SEAPORT_1_5 = getSettings(CHAIN)?.seaport_1_5 || ZERO;
+  const SEAPORT_1_4 = getSettings(CHAIN)?.seaport_1_4 || ZERO;
   const X2Y2 = getSettings(CHAIN)?.x2y2 || ZERO;
   const LOOKSRARE = getSettings(CHAIN)?.looksrare || ZERO;
   const SUDOSWAP = getSettings(CHAIN)?.sudoswap || ZERO;
@@ -28,11 +28,15 @@ async function main() {
       execute: {
         init: {
           methodName: '__ExchangeWrapper_init',
-          args: [GHOSTMARKET, RARIBLE, WYVERN, SEAPORT, X2Y2, LOOKSRARE, SUDOSWAP, BLUR],
+          args: [GHOSTMARKET, RARIBLE, SEAPORT_1_4, SEAPORT_1_5, X2Y2, LOOKSRARE, SUDOSWAP, BLUR],
         },
       },
     },
     log: true,
+    skipIfAlreadyDeployed: false,
+    deterministicDeployment: false,
+    // estimatedGasLimit: 10000000,
+    // estimateGasExtra: 10000000
   });
 
   console.log('Exchange Wrapper deployed at: ', exchange_wrapper_proxy.address);

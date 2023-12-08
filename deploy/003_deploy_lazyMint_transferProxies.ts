@@ -22,6 +22,10 @@ async function main() {
   const erc1155LazyMintTransferProxy = await deploy('ERC1155LazyMintTransferProxy', {
     from: deployer,
     log: true,
+    skipIfAlreadyDeployed: false,
+    deterministicDeployment: false,
+    estimatedGasLimit: 10000000,
+    estimateGasExtra: 10000000,
   });
 
   await execute('ERC1155LazyMintTransferProxy', {from: deployer, log: true}, '__OperatorRole_init');
