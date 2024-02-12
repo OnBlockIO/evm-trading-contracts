@@ -84,7 +84,7 @@ const config: HardhatUserConfig = {
       tags: ['testnet'],
     },
     neoevm_testnet: {
-      chainId: 12227329,
+      chainId: 12227330,
       url: ETH_NODE_URI,
       accounts: TESTNET_PRIVATE_KEY,
       saveDeployments: true,
@@ -145,10 +145,10 @@ const config: HardhatUserConfig = {
     customChains: [
       {
         network: 'base_testnet',
-        chainId: 84531,
+        chainId: 84532,
         urls: {
-          apiURL: 'https://api-goerli.basescan.org/api',
-          browserURL: 'https://goerli.basescan.org',
+          apiURL: 'https://api-sepolia.basescan.org/api',
+          browserURL: 'https://sepolia.basescan.org',
         },
       },
       {
