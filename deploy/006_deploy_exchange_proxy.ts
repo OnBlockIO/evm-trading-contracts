@@ -35,8 +35,8 @@ async function main() {
     log: true,
     skipIfAlreadyDeployed: false,
     deterministicDeployment: false,
-    // estimatedGasLimit: 10000000,
-    // estimateGasExtra: 10000000
+    estimatedGasLimit: 10000000,
+    estimateGasExtra: 10000000
   });
 
   // add ExchangeV2 proxy address to the the allowed operators of transferProxy & erc20TransferProxy
