@@ -22,17 +22,17 @@ const ethereum_mainnet = {
 
 const ethereum_testnet = {
   fees: 0,
-  transferProxy: '0x7aa199E2D5cFf1E6275A33c8dCE3c6085E393781',
-  erc20TransferProxy: '0x34A40153C91a411b0a94eEa4506733e59d523495',
-  erc721LazyMintTransferProxy: '0x4633a32D9316C6515517d9001fAFDdAdABf24543',
-  erc1155LazyMintTransferProxy: '0x1D86a5a19405f70308114bC21D092162C02C5Ae8',
-  royalties_proxy: '0xca1284B5EEb97c31cc693c4b182C8E1075Dc57f9',
-  exchange_proxy: '0x6c3E76022bEAAA29c12aca09823EDB6369F4bC6E',
-  exchange_wrapper_proxy: '0xB9C14Bb1A8aD6E6e071CDeC273817cfd75Af0575',
-  customMatcher: '0x99428B1e5A8f5985625e9d19Ad0Ea19F33A5f749',
-  wrapped: '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6',
+  transferProxy: '0xcCc6964582310f915Ac1AF470Aa7f389387837be',
+  erc20TransferProxy: '0x07C68e07F33C4Ec796166390722d50429EFd63E4',
+  erc721LazyMintTransferProxy: '0x80762F5ce7d145a1fB61c5527Fa0730E87E0142d',
+  erc1155LazyMintTransferProxy: '0xbf975661571d8b6c8970497ed3A45bF59795dF05',
+  royalties_proxy: '0x76f2A3A4A2c45719684Df553017bFddD1f43Fa51',
+  exchange_proxy: '0x92682fE7884a63e6EB91458E06382fE195823177',
+  exchange_wrapper_proxy: '0x53A166616893AAFF432Bc23B5515D2EE862042C5',
+  customMatcher: '0xAE477738c5E2a6A00264f26a60F9Ca31A9E95726',
+  wrapped: '0x034b7ccf069fe523de04f765fc22356a099a9853',
   uniswapV2: '',
-  uniswapV3: '0xE592427A0AEce92De3Edee1F18E0157C05861564',
+  uniswapV3: '0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4',
 };
 
 const avalanche_mainnet = {
