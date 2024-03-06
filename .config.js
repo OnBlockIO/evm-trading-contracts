@@ -30,7 +30,7 @@ const ethereum_testnet = {
   exchange_proxy: '0x92682fE7884a63e6EB91458E06382fE195823177',
   exchange_wrapper_proxy: '0x53A166616893AAFF432Bc23B5515D2EE862042C5',
   customMatcher: '0xAE477738c5E2a6A00264f26a60F9Ca31A9E95726',
-  wrapped: '0x034b7ccf069fe523de04f765fc22356a099a9853',
+  wrapped: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
   uniswapV2: '',
   uniswapV3: '0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4',
 };
