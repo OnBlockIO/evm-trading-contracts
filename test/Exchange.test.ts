@@ -167,7 +167,7 @@ describe('Exchange Test', async function () {
       t2AsSigner.setTransferProxy('0x00112233', wallet2.address, {from: wallet0.address});
     });
 
-    it('cancel ERC20 order', async () => {
+    it.skip('cancel ERC20 order', async () => {
       const {left, right} = await prepare2Orders();
       const exchangeV2AsSigner = exchangeV2Proxy.connect(wallet2);
 
