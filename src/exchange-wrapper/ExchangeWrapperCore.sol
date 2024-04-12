@@ -54,8 +54,8 @@ abstract contract ExchangeWrapperCore is
 
     enum Markets {
         Rarible,
-        SeaPort_1_6,
         SeaPort_1_5,
+        SeaPort_1_6,
         X2Y2,
         LooksRare,
         SudoSwap,
