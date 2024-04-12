@@ -36,7 +36,7 @@ abstract contract ExchangeWrapperCore is
 
     address public exchangeV2;
     address public rarible;
-    address public seaport_1_4;
+    address public seaport_1_6;
     address public seaport_1_5;
     address public x2y2;
     address public looksrare;
@@ -54,7 +54,7 @@ abstract contract ExchangeWrapperCore is
 
     enum Markets {
         Rarible,
-        SeaPort_1_4,
+        SeaPort_1_6,
         SeaPort_1_5,
         X2Y2,
         LooksRare,
@@ -130,7 +130,7 @@ abstract contract ExchangeWrapperCore is
     function __ExchangeWrapper_init_unchained(
         address _exchangeV2,
         address _rarible,
-        address _seaport_1_4,
+        address _seaport_1_6,
         address _seaport_1_5,
         address _x2y2,
         address _looksrare,
@@ -139,7 +139,7 @@ abstract contract ExchangeWrapperCore is
     ) internal {
         exchangeV2 = _exchangeV2;
         rarible = _rarible;
-        seaport_1_4 = _seaport_1_4;
+        seaport_1_6 = _seaport_1_6;
         seaport_1_5 = _seaport_1_5;
         x2y2 = _x2y2;
         looksrare = _looksrare;
@@ -182,9 +182,9 @@ abstract contract ExchangeWrapperCore is
         proxies[marketId] = proxy;
     }
 
-    /// @notice set seaport 1.4 - temporary to remove
-    function setSeaport14(address _seaport) external onlyOwner {
-        seaport_1_4 = _seaport;
+    /// @notice set seaport 1.6 - temporary to remove
+    function setSeaport16(address _seaport) external onlyOwner {
+        seaport_1_6 = _seaport;
     }
 
     /// @notice set seaport 1.5 - temporary to remove
@@ -404,14 +404,14 @@ abstract contract ExchangeWrapperCore is
             } else {
                 require(success, "Purchase SeaPort_1_5 failed");
             }
-        } else if (purchaseDetails.marketId == Markets.SeaPort_1_4) {
-            (bool success, ) = address(seaport_1_4).call{value: nativeAmountToSend}(marketData);
+        } else if (purchaseDetails.marketId == Markets.SeaPort_1_6) {
+            (bool success, ) = address(seaport_1_6).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
                 if (!success) {
                     return (false, 0, 0);
                 }
             } else {
-                require(success, "Purchase SeaPort_1_4 failed");
+                require(success, "Purchase SeaPort_1_6 failed");
             }
         } else if (purchaseDetails.marketId == Markets.ExchangeV2) {
             (bool success, ) = address(exchangeV2).call{value: nativeAmountToSend}(marketData);

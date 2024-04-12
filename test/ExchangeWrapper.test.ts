@@ -90,7 +90,7 @@ describe('ExchangeWrapper Test', async function () {
   let testHelper: TestHelper;
   let wrapperHelper: WrapperHelper;
   let seaport_1_5: any;
-  let seaport_1_4: any;
+  let seaport_1_6: any;
   let conduitController: any;
   let currencyManager: any;
   let executionManager: any;
@@ -283,7 +283,7 @@ describe('ExchangeWrapper Test', async function () {
 
     conduitController = await ConduitController.deploy();
     seaport_1_5 = await Seaport.deploy(conduitController.address);
-    seaport_1_4 = await Seaport.deploy(conduitController.address);
+    seaport_1_6 = await Seaport.deploy(conduitController.address);
 
     currencyManager = await CurrencyManager.deploy();
     executionManager = await ExecutionManager.deploy();
@@ -367,7 +367,7 @@ describe('ExchangeWrapper Test', async function () {
         [
           exchangeV2Proxy.address,
           rarible.address,
-          seaport_1_4.address,
+          seaport_1_6.address,
           seaport_1_5.address,
           x2y2.address,
           looksRareExchange.address,

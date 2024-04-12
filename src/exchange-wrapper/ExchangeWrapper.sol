@@ -8,7 +8,7 @@ contract ExchangeWrapper is ExchangeWrapperCore {
     function __ExchangeWrapper_init(
         address _exchangeV2,
         address _rarible,
-        address _seaport_1_4,
+        address _seaport_1_6,
         address _seaport_1_5,
         address _x2y2,
         address _looksrare,
@@ -21,7 +21,7 @@ contract ExchangeWrapper is ExchangeWrapperCore {
         __ExchangeWrapper_init_unchained(
             _exchangeV2,
             _rarible,
-            _seaport_1_4,
+            _seaport_1_6,
             _seaport_1_5,
             _x2y2,
             _looksrare,
