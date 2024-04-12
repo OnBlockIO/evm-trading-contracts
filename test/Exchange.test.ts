@@ -184,7 +184,7 @@ describe('Exchange Test', async function () {
         right,
         await EIP712.sign(right, wallet2.address, exchangeV2Proxy.address)
       );
-      await expect(tx2).to.be.revertedWith('panic code 0x11');
+      await expect(tx2).to.be.revertedWith('order signature verification error');
     });
 
     it('fail for order with salt 0 cancel', async () => {
