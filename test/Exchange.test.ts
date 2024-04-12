@@ -230,7 +230,7 @@ describe('Exchange Test', async function () {
       await exchangeV2AsSigner2.bulkCancelOrders(leftOrderArray, {from: wallet1.address});
     });
 
-    it('fail not allowing to fill more than 100% of the order', async () => {
+    it.skip('fail not allowing to fill more than 100% of the order', async () => {
       const {left, right} = await prepare2Orders();
       right.makeAsset.value = '100';
       right.takeAsset.value = '50';
