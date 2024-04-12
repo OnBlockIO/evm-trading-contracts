@@ -31,11 +31,11 @@ async function main() {
 
   const wrapperContract = await ethers.getContractAt('ExchangeWrapper', WRAPPER);
   // set wrapped token on wrapper
-  await wrapperContract.setWrapped(WRAPPED_TOKEN);
+  // await wrapperContract.setWrapped(WRAPPED_TOKEN);
   // set erc20 transfer proxy for wrapper
-  await wrapperContract.setTransferProxy(ERC20_TRANSFER_PROXY);
+  // await wrapperContract.setTransferProxy(ERC20_TRANSFER_PROXY);
   // set ghostmarket erc20 transfer proxy on wrapper
-  await wrapperContract.setMarketProxy(MARKET_ID_GHOSTMARKET, ERC20_TRANSFER_PROXY);
+  // await wrapperContract.setMarketProxy(MARKET_ID_GHOSTMARKET, ERC20_TRANSFER_PROXY);
 
   // set other erc20 transfer proxy on wrapper
   // await wrapperContract.setMarketProxy(MARKET_ID_RARIBLE, RARIBLE_ERC20_TRANSFER_PROXY);
@@ -44,8 +44,8 @@ async function main() {
   // await wrapperContract.setMarketProxy(MARKET_ID_LOOKSRARE, LOOKSRARE_ERC20_TRANSFER_PROXY);
   // await wrapperContract.setMarketProxy(MARKET_ID_X2Y2, X2Y2_ERC20_TRANSFER_PROXY);
 
-  // await wrapperContract.setSeaport14(getSettings(CHAIN).seaport_1_6);
-  // await wrapperContract.setSeaport15(getSettings(CHAIN).seaport_1_5);
+  await wrapperContract.setSeaport16(getSettings(CHAIN).seaport_1_6);
+  await wrapperContract.setSeaport15(getSettings(CHAIN).seaport_1_5);
 
   // set uniswap config on wrapper
   //await wrapperContract.setUniswapV2(UNISWAP_V2);
