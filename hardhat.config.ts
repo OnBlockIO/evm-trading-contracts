@@ -85,7 +85,7 @@ const config: HardhatUserConfig = {
       tags: ['testnet'],
     },
     neoevm_testnet: {
-      chainId: 12227330,
+      chainId: 12227331,
       url: ETH_NODE_URI,
       accounts: TESTNET_PRIVATE_KEY,
       saveDeployments: true,
