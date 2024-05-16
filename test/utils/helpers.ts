@@ -1,29 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {expect} from './chai-setup';
 import hre from 'hardhat';
-import {BigNumber, ethers} from 'ethers';
 
-export async function getLastTokenID(token: any): Promise<BigNumber> {
+export async function getLastTokenID(token: any): Promise<bigint> {
   const counter = await token.getCurrentCounter();
   if (counter == 1) {
-    return ethers.BigNumber.from(parseInt(counter));
-  } else return ethers.BigNumber.from(parseInt(counter) - 1);
+    return BigInt(parseInt(counter));
+  } else return BigInt(parseInt(counter) - 1);
 }
 
 export async function verifyBalanceChange(account: string, change: number, todo: any): Promise<Chai.Assertion> {
-  const before = ethers.BigNumber.from(await hre.web3.eth.getBalance(account));
+  const before = BigInt(await hre.web3.eth.getBalance(account));
   await todo();
-  const after = ethers.BigNumber.from(await hre.web3.eth.getBalance(account));
-  const actual = before.sub(after);
-  return expect(actual).to.equal(change.toString());
+  const after = BigInt(await hre.web3.eth.getBalance(account));
+  const actual = before - after;
+  return expect(actual).to.equal(BigInt(change.toString()));
 }
 
 export async function verifyBalanceChangeReturnTx(account: string, change: number, todo: any) {
-  const before = ethers.BigNumber.from(await hre.web3.eth.getBalance(account));
+  const before = BigInt(await hre.web3.eth.getBalance(account));
   const tx = await todo();
-  const after = ethers.BigNumber.from(await hre.web3.eth.getBalance(account));
-  const actual = before.sub(after);
-  expect(change).to.equal(actual);
+  const after = BigInt(await hre.web3.eth.getBalance(account));
+  const actual = before - after;
+  expect(BigInt(change)).to.equal(actual);
   return tx;
 }
 

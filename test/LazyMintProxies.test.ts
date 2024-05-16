@@ -6,7 +6,7 @@ import {
   ERC721LazyMintTransferProxy,
   ERC1155LazyMintTransferProxy,
 } from '../typechain';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {Asset} from '../test/utils/order';
 import {ERC1155_LAZY, ERC721_LAZY} from '../test/utils/assets';
 
@@ -29,10 +29,10 @@ describe('LazyMint Proxies Test', function () {
     [...addrs] = await ethers.getSigners();
     erc721_lazy_proxy = await ERC721_PROXY.deploy();
     await erc721_lazy_proxy.__OperatorRole_init();
-    await erc721_lazy_proxy.addOperator(addrs[1].address);
+    await erc721_lazy_proxy.addOperator(await addrs[1].getAddress());
     erc1155_lazy_proxy = await ERC1155_PROXY.deploy();
     await erc1155_lazy_proxy.__OperatorRole_init();
-    await erc1155_lazy_proxy.addOperator(addrs[1].address);
+    await erc1155_lazy_proxy.addOperator(await addrs[1].getAddress());
     erc721_lazy = await ERC721.deploy();
     erc1155_lazy = await ERC1155.deploy();
     testingAsSigner1 = erc721_lazy_proxy.connect(addrs[1]);
@@ -45,30 +45,40 @@ describe('LazyMint Proxies Test', function () {
     const encodedMintData = await erc721_lazy.encode({
       tokenId: '1',
       tokenURI: 'uri',
-      minter: addrs[1].address,
+      minter: await addrs[1].getAddress(),
       royalties: [],
       signature: '0x',
     });
     //transfer by ERC721LazyMintTransferProxy.transfer
-    await testingAsSigner1.transfer(Asset(ERC721_LAZY, encodedMintData, '1'), addrs[1].address, addrs[2].address, {
-      from: addrs[1].address,
-    });
+    await testingAsSigner1.transfer(
+      Asset(ERC721_LAZY, encodedMintData, '1'),
+      await addrs[1].getAddress(),
+      await addrs[2].getAddress(),
+      {
+        from: await addrs[1].getAddress(),
+      }
+    );
     //check owner token after transfer
-    expect(await erc721_lazy.ownerOf(1), addrs[2].address);
+    expect(await erc721_lazy.ownerOf(1), await addrs[2].getAddress());
   });
   it('lazy mint proxyTransfer works for ERC-721, wrong operator, throw', async () => {
     const encodedMintData = await erc721_lazy.encode({
       tokenId: '1',
       tokenURI: 'uri',
-      minter: addrs[1].address,
+      minter: await addrs[1].getAddress(),
       royalties: [],
       signature: '0x',
     });
     //transfer by ERC721LazyMintTransferProxy.transfer
     await expect(
-      testingAsSigner4.transfer(Asset(ERC721_LAZY, encodedMintData, '1'), addrs[1].address, addrs[2].address, {
-        from: addrs[4].address,
-      })
+      testingAsSigner4.transfer(
+        Asset(ERC721_LAZY, encodedMintData, '1'),
+        await addrs[1].getAddress(),
+        await addrs[2].getAddress(),
+        {
+          from: await addrs[4].getAddress(),
+        }
+      )
     ).revertedWith('OperatorRole: caller is not the operator');
   });
 
@@ -77,16 +87,21 @@ describe('LazyMint Proxies Test', function () {
       tokenId: '1',
       tokenURI: 'uri',
       amount: 10,
-      minter: addrs[1].address,
+      minter: await addrs[1].getAddress(),
       royalties: [],
       signature: '0x',
     });
     //transfer by ERC1155LazyMintTransferProxy.transfer
-    await testingAsSigner11.transfer(Asset(ERC1155_LAZY, encodedMintData, '5'), addrs[1].address, addrs[2].address, {
-      from: addrs[1].address,
-    });
+    await testingAsSigner11.transfer(
+      Asset(ERC1155_LAZY, encodedMintData, '5'),
+      await addrs[1].getAddress(),
+      await addrs[2].getAddress(),
+      {
+        from: await addrs[1].getAddress(),
+      }
+    );
     //check owner token after transfer
-    expect(await erc1155_lazy.balanceOf(addrs[2].address, 1)).to.eq(5);
+    expect(await erc1155_lazy.balanceOf(await addrs[2].getAddress(), 1)).to.eq(BigInt(5));
   });
 
   it('lazy mint proxyTransfer works for ERC-1155, wrong operator, throw', async () => {
@@ -94,15 +109,20 @@ describe('LazyMint Proxies Test', function () {
       tokenId: '1',
       tokenURI: 'uri',
       amount: 10,
-      minter: addrs[1].address,
+      minter: await addrs[1].getAddress(),
       royalties: [],
       signature: '0x',
     });
     //transfer by ERC721LazyMintTransferProxy.transfer
     await expect(
-      testingAsSigner44.transfer(Asset(ERC1155_LAZY, encodedMintData, '5'), addrs[1].address, addrs[2].address, {
-        from: addrs[4].address,
-      })
+      testingAsSigner44.transfer(
+        Asset(ERC1155_LAZY, encodedMintData, '5'),
+        await addrs[1].getAddress(),
+        await addrs[2].getAddress(),
+        {
+          from: await addrs[4].getAddress(),
+        }
+      )
     ).revertedWith('OperatorRole: caller is not the operator');
   });
 });

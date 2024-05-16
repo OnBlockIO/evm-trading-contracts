@@ -1,7 +1,7 @@
 import {expect} from '../test/utils/chai-setup';
 import {Royalties2981TestImpl} from '../typechain';
 import {ethers} from 'hardhat';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 
 describe('Royalties2981 Test', async function () {
   let wallet1: SignerWithAddress;
@@ -16,11 +16,11 @@ describe('Royalties2981 Test', async function () {
 
   it('simple impl works', async () => {
     const amount = '100';
-    const getRoyalties = wallet1.address;
+    const getRoyalties = await wallet1.getAddress();
     const tokenId = getRoyalties + 'b00000000000000000000001';
 
     const result = await royalties2981TestImpl.royaltyInfo(tokenId, amount);
     expect(result[0]).to.equal(getRoyalties);
-    expect(result[1]).to.equal(10);
+    expect(result[1]).to.equal(BigInt(10));
   });
 });

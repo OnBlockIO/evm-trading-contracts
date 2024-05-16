@@ -8,11 +8,11 @@ import {
   TestERC721WithRoyaltyV2981,
   GhostMarketERC721,
 } from './../typechain';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {BASE_URI, TOKEN_NAME, TOKEN_SYMBOL} from './utils/constants';
 
 describe('RoyaltiesType Test', () => {
-  const ADDRESS_ZERO = ethers.constants.AddressZero;
+  const ADDRESS_ZERO = ethers.ZeroAddress;
   let royaltiesRegistry: RoyaltiesRegistry;
   let testERC721WithRoyaltiesV2981: TestERC721WithRoyaltyV2981;
   let testRoyaltiesProvider: RoyaltiesProviderTest;
@@ -54,17 +54,17 @@ describe('RoyaltiesType Test', () => {
       wallet7
     ).deploy();
     testRoyaltiesProvider = await TestRoyaltiesProvider.deploy();
-    ghostERC721 = <GhostMarketERC721>await upgrades.deployProxy(
+    ghostERC721 = <GhostMarketERC721>(<unknown>await upgrades.deployProxy(
       GhostMarketERC721,
       [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI],
       {
         initializer: 'initialize',
         unsafeAllowCustomTypes: true,
       }
-    );
+    ));
     defaultRoyalties = [
-      [wallet5.address, 1000],
-      [wallet6.address, 500],
+      [await wallet5.getAddress(), 1000],
+      [await wallet6.getAddress(), 500],
     ];
     defaultTokenId1 = 533;
     defaultTokenId2 = 644;
@@ -72,216 +72,234 @@ describe('RoyaltiesType Test', () => {
 
   describe('royalties types are set correctly', () => {
     it('should test royalties type = 1, royalties set in royaltiesByToken', async () => {
-      const token = royaltiesRegistry.address;
+      const token = await royaltiesRegistry.getAddress();
 
       await royaltiesRegistry.setRoyaltiesByToken(token, defaultRoyalties);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(1, 'setRoyaltiesByToken type = 1');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(1), 'setRoyaltiesByToken type = 1');
 
       await royaltiesRegistry.clearRoyaltiesType(token);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(0, 'correct royalties type');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(0), 'correct royalties type');
 
       const tx1 = await royaltiesRegistry['getRoyalties(address,uint256)'](token, defaultTokenId1);
       await tx1.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(1, 'correct royalties type');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(1), 'correct royalties type');
       // console.log('royaltiesByToken gas used first request', (await tx1.wait()).gasUsed.toString());
 
       const tx2 = await royaltiesRegistry['getRoyalties(address,uint256)'](token, defaultTokenId2);
       await tx2.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(1, 'correct royalties type');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(1), 'correct royalties type');
       // console.log('royaltiesByToken gas used second request', (await tx2.wait()).gasUsed.toString());
     });
 
     it('should test royalties type = 2, royalties v2', async () => {
-      await testERC721WithRoyaltiesV2OwnableUpgradeable.mint(wallet2.address, defaultTokenId1, defaultRoyalties);
-      await testERC721WithRoyaltiesV2OwnableUpgradeable.mint(wallet2.address, defaultTokenId2, defaultRoyalties);
+      await testERC721WithRoyaltiesV2OwnableUpgradeable.mint(
+        await wallet2.getAddress(),
+        defaultTokenId1,
+        defaultRoyalties
+      );
+      await testERC721WithRoyaltiesV2OwnableUpgradeable.mint(
+        await wallet2.getAddress(),
+        defaultTokenId2,
+        defaultRoyalties
+      );
 
       const tx1 = await royaltiesRegistry['getRoyalties(address,uint256)'](
-        testERC721WithRoyaltiesV2OwnableUpgradeable.address,
+        await testERC721WithRoyaltiesV2OwnableUpgradeable.getAddress(),
         defaultTokenId1
       );
       await tx1.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(testERC721WithRoyaltiesV2OwnableUpgradeable.address)).to.be.equal(
-        2,
-        'correct royalties type'
-      );
+      expect(
+        await royaltiesRegistry.getRoyaltiesType(await testERC721WithRoyaltiesV2OwnableUpgradeable.getAddress())
+      ).to.be.equal(BigInt(2), 'correct royalties type');
       // console.log('royalties v2 gas used first request', (await tx1.wait()).gasUsed.toString());
 
       const tx2 = await royaltiesRegistry['getRoyalties(address,uint256)'](
-        testERC721WithRoyaltiesV2OwnableUpgradeable.address,
+        await testERC721WithRoyaltiesV2OwnableUpgradeable.getAddress(),
         defaultTokenId2
       );
       await tx2.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(testERC721WithRoyaltiesV2OwnableUpgradeable.address)).to.be.equal(
-        2,
-        'correct royalties type'
-      );
+      expect(
+        await royaltiesRegistry.getRoyaltiesType(await testERC721WithRoyaltiesV2OwnableUpgradeable.getAddress())
+      ).to.be.equal(BigInt(2), 'correct royalties type');
       // console.log('royalties v2 gas used second request', (await tx2.wait()).gasUsed.toString());
     });
 
     it('should test royalties type = 3, royalties ghostmarket', async () => {
       await ghostERC721.mintGhost(
-        wallet1.address,
+        await wallet1.getAddress(),
         [
-          {recipient: wallet2.address, value: 300},
-          {recipient: wallet3.address, value: 400},
+          {recipient: await wallet2.getAddress(), value: 300},
+          {recipient: await wallet3.getAddress(), value: 400},
         ],
         'ext_uri',
         ''
       );
       const erc721TokenId1 = (await ghostERC721.getLastTokenID()).toString();
       await ghostERC721.mintGhost(
-        wallet1.address,
+        await wallet1.getAddress(),
         [
-          {recipient: wallet2.address, value: 300},
-          {recipient: wallet3.address, value: 400},
+          {recipient: await wallet2.getAddress(), value: 300},
+          {recipient: await wallet3.getAddress(), value: 400},
         ],
         'ext_uri',
         ''
       );
       const erc721TokenId2 = (await ghostERC721.getLastTokenID()).toString();
 
-      const tx1 = await royaltiesRegistry['getRoyalties(address,uint256)'](ghostERC721.address, erc721TokenId1);
+      const tx1 = await royaltiesRegistry['getRoyalties(address,uint256)'](
+        await ghostERC721.getAddress(),
+        erc721TokenId1
+      );
       await tx1.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(ghostERC721.address)).to.be.equal(3, 'correct royalties type');
+      expect(await royaltiesRegistry.getRoyaltiesType(await ghostERC721.getAddress())).to.be.equal(
+        BigInt(3),
+        'correct royalties type'
+      );
       // console.log('royalties ghostmarket gas used first request', (await tx1.wait()).gasUsed.toString());
 
-      const tx2 = await royaltiesRegistry['getRoyalties(address,uint256)'](ghostERC721.address, erc721TokenId2);
+      const tx2 = await royaltiesRegistry['getRoyalties(address,uint256)'](
+        await ghostERC721.getAddress(),
+        erc721TokenId2
+      );
       await tx2.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(ghostERC721.address)).to.be.equal(3, 'correct royalties type');
+      expect(await royaltiesRegistry.getRoyaltiesType(await ghostERC721.getAddress())).to.be.equal(
+        BigInt(3),
+        'correct royalties type'
+      );
       // console.log('royalties ghostmarket gas used second request', (await tx2.wait()).gasUsed.toString());
     });
 
     it('should test royalties type = 4, royalties from external provider', async () => {
-      const token = royaltiesRegistry.address;
+      const token = await royaltiesRegistry.getAddress();
 
       await testRoyaltiesProvider.initializeProvider(token, defaultTokenId1, defaultRoyalties);
       await testRoyaltiesProvider.initializeProvider(token, defaultTokenId2, defaultRoyalties);
 
-      await royaltiesRegistry.setProviderByToken(token, testRoyaltiesProvider.address);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(4, 'external provider type = 4');
+      await royaltiesRegistry.setProviderByToken(token, await testRoyaltiesProvider.getAddress());
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(4), 'external provider type = 4');
 
       await royaltiesRegistry.clearRoyaltiesType(token);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(0, 'correct royalties type');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(0), 'correct royalties type');
 
       const tx1 = await royaltiesRegistry['getRoyalties(address,uint256)'](token, defaultTokenId1);
       await tx1.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(4, 'correct royalties type');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(4), 'correct royalties type');
       // console.log('external provider gas used first request', (await tx1.wait()).gasUsed.toString());
 
       const tx2 = await royaltiesRegistry['getRoyalties(address,uint256)'](token, defaultTokenId2);
       await tx2.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(4, 'correct royalties type');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(4), 'correct royalties type');
       // console.log('external provider gas used second request', (await tx2.wait()).gasUsed.toString());
     });
 
     it('should test royalties type = 5, royalties 2981', async () => {
-      const tokenId1 = wallet1.address + 'b00000000000000000000001';
-      const tokenId2 = wallet2.address + 'b00000000000000000000002';
+      const tokenId1 = (await wallet1.getAddress()) + 'b00000000000000000000001';
+      const tokenId2 = (await wallet2.getAddress()) + 'b00000000000000000000002';
 
       const tx1 = await royaltiesRegistry['getRoyalties(address,uint256)'](
-        testERC721WithRoyaltiesV2981.address,
+        await testERC721WithRoyaltiesV2981.getAddress(),
         tokenId1
       );
       await tx1.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(testERC721WithRoyaltiesV2981.address)).to.be.equal(
-        5,
+      expect(await royaltiesRegistry.getRoyaltiesType(await testERC721WithRoyaltiesV2981.getAddress())).to.be.equal(
+        BigInt(5),
         'correct royalties type'
       );
       // console.log('royalties 2981 gas used first request', (await tx1.wait()).gasUsed.toString());
 
       const tx2 = await royaltiesRegistry['getRoyalties(address,uint256)'](
-        testERC721WithRoyaltiesV2981.address,
+        await testERC721WithRoyaltiesV2981.getAddress(),
         tokenId2
       );
       await tx2.wait();
-      expect(await royaltiesRegistry.getRoyaltiesType(testERC721WithRoyaltiesV2981.address)).to.be.equal(
-        5,
+      expect(await royaltiesRegistry.getRoyaltiesType(await testERC721WithRoyaltiesV2981.getAddress())).to.be.equal(
+        BigInt(5),
         'correct royalties type'
       );
       // console.log('royalties 2981 gas used second request', (await tx2.wait()).gasUsed.toString());
     });
 
     it('should test royalties type = 6, no royalties contract', async () => {
-      const token = royaltiesRegistry.address;
+      const token = await royaltiesRegistry.getAddress();
 
       await royaltiesRegistry['getRoyalties(address,uint256)'](token, defaultTokenId1);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(6, 'type 6 ');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(6), 'type 6 ');
       expect(
-        (await royaltiesRegistry.callStatic['getRoyalties(address,uint256)'](token, defaultTokenId1)).length
+        (await royaltiesRegistry['getRoyalties(address,uint256)'].staticCall(token, defaultTokenId1)).length
       ).to.be.equal(0, 'royalties 0');
     });
 
     it('should change royalties types correctly', async () => {
-      const token = royaltiesRegistry.address;
+      const token = await royaltiesRegistry.getAddress();
 
       //firstly type = 6, no royalties
       await royaltiesRegistry['getRoyalties(address,uint256)'](token, defaultTokenId1);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(6, 'type 6 ');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(6), 'type 6 ');
       expect(
-        (await royaltiesRegistry.callStatic['getRoyalties(address,uint256)'](token, defaultTokenId1)).length
+        (await royaltiesRegistry['getRoyalties(address,uint256)'].staticCall(token, defaultTokenId1)).length
       ).to.be.equal(0, 'royalties 0');
 
       await testRoyaltiesProvider.initializeProvider(token, defaultTokenId1, defaultRoyalties);
       await testRoyaltiesProvider.initializeProvider(token, defaultTokenId2, defaultRoyalties);
 
       // then we set external provider, now type is 4
-      await royaltiesRegistry.setProviderByToken(token, testRoyaltiesProvider.address);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(4, 'external provider type = 4');
+      await royaltiesRegistry.setProviderByToken(token, await testRoyaltiesProvider.getAddress());
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(4), 'external provider type = 4');
 
       // then we use setRoyaltiesByToken
       await royaltiesRegistry.setRoyaltiesByToken(token, defaultRoyalties);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(1, 'setRoyaltiesByToken type = 1');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(1), 'setRoyaltiesByToken type = 1');
 
       // finally clear type
       await royaltiesRegistry.clearRoyaltiesType(token);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(0, 'correct royalties type');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(0), 'correct royalties type');
     });
 
     it('should work for royalties types with zero address', async () => {
-      expect(await royaltiesRegistry.getRoyaltiesType(ADDRESS_ZERO)).to.be.equal(0, 'unset royalties type = 0');
+      expect(await royaltiesRegistry.getRoyaltiesType(ADDRESS_ZERO)).to.be.equal(BigInt(0), 'unset royalties type = 0');
     });
   });
 
   describe('royalties types set correctly from external methods', () => {
     it('should test setRoyaltiesByToken sets royalties type = 1', async () => {
-      const token = wallet4.address;
+      const token = await wallet4.getAddress();
 
       await royaltiesRegistry.setRoyaltiesByToken(token, defaultRoyalties);
       expect(await royaltiesRegistry.getProvider(token)).to.be.equal(ADDRESS_ZERO, 'provider is not set');
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(1, 'setRoyaltiesByToken type = 1');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(1), 'setRoyaltiesByToken type = 1');
 
       //forceSetRoyaltiesType = 3
       await royaltiesRegistry.forceSetRoyaltiesType(token, 3);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(3, 'forceSetRoyaltiesType 3');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(3), 'forceSetRoyaltiesType 3');
       expect(await royaltiesRegistry.getProvider(token)).to.be.equal(ADDRESS_ZERO, 'provider is not set');
 
       //clearRoyaltiesType
       await royaltiesRegistry.clearRoyaltiesType(token);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(0, 'clearRoyaltiesType ');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(0), 'clearRoyaltiesType ');
       expect(await royaltiesRegistry.getProvider(token)).to.be.equal(ADDRESS_ZERO, 'provider is not set');
     });
 
     it('should test setProvider sets royalties type = 4, forceSetRoyaltiesType = 3, clearRoyaltiesType', async () => {
-      const token = wallet4.address;
-      const provider = wallet5.address;
+      const token = await wallet4.getAddress();
+      const provider = await wallet5.getAddress();
 
       await royaltiesRegistry.setProviderByToken(token, provider);
       expect(await royaltiesRegistry.getProvider(token)).to.be.equal(provider, 'setProviderByToken works');
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(4, 'external provider type = 4');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(4), 'external provider type = 4');
 
       //forceSetRoyaltiesType = 3
       await royaltiesRegistry.forceSetRoyaltiesType(token, 3);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(3, 'forceSetRoyaltiesType 3');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(3), 'forceSetRoyaltiesType 3');
       expect(await royaltiesRegistry.getProvider(token)).to.be.equal(provider, 'provider is set');
 
       //clearRoyaltiesType
       await royaltiesRegistry.clearRoyaltiesType(token);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(0, 'clearRoyaltiesType ');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(0), 'clearRoyaltiesType ');
       expect(await royaltiesRegistry.getProvider(token)).to.be.equal(provider, 'provider is set');
     });
 
     it('should test forceSetRoyaltiesType + clearRoyaltiesType', async () => {
-      const token = wallet4.address;
+      const token = await wallet4.getAddress();
 
       //forceSetRoyaltiesType not from owner
       await expect(royaltiesRegistry.connect(wallet3).forceSetRoyaltiesType(token, 1)).to.be.reverted;
@@ -292,7 +310,7 @@ describe('RoyaltiesType Test', () => {
       //forceSetRoyaltiesType from 1 to 5 works
       for (let i = 1; i <= 6; i++) {
         await royaltiesRegistry.forceSetRoyaltiesType(token, i);
-        expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(i, 'forceSetRoyaltiesType ' + i);
+        expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(i), 'forceSetRoyaltiesType ' + i);
         expect(await royaltiesRegistry.getProvider(token)).to.be.equal(ADDRESS_ZERO, 'provider is not set');
       }
 
@@ -304,7 +322,7 @@ describe('RoyaltiesType Test', () => {
 
       //clearRoyaltiesType
       await royaltiesRegistry.clearRoyaltiesType(token);
-      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(0, 'clearRoyaltiesType ');
+      expect(await royaltiesRegistry.getRoyaltiesType(token)).to.be.equal(BigInt(0), 'clearRoyaltiesType ');
       expect(await royaltiesRegistry.getProvider(token)).to.be.equal(ADDRESS_ZERO, 'provider is not set');
     });
   });

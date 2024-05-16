@@ -1,7 +1,7 @@
 import {expect} from './utils/chai-setup';
 import {ethers} from 'hardhat';
 import {TestERC1271, OrderValidatorTest} from '../typechain';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {Asset, Order} from './utils/order';
 import EIP712 from './utils/EIP712';
 import {ZERO} from './utils/assets';
@@ -26,7 +26,7 @@ describe('OrderValidator Test', async function () {
 
   it('should validate if signer is correct', async () => {
     const testOrder = Order(
-      wallet1.address,
+      await wallet1.getAddress(),
       Asset('0xffffffff', '0x', '100'),
       ZERO,
       Asset('0xffffffff', '0x', '200'),
@@ -36,14 +36,14 @@ describe('OrderValidator Test', async function () {
       '0xffffffff',
       '0x'
     );
-    const signature = await EIP712.sign(testOrder, wallet1.address, orderValidator.address);
+    const signature = await EIP712.sign(testOrder, await wallet1.getAddress(), await orderValidator.getAddress());
     const t1AsSigner = orderValidator.connect(wallet1);
     await t1AsSigner.validateOrderTest(testOrder, signature);
   });
 
   it('should fail validate if signer is incorrect', async () => {
     const testOrder = Order(
-      wallet1.address,
+      await wallet1.getAddress(),
       Asset('0xffffffff', '0x', '100'),
       ZERO,
       Asset('0xffffffff', '0x', '200'),
@@ -53,13 +53,13 @@ describe('OrderValidator Test', async function () {
       '0xffffffff',
       '0x'
     );
-    const signature = await EIP712.sign(testOrder, wallet2.address, orderValidator.address);
+    const signature = await EIP712.sign(testOrder, await wallet2.getAddress(), await orderValidator.getAddress());
     await expect(orderValidator.validateOrderTest(testOrder, signature)).to.be.reverted;
   });
 
   it('should fail validate if signer is bogus', async () => {
     const testOrder = Order(
-      wallet1.address,
+      await wallet1.getAddress(),
       Asset('0xffffffff', '0x', '100'),
       ZERO,
       Asset('0xffffffff', '0x', '200'),
@@ -80,7 +80,7 @@ describe('OrderValidator Test', async function () {
 
   it('should bypass signature if maker is msg.sender', async () => {
     const testOrder = Order(
-      wallet3.address,
+      await wallet3.getAddress(),
       Asset('0xffffffff', '0x', '100'),
       ZERO,
       Asset('0xffffffff', '0x', '200'),
@@ -91,12 +91,12 @@ describe('OrderValidator Test', async function () {
       '0x'
     );
     const t3AsSigner = orderValidator.connect(wallet3);
-    await t3AsSigner.validateOrderTest(testOrder, '0x', {from: wallet3.address});
+    await t3AsSigner.validateOrderTest(testOrder, '0x', {from: await wallet3.getAddress()});
   });
 
   it('should validate if signer is contract and 1271 passes', async () => {
     const testOrder = Order(
-      erc1271.address,
+      await erc1271.getAddress(),
       Asset('0xffffffff', '0x', '100'),
       ZERO,
       Asset('0xffffffff', '0x', '200'),
@@ -106,15 +106,15 @@ describe('OrderValidator Test', async function () {
       '0xffffffff',
       '0x'
     );
-    const signature = await EIP712.sign(testOrder, wallet2.address, orderValidator.address);
+    const signature = await EIP712.sign(testOrder, await wallet2.getAddress(), await orderValidator.getAddress());
     await expect(orderValidator.validateOrderTest(testOrder, signature)).to.be.reverted;
     await erc1271.setReturnSuccessfulValidSignature(true);
     await orderValidator.validateOrderTest(testOrder, signature);
   });
 
-  it.skip('should not validate contract don`t support ERC1271_INTERFACE', async () => {
+  it('should not validate contract don`t support ERC1271_INTERFACE', async () => {
     const testOrder = Order(
-      orderValidator.address,
+      await orderValidator.getAddress(),
       Asset('0xffffffff', '0x', '100'),
       ZERO,
       Asset('0xffffffff', '0x', '200'),
@@ -124,14 +124,14 @@ describe('OrderValidator Test', async function () {
       '0xffffffff',
       '0x'
     );
-    const signature = await EIP712.sign(testOrder, wallet2.address, orderValidator.address);
+    const signature = await EIP712.sign(testOrder, await wallet2.getAddress(), await orderValidator.getAddress());
     const t2AsSigner = orderValidator.connect(wallet2);
     await expect(t2AsSigner.validateOrderTest(testOrder, signature)).to.be.reverted;
   });
 
   it('should validate IERC1271 with empty signature', async () => {
     const testOrder = Order(
-      erc1271.address,
+      await erc1271.getAddress(),
       Asset('0xffffffff', '0x', '100'),
       ZERO,
       Asset('0xffffffff', '0x', '200'),
@@ -148,7 +148,7 @@ describe('OrderValidator Test', async function () {
 
   it('should validate correct ERC1271 AND incorrect ECDSA signature', async () => {
     const testOrder = Order(
-      erc1271.address,
+      await erc1271.getAddress(),
       Asset('0xffffffff', '0x', '100'),
       ZERO,
       Asset('0xffffffff', '0x', '200'),

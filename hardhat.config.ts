@@ -1,12 +1,12 @@
 import 'dotenv/config';
 import 'hardhat-deploy';
-import '@nomiclabs/hardhat-ethers';
+import '@nomicfoundation/hardhat-ethers';
 import 'hardhat-gas-reporter';
 import '@typechain/hardhat';
 import 'solidity-coverage';
 import '@openzeppelin/hardhat-upgrades';
-import '@nomiclabs/hardhat-web3';
-import '@nomiclabs/hardhat-etherscan';
+import '@nomicfoundation/hardhat-web3-v4';
+import '@nomicfoundation/hardhat-verify';
 import {HardhatUserConfig} from 'hardhat/types';
 import {node_url, accounts} from './utils/network';
 
@@ -90,7 +90,7 @@ const config: HardhatUserConfig = {
       accounts: TESTNET_PRIVATE_KEY,
       saveDeployments: true,
       tags: ['testnet'],
-      gasPrice: 8000000000
+      gasPrice: 8000000000,
     },
     base_testnet: {
       url: ETH_NODE_URI,
@@ -170,11 +170,10 @@ const config: HardhatUserConfig = {
     gasPrice: 100,
     enabled: process.env.REPORT_GAS ? true : false,
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
-    maxMethodDiff: 10,
   },
   typechain: {
     outDir: 'typechain',
-    target: 'ethers-v5',
+    target: 'ethers-v6',
   },
   mocha: {
     timeout: 0,

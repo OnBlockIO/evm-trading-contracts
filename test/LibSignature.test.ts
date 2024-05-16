@@ -1,7 +1,7 @@
 import {expect} from '../test/utils/chai-setup';
 import {LibSignatureTest} from '../typechain';
 import hre, {ethers} from 'hardhat';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {privateToAddress, toBuffer, ecsign, bufferToInt} from 'ethereumjs-util';
 
 describe('LibSignature Test', async function () {
@@ -23,7 +23,7 @@ describe('LibSignature Test', async function () {
     const sig2 = signature.r + signature.s.substr(2) + (signature.v + 4).toString(16);
     const signer = await lib.recoverFromSigTest(hash, sig2);
 
-    expect(signer).to.equal(wallet1.address);
+    expect(signer).to.equal(await wallet1.getAddress());
   });
 
   it('should return correct signer, default case: v < 30', async () => {
@@ -44,7 +44,7 @@ describe('LibSignature Test', async function () {
   });
 
   async function signPersonalMessage(message: string, account: SignerWithAddress) {
-    const signature = (await hre.web3.eth.sign(message, account.address)).substr(2, 130);
+    const signature = (await hre.web3.eth.sign(message, await account.getAddress())).toString().substr(2, 130);
     const v = bufferToInt(Buffer.from(signature.substr(128, 2), 'hex'));
     return {
       v: v < 27 ? v + 27 : v,

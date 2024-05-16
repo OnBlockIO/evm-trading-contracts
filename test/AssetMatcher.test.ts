@@ -1,7 +1,7 @@
 import {expect} from './utils/chai-setup';
 import {ethers} from 'hardhat';
 import {AssetMatcherTest, TestAssetMatcher} from '../typechain';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {enc, id, ETH, ERC20, ERC721, ERC1155} from './utils/assets';
 import {AssetType} from './utils/order';
 
@@ -21,21 +21,19 @@ describe('AssetMatcher Test', function () {
     wallet5 = accounts[5];
     const AssetMatcherTest = await ethers.getContractFactory('AssetMatcherTest');
     assetMatcherTest = await AssetMatcherTest.deploy();
-    await assetMatcherTest.deployed();
     await assetMatcherTest.__AssetMatcherTest_init();
   });
 
   it('should work setAssetMatcher', async () => {
-    const encoded = enc(wallet5.address);
+    const encoded = enc(await wallet5.getAddress());
     await expect(
       assetMatcherTest.matchAssetsTest(AssetType(ERC20, encoded), AssetType(id('BLA'), encoded))
     ).revertedWith('not found IAssetMatcher');
 
     const TestAssetMatcher = await ethers.getContractFactory('TestAssetMatcher');
     testAssetMatcher = await TestAssetMatcher.deploy();
-    await testAssetMatcher.deployed();
 
-    await assetMatcherTest.setAssetMatcher(id('BLA'), testAssetMatcher.address);
+    await assetMatcherTest.setAssetMatcher(id('BLA'), await testAssetMatcher.getAddress());
     const result = await assetMatcherTest.matchAssetsTest(AssetType(ERC20, encoded), AssetType(id('BLA'), encoded));
     expect(result[0]).to.equal(ERC20);
     expect(result[1]).to.equal(encoded);
@@ -55,7 +53,7 @@ describe('AssetMatcher Test', function () {
 
   describe('ERC20', () => {
     it('should extract ERC20 type if both are and addresses equal', async () => {
-      const encoded = enc(wallet5.address);
+      const encoded = enc(await wallet5.getAddress());
       const result = await assetMatcherTest.matchAssetsTest(AssetType(ERC20, encoded), AssetType(ERC20, encoded));
       expect(result[0]).to.equal(ERC20);
       expect(result[1]).to.equal(encoded);
@@ -63,15 +61,15 @@ describe('AssetMatcher Test', function () {
 
     it("should extract nothing if erc20 don't match", async () => {
       const result = await assetMatcherTest.matchAssetsTest(
-        AssetType(ERC20, enc(wallet1.address)),
-        AssetType(ERC20, enc(wallet2.address))
+        AssetType(ERC20, enc(await wallet1.getAddress())),
+        AssetType(ERC20, enc(await wallet2.getAddress()))
       );
       expect(result[0]).to.equal('0x00000000');
     });
 
     it('should extract nothing if other type is not ERC20', async () => {
       const result = await assetMatcherTest.matchAssetsTest(
-        AssetType(ERC20, enc(wallet1.address)),
+        AssetType(ERC20, enc(await wallet1.getAddress())),
         AssetType(ETH, '0x')
       );
       expect(result[0]).to.equal('0x00000000');
@@ -80,7 +78,7 @@ describe('AssetMatcher Test', function () {
 
   describe('ERC721', () => {
     it('should extract ERC721 type if both are equal', async () => {
-      const encoded = enc(wallet5.address, '100');
+      const encoded = enc(await wallet5.getAddress(), '100');
       const result = await assetMatcherTest.matchAssetsTest(AssetType(ERC721, encoded), AssetType(ERC721, encoded));
       expect(result[0]).to.equal(ERC721);
       expect(result[1]).to.equal(encoded);
@@ -88,23 +86,23 @@ describe('AssetMatcher Test', function () {
 
     it("should extract nothing if tokenIds don't match", async () => {
       const result = await assetMatcherTest.matchAssetsTest(
-        AssetType(ERC721, enc(wallet5.address, '100')),
-        AssetType(ERC721, enc(wallet5.address, '101'))
+        AssetType(ERC721, enc(await wallet5.getAddress(), '100')),
+        AssetType(ERC721, enc(await wallet5.getAddress(), '101'))
       );
       expect(result[0]).to.equal('0x00000000');
     });
 
     it("should extract nothing if addresses don't match", async () => {
       const result = await assetMatcherTest.matchAssetsTest(
-        AssetType(ERC721, enc(wallet4.address, '100')),
-        AssetType(ERC721, enc(wallet5.address, '100'))
+        AssetType(ERC721, enc(await wallet4.getAddress(), '100')),
+        AssetType(ERC721, enc(await wallet5.getAddress(), '100'))
       );
       expect(result[0]).to.equal('0x00000000');
     });
 
     it('should extract nothing if other type is not ERC721', async () => {
       const result = await assetMatcherTest.matchAssetsTest(
-        AssetType(ERC721, enc(wallet5.address, '100')),
+        AssetType(ERC721, enc(await wallet5.getAddress(), '100')),
         AssetType(ETH, '0x')
       );
       expect(result[0]).to.equal('0x00000000');
@@ -113,7 +111,7 @@ describe('AssetMatcher Test', function () {
 
   describe('ERC1155', () => {
     it('should extract ERC1155 type if both are equal', async () => {
-      const encoded = enc(wallet5.address, '100');
+      const encoded = enc(await wallet5.getAddress(), '100');
       const result = await assetMatcherTest.matchAssetsTest(AssetType(ERC1155, encoded), AssetType(ERC1155, encoded));
       expect(result[0]).to.equal(ERC1155);
       expect(result[1]).to.equal(encoded);
@@ -121,22 +119,22 @@ describe('AssetMatcher Test', function () {
 
     it("should extract nothing if tokenIds don't match", async () => {
       const result = await assetMatcherTest.matchAssetsTest(
-        AssetType(ERC1155, enc(wallet5.address, '100')),
-        AssetType(ERC1155, enc(wallet5.address, '101'))
+        AssetType(ERC1155, enc(await wallet5.getAddress(), '100')),
+        AssetType(ERC1155, enc(await wallet5.getAddress(), '101'))
       );
       expect(result[0]).to.equal('0x00000000');
     });
 
     it("should extract nothing if addresses don't match", async () => {
       const result = await assetMatcherTest.matchAssetsTest(
-        AssetType(ERC1155, enc(wallet4.address, '100')),
-        AssetType(ERC1155, enc(wallet5.address, '100'))
+        AssetType(ERC1155, enc(await wallet4.getAddress(), '100')),
+        AssetType(ERC1155, enc(await wallet5.getAddress(), '100'))
       );
       expect(result[0]).to.equal('0x00000000');
     });
 
     it('should extract nothing if other type is not erc1155', async () => {
-      const encoded = enc(wallet5.address, '100');
+      const encoded = enc(await wallet5.getAddress(), '100');
       const result = await assetMatcherTest.matchAssetsTest(AssetType(ERC1155, encoded), AssetType(ERC721, encoded));
       expect(result[0]).to.equal('0x00000000');
     });

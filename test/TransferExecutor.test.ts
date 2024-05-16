@@ -8,7 +8,7 @@ import {
   GhostMarketERC721,
   GhostMarketERC1155,
 } from '../typechain';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {Asset} from './utils/order';
 import {ZERO, ETH, ERC20, ERC721, ERC1155, enc} from './utils/assets';
 import {BASE_URI, TOKEN_NAME, TOKEN_SYMBOL, DATA} from './utils/constants';
@@ -39,78 +39,91 @@ describe('TransferExecutor Test', async function () {
     transferProxy = await TransferProxyTest.deploy();
     await transferProxy.__TransferProxy_init();
     transferExecutorContract = await TransferExecutorTest.deploy();
-    await transferExecutorContract.__TransferExecutorTest_init(transferProxy.address, erc20TransferProxy.address);
+    await transferExecutorContract.__TransferExecutorTest_init(
+      await transferProxy.getAddress(),
+      await erc20TransferProxy.getAddress()
+    );
     erc20Token = await TestERC20.deploy();
 
-    ghostMarketERC721Token = <GhostMarketERC721>await upgrades.deployProxy(
+    ghostMarketERC721Token = <GhostMarketERC721>(<unknown>await upgrades.deployProxy(
       GhostMarketERC721,
       [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI],
       {
         initializer: 'initialize',
         unsafeAllowCustomTypes: true,
       }
-    );
+    ));
 
-    ghostERC1155Token = <GhostMarketERC1155>await upgrades.deployProxy(
+    ghostERC1155Token = <GhostMarketERC1155>(<unknown>await upgrades.deployProxy(
       GhostERC1155contract,
       [TOKEN_NAME, TOKEN_SYMBOL, BASE_URI],
       {
         initializer: 'initialize',
         unsafeAllowCustomTypes: true,
       }
-    );
+    ));
 
-    await transferProxy.addOperator(transferExecutorContract.address);
-    await erc20TransferProxy.addOperator(transferExecutorContract.address);
+    await transferProxy.addOperator(await transferExecutorContract.getAddress());
+    await erc20TransferProxy.addOperator(await transferExecutorContract.getAddress());
   });
 
   it('should support ETH transfers', async () => {
-    await transferExecutorContract.transferTest(Asset(ETH, '0x', '500'), ZERO, wallet1.address, {value: 500});
+    await transferExecutorContract.transferTest(Asset(ETH, '0x', '500'), ZERO, await wallet1.getAddress(), {
+      value: 500,
+    });
   });
 
   it('should support ERC20 transfers', async () => {
-    await erc20Token.mint(wallet1.address, 100);
+    await erc20Token.mint(await wallet1.getAddress(), 100);
     const t1AsSigner = erc20Token.connect(wallet1);
-    await t1AsSigner.approve(erc20TransferProxy.address, 100, {from: wallet1.address});
+    await t1AsSigner.approve(await erc20TransferProxy.getAddress(), 100, {from: await wallet1.getAddress()});
     const acc1AsSigner = transferExecutorContract.connect(wallet1);
-    await acc1AsSigner.transferTest(Asset(ERC20, enc(erc20Token.address), '40'), wallet1.address, wallet2.address);
-    expectEqualStringValues(await erc20Token.balanceOf(wallet1.address), 60);
-    expectEqualStringValues(await erc20Token.balanceOf(wallet2.address), 40);
+    await acc1AsSigner.transferTest(
+      Asset(ERC20, enc(await erc20Token.getAddress()), '40'),
+      await wallet1.getAddress(),
+      await wallet2.getAddress()
+    );
+    expectEqualStringValues(await erc20Token.balanceOf(await wallet1.getAddress()), 60);
+    expectEqualStringValues(await erc20Token.balanceOf(await wallet2.getAddress()), 40);
   });
 
   it('should support ERC721 transfers', async () => {
-    await ghostMarketERC721Token.mintGhost(wallet1.address, [], 'ext_uri', '');
+    await ghostMarketERC721Token.mintGhost(await wallet1.getAddress(), [], 'ext_uri', '');
     const erc721TokenId1 = await ghostMarketERC721Token.getLastTokenID();
     const account1AsSigner = ghostMarketERC721Token.connect(wallet1);
-    await account1AsSigner.setApprovalForAll(transferProxy.address, true, {from: wallet1.address});
+    await account1AsSigner.setApprovalForAll(await transferProxy.getAddress(), true, {
+      from: await wallet1.getAddress(),
+    });
     const acc1AsSigner = transferExecutorContract.connect(wallet1);
     await expect(
       acc1AsSigner.transferTest(
-        Asset(ERC721, enc(ghostMarketERC721Token.address, '1'), '2'),
-        wallet1.address,
-        wallet2.address
+        Asset(ERC721, enc(await ghostMarketERC721Token.getAddress(), '1'), '2'),
+        await wallet1.getAddress(),
+        await wallet2.getAddress()
       )
     ).revertedWith('erc721 value error');
     await acc1AsSigner.transferTest(
-      Asset(ERC721, enc(ghostMarketERC721Token.address, '1'), '1'),
-      wallet1.address,
-      wallet2.address
+      Asset(ERC721, enc(await ghostMarketERC721Token.getAddress(), '1'), '1'),
+      await wallet1.getAddress(),
+      await wallet2.getAddress()
     );
-    expectEqualStringValues(await ghostMarketERC721Token.ownerOf(erc721TokenId1), wallet2.address);
+    expectEqualStringValues(await ghostMarketERC721Token.ownerOf(erc721TokenId1), await wallet2.getAddress());
   });
 
   it('should support ERC1155 transfers', async () => {
     const erc1155amount = 100;
-    await ghostERC1155Token.mintGhost(wallet1.address, erc1155amount, DATA, [], 'ext_uri', '');
+    await ghostERC1155Token.mintGhost(await wallet1.getAddress(), erc1155amount, DATA, [], 'ext_uri', '');
     const account1AsSigner = ghostERC1155Token.connect(wallet1);
-    await account1AsSigner.setApprovalForAll(transferProxy.address, true, {from: wallet1.address});
+    await account1AsSigner.setApprovalForAll(await transferProxy.getAddress(), true, {
+      from: await wallet1.getAddress(),
+    });
     const acc1AsSigner = transferExecutorContract.connect(wallet1);
     await acc1AsSigner.transferTest(
-      Asset(ERC1155, enc(ghostERC1155Token.address, '1'), '40'),
-      wallet1.address,
-      wallet2.address
+      Asset(ERC1155, enc(await ghostERC1155Token.getAddress(), '1'), '40'),
+      await wallet1.getAddress(),
+      await wallet2.getAddress()
     );
-    expectEqualStringValues(await ghostERC1155Token.balanceOf(wallet1.address, 1), 60);
-    expectEqualStringValues(await ghostERC1155Token.balanceOf(wallet2.address, 1), 40);
+    expectEqualStringValues(await ghostERC1155Token.balanceOf(await wallet1.getAddress(), 1), 60);
+    expectEqualStringValues(await ghostERC1155Token.balanceOf(await wallet2.getAddress(), 1), 40);
   });
 });

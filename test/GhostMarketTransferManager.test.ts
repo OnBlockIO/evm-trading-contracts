@@ -13,7 +13,7 @@ import {
   ERC1155LazyMintTransferProxy,
   ERC1155LazyMintTest,
 } from '../typechain';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {Asset, Order} from './utils/order';
 import {ZERO, ORDER_DATA_V1, ERC721, ERC1155, ERC20, ETH, enc, id} from './utils/assets';
 import {ethers, upgrades} from 'hardhat';
@@ -77,22 +77,30 @@ describe('GhostMarketTransferManager Test', async function () {
     await royaltiesRegistryProxy.__RoyaltiesRegistry_init();
 
     gtm = <GhostMarketTransferManagerTest>(
-      await upgrades.deployProxy(
-        GTM,
-        [transferProxy.address, erc20TransferProxy.address, 300, community.address, royaltiesRegistryProxy.address],
-        {initializer: 'init____'}
-      )
+      (<unknown>(
+        await upgrades.deployProxy(
+          GTM,
+          [
+            await transferProxy.getAddress(),
+            await erc20TransferProxy.getAddress(),
+            300,
+            await community.getAddress(),
+            await royaltiesRegistryProxy.getAddress(),
+          ],
+          {initializer: 'init____'}
+        )
+      ))
     );
 
-    await transferProxy.addOperator(gtm.address);
-    await erc20TransferProxy.addOperator(gtm.address);
+    await transferProxy.addOperator(await gtm.getAddress());
+    await erc20TransferProxy.addOperator(await gtm.getAddress());
 
     erc721_lazy_proxy = await ERC721LazyMintTransferProxy.deploy();
     await erc721_lazy_proxy.__OperatorRole_init();
-    await erc721_lazy_proxy.addOperator(gtm.address);
+    await erc721_lazy_proxy.addOperator(await gtm.getAddress());
     erc1155_lazy_proxy = await ERC1155LazyMintTransferProxy.deploy();
     await erc1155_lazy_proxy.__OperatorRole_init();
-    await erc1155_lazy_proxy.addOperator(gtm.address);
+    await erc1155_lazy_proxy.addOperator(await gtm.getAddress());
     erc721_lazy = await ERC721LazyMintTest.deploy();
     erc1155_lazy = await ERC1155LazyMintTest.deploy();
 
@@ -106,10 +114,10 @@ describe('GhostMarketTransferManager Test', async function () {
       try {
         const erc721 = await prepareERC721(wallet2);
         const left = Order(
-          wallet1.address,
+          await wallet1.getAddress(),
           Asset(ETH, '0x', '100'),
           ZERO,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           '1',
           0,
           0,
@@ -117,8 +125,8 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          await wallet2.getAddress(),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           ZERO,
           Asset(ETH, '0x', '100'),
           '1',
@@ -129,15 +137,15 @@ describe('GhostMarketTransferManager Test', async function () {
         );
 
         const asSigner = gtm.connect(wallet1);
-        await verifyBalanceChange(wallet1.address, 100, () =>
-          verifyBalanceChange(wallet2.address, -100, () =>
-            verifyBalanceChange(protocol.address, 0, async () =>
-              asSigner.doTransfersExternal(left, right, {value: 100, from: wallet1.address, gasPrice: 0})
+        await verifyBalanceChange(await wallet1.getAddress(), 100, async () =>
+          verifyBalanceChange(await wallet2.getAddress(), -100, async () =>
+            verifyBalanceChange(await protocol.getAddress(), 0, async () =>
+              asSigner.doTransfersExternal(left, right, {value: 100, from: await wallet1.getAddress(), gasPrice: 0})
             )
           )
         );
-        expect((await erc721.balanceOf(wallet1.address)).toString()).to.equal('1');
-        expect((await erc721.balanceOf(wallet2.address)).toString()).to.equal('0');
+        expect((await erc721.balanceOf(await wallet1.getAddress())).toString()).to.equal('1');
+        expect((await erc721.balanceOf(await wallet2.getAddress())).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -148,10 +156,10 @@ describe('GhostMarketTransferManager Test', async function () {
       try {
         const erc1155 = await prepareERC1155(wallet2, '10');
         const left = Order(
-          wallet1.address,
+          await wallet1.getAddress(),
           Asset(ETH, '0x', '100'),
           ZERO,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '7'),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '7'),
           '1',
           0,
           0,
@@ -159,8 +167,8 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '7'),
+          await wallet2.getAddress(),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '7'),
           ZERO,
           Asset(ETH, '0x', '100'),
           '1',
@@ -171,15 +179,15 @@ describe('GhostMarketTransferManager Test', async function () {
         );
 
         const asSigner = gtm.connect(wallet1);
-        await verifyBalanceChange(wallet1.address, 100, () =>
-          verifyBalanceChange(wallet2.address, -100, () =>
-            verifyBalanceChange(protocol.address, 0, async () =>
-              asSigner.doTransfersExternal(left, right, {value: 100, from: wallet1.address, gasPrice: 0})
+        await verifyBalanceChange(await wallet1.getAddress(), 100, async () =>
+          verifyBalanceChange(await wallet2.getAddress(), -100, async () =>
+            verifyBalanceChange(await protocol.getAddress(), 0, async () =>
+              asSigner.doTransfersExternal(left, right, {value: 100, from: await wallet1.getAddress(), gasPrice: 0})
             )
           )
         );
-        expect((await erc1155.balanceOf(wallet1.address, erc1155TokenId1)).toString()).to.equal('7');
-        expect((await erc1155.balanceOf(wallet2.address, erc1155TokenId1)).toString()).to.equal('3');
+        expect((await erc1155.balanceOf(await wallet1.getAddress(), erc1155TokenId1)).toString()).to.equal('7');
+        expect((await erc1155.balanceOf(await wallet2.getAddress(), erc1155TokenId1)).toString()).to.equal('3');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -190,10 +198,10 @@ describe('GhostMarketTransferManager Test', async function () {
       try {
         const erc20 = await prepareERC20(wallet2, '105');
         const left = Order(
-          wallet1.address,
+          await wallet1.getAddress(),
           Asset(ETH, '0x', '100'),
           ZERO,
-          Asset(ERC20, enc(erc20.address, erc721TokenId1), '50'),
+          Asset(ERC20, enc(await erc20.getAddress(), erc721TokenId1), '50'),
           '1',
           0,
           0,
@@ -201,8 +209,8 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC20, enc(erc20.address, erc721TokenId1), '50'),
+          await wallet2.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress(), erc721TokenId1), '50'),
           ZERO,
           Asset(ETH, '0x', '100'),
           '1',
@@ -213,15 +221,15 @@ describe('GhostMarketTransferManager Test', async function () {
         );
 
         const asSigner = gtm.connect(wallet1);
-        await verifyBalanceChange(wallet1.address, 100, () =>
-          verifyBalanceChange(wallet2.address, -100, () =>
-            verifyBalanceChange(protocol.address, 0, async () =>
-              asSigner.doTransfersExternal(left, right, {value: 100, from: wallet1.address, gasPrice: 0})
+        await verifyBalanceChange(await wallet1.getAddress(), 100, async () =>
+          verifyBalanceChange(await wallet2.getAddress(), -100, async () =>
+            verifyBalanceChange(await protocol.getAddress(), 0, async () =>
+              asSigner.doTransfersExternal(left, right, {value: 100, from: await wallet1.getAddress(), gasPrice: 0})
             )
           )
         );
-        expect((await erc20.balanceOf(wallet1.address)).toString()).to.equal('50');
-        expect((await erc20.balanceOf(wallet2.address)).toString()).to.equal('55');
+        expect((await erc20.balanceOf(await wallet1.getAddress())).toString()).to.equal('50');
+        expect((await erc20.balanceOf(await wallet2.getAddress())).toString()).to.equal('55');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -232,16 +240,16 @@ describe('GhostMarketTransferManager Test', async function () {
       try {
         const erc721 = await prepareERC721(wallet1);
 
-        await erc721.mint(wallet2.address, erc721TokenId0, []);
+        await erc721.mint(await wallet2.getAddress(), erc721TokenId0, []);
         const asSigner2 = erc721.connect(wallet2);
-        await asSigner2.setApprovalForAll(transferProxy.address, true, {from: wallet2.address});
+        await asSigner2.setApprovalForAll(await transferProxy.getAddress(), true, {from: await wallet2.getAddress()});
 
         const data = await encDataV1([[], []]);
         const left = Order(
-          wallet1.address,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          await wallet1.getAddress(),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           ZERO,
-          Asset(ERC721, enc(erc721.address, erc721TokenId0), '1'),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId0), '1'),
           '1',
           0,
           0,
@@ -249,10 +257,10 @@ describe('GhostMarketTransferManager Test', async function () {
           data
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC721, enc(erc721.address, erc721TokenId0), '1'),
+          await wallet2.getAddress(),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId0), '1'),
           ZERO,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           '1',
           0,
           0,
@@ -261,8 +269,8 @@ describe('GhostMarketTransferManager Test', async function () {
         );
 
         await gtm.doTransfersExternal(left, right);
-        expect((await erc721.ownerOf(erc721TokenId1)).toString()).to.equal(wallet2.address);
-        expect((await erc721.ownerOf(erc721TokenId0)).toString()).to.equal(wallet1.address);
+        expect((await erc721.ownerOf(erc721TokenId1)).toString()).to.equal(await wallet2.getAddress());
+        expect((await erc721.ownerOf(erc721TokenId0)).toString()).to.equal(await wallet1.getAddress());
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -274,20 +282,20 @@ describe('GhostMarketTransferManager Test', async function () {
         const erc721 = await prepareERC721(wallet1);
         const erc1155 = await prepareERC1155(wallet2, '120');
         const addrOriginLeft = [
-          [wallet3.address, 100],
-          [wallet5.address, 300],
+          [await wallet3.getAddress(), 100],
+          [await wallet5.getAddress(), 300],
         ];
         const addrOriginRight = [
-          [wallet4.address, 200],
-          [wallet6.address, 400],
+          [await wallet4.getAddress(), 200],
+          [await wallet6.getAddress(), 400],
         ];
-        const encDataLeft = await encDataV1([[[wallet1.address, 10000]], addrOriginLeft]);
-        const encDataRight = await encDataV1([[[wallet2.address, 10000]], addrOriginRight]);
+        const encDataLeft = await encDataV1([[[await wallet1.getAddress(), 10000]], addrOriginLeft]);
+        const encDataRight = await encDataV1([[[await wallet2.getAddress(), 10000]], addrOriginRight]);
         const left = Order(
-          wallet1.address,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          await wallet1.getAddress(),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           ZERO,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '100'),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '100'),
           '1',
           0,
           0,
@@ -295,10 +303,10 @@ describe('GhostMarketTransferManager Test', async function () {
           encDataLeft
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '100'),
+          await wallet2.getAddress(),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '100'),
           ZERO,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           '1',
           0,
           0,
@@ -309,11 +317,11 @@ describe('GhostMarketTransferManager Test', async function () {
         const asSigner = gtm.connect(wallet1);
         await asSigner.doTransfersExternal(left, right);
 
-        expect((await erc721.balanceOf(wallet1.address)).toString()).to.equal('0');
-        expect((await erc721.balanceOf(wallet2.address)).toString()).to.equal('1');
-        expect((await erc1155.balanceOf(wallet1.address, erc1155TokenId1)).toString()).to.equal('96');
-        expect((await erc1155.balanceOf(wallet2.address, erc1155TokenId1)).toString()).to.equal('14');
-        expect((await erc1155.balanceOf(community.address, erc1155TokenId1)).toString()).to.equal('0');
+        expect((await erc721.balanceOf(await wallet1.getAddress())).toString()).to.equal('0');
+        expect((await erc721.balanceOf(await wallet2.getAddress())).toString()).to.equal('1');
+        expect((await erc1155.balanceOf(await wallet1.getAddress(), erc1155TokenId1)).toString()).to.equal('96');
+        expect((await erc1155.balanceOf(await wallet2.getAddress(), erc1155TokenId1)).toString()).to.equal('14');
+        expect((await erc1155.balanceOf(await community.getAddress(), erc1155TokenId1)).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -323,29 +331,29 @@ describe('GhostMarketTransferManager Test', async function () {
       const snapshot = await ethers.provider.send('evm_snapshot', []);
       try {
         const erc1155 = await prepareERC1155(wallet1, '100');
-        await erc1155.mint(wallet2.address, erc1155TokenId2, 100, []);
+        await erc1155.mint(await wallet2.getAddress(), erc1155TokenId2, 100, []);
         const asSigner = erc1155.connect(wallet2);
-        await asSigner.setApprovalForAll(transferProxy.address, true, {from: wallet2.address});
+        await asSigner.setApprovalForAll(await transferProxy.getAddress(), true, {from: await wallet2.getAddress()});
 
         const encDataLeft = await encDataV1([
           [
-            [wallet3.address, 5000],
-            [wallet5.address, 5000],
+            [await wallet3.getAddress(), 5000],
+            [await wallet5.getAddress(), 5000],
           ],
           [],
         ]);
         const encDataRight = await encDataV1([
           [
-            [wallet4.address, 5000],
-            [wallet6.address, 5000],
+            [await wallet4.getAddress(), 5000],
+            [await wallet6.getAddress(), 5000],
           ],
           [],
         ]);
         const left = Order(
-          wallet1.address,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '2'),
+          await wallet1.getAddress(),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '2'),
           ZERO,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId2), '10'),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId2), '10'),
           '1',
           0,
           0,
@@ -353,10 +361,10 @@ describe('GhostMarketTransferManager Test', async function () {
           encDataLeft
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId2), '10'),
+          await wallet2.getAddress(),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId2), '10'),
           ZERO,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '2'),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '2'),
           '1',
           0,
           0,
@@ -366,15 +374,15 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc1155.balanceOf(wallet1.address, erc1155TokenId1)).toString()).to.equal('98');
-        expect((await erc1155.balanceOf(wallet2.address, erc1155TokenId1)).toString()).to.equal('0');
-        expect((await erc1155.balanceOf(wallet1.address, erc1155TokenId2)).toString()).to.equal('0');
-        expect((await erc1155.balanceOf(wallet2.address, erc1155TokenId2)).toString()).to.equal('90');
+        expect((await erc1155.balanceOf(await wallet1.getAddress(), erc1155TokenId1)).toString()).to.equal('98');
+        expect((await erc1155.balanceOf(await wallet2.getAddress(), erc1155TokenId1)).toString()).to.equal('0');
+        expect((await erc1155.balanceOf(await wallet1.getAddress(), erc1155TokenId2)).toString()).to.equal('0');
+        expect((await erc1155.balanceOf(await wallet2.getAddress(), erc1155TokenId2)).toString()).to.equal('90');
 
-        expect((await erc1155.balanceOf(wallet3.address, erc1155TokenId2)).toString()).to.equal('5');
-        expect((await erc1155.balanceOf(wallet5.address, erc1155TokenId2)).toString()).to.equal('5');
-        expect((await erc1155.balanceOf(wallet4.address, erc1155TokenId1)).toString()).to.equal('1');
-        expect((await erc1155.balanceOf(wallet6.address, erc1155TokenId1)).toString()).to.equal('1');
+        expect((await erc1155.balanceOf(await wallet3.getAddress(), erc1155TokenId2)).toString()).to.equal('5');
+        expect((await erc1155.balanceOf(await wallet5.getAddress(), erc1155TokenId2)).toString()).to.equal('5');
+        expect((await erc1155.balanceOf(await wallet4.getAddress(), erc1155TokenId1)).toString()).to.equal('1');
+        expect((await erc1155.balanceOf(await wallet6.getAddress(), erc1155TokenId1)).toString()).to.equal('1');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -385,28 +393,28 @@ describe('GhostMarketTransferManager Test', async function () {
       try {
         const erc1155 = await prepareERC1155(wallet1, '100');
 
-        await erc1155.mint(wallet2.address, erc1155TokenId2, 100, []);
+        await erc1155.mint(await wallet2.getAddress(), erc1155TokenId2, 100, []);
         const asSigner = erc1155.connect(wallet2);
-        await asSigner.setApprovalForAll(transferProxy.address, true, {from: wallet2.address});
+        await asSigner.setApprovalForAll(await transferProxy.getAddress(), true, {from: await wallet2.getAddress()});
         const encDataLeft = await encDataV1([
           [
-            [wallet3.address, 5000],
-            [wallet5.address, 5000],
+            [await wallet3.getAddress(), 5000],
+            [await wallet5.getAddress(), 5000],
           ],
           [],
         ]);
         const encDataRight = await encDataV1([
           [
-            [wallet4.address, 5000],
-            [wallet6.address, 5000],
+            [await wallet4.getAddress(), 5000],
+            [await wallet6.getAddress(), 5000],
           ],
           [],
         ]);
         const left = Order(
-          wallet1.address,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '1'),
+          await wallet1.getAddress(),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '1'),
           ZERO,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId2), '5'),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId2), '5'),
           '1',
           0,
           0,
@@ -414,10 +422,10 @@ describe('GhostMarketTransferManager Test', async function () {
           encDataLeft
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId2), '5'),
+          await wallet2.getAddress(),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId2), '5'),
           ZERO,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '1'),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '1'),
           '1',
           0,
           0,
@@ -427,16 +435,16 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc1155.balanceOf(wallet1.address, erc1155TokenId1)).toString()).to.equal('99');
-        expect((await erc1155.balanceOf(wallet2.address, erc1155TokenId1)).toString()).to.equal('0');
-        expect((await erc1155.balanceOf(wallet1.address, erc1155TokenId2)).toString()).to.equal('0');
-        expect((await erc1155.balanceOf(wallet2.address, erc1155TokenId2)).toString()).to.equal('95');
+        expect((await erc1155.balanceOf(await wallet1.getAddress(), erc1155TokenId1)).toString()).to.equal('99');
+        expect((await erc1155.balanceOf(await wallet2.getAddress(), erc1155TokenId1)).toString()).to.equal('0');
+        expect((await erc1155.balanceOf(await wallet1.getAddress(), erc1155TokenId2)).toString()).to.equal('0');
+        expect((await erc1155.balanceOf(await wallet2.getAddress(), erc1155TokenId2)).toString()).to.equal('95');
 
-        expect((await erc1155.balanceOf(wallet3.address, erc1155TokenId2)).toString()).to.equal('2');
-        expect((await erc1155.balanceOf(wallet5.address, erc1155TokenId2)).toString()).to.equal('3');
-        expect((await erc1155.balanceOf(wallet4.address, erc1155TokenId1)).toString()).to.equal('0');
-        expect((await erc1155.balanceOf(wallet6.address, erc1155TokenId1)).toString()).to.equal('1');
-        expect((await erc1155.balanceOf(community.address, erc1155TokenId1)).toString()).to.equal('0');
+        expect((await erc1155.balanceOf(await wallet3.getAddress(), erc1155TokenId2)).toString()).to.equal('2');
+        expect((await erc1155.balanceOf(await wallet5.getAddress(), erc1155TokenId2)).toString()).to.equal('3');
+        expect((await erc1155.balanceOf(await wallet4.getAddress(), erc1155TokenId1)).toString()).to.equal('0');
+        expect((await erc1155.balanceOf(await wallet6.getAddress(), erc1155TokenId1)).toString()).to.equal('1');
+        expect((await erc1155.balanceOf(await community.getAddress(), erc1155TokenId1)).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -449,10 +457,10 @@ describe('GhostMarketTransferManager Test', async function () {
         const erc1155 = await prepareERC1155(wallet1, '105');
 
         const left = Order(
-          wallet1.address,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '100'),
+          await wallet1.getAddress(),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '100'),
           ZERO,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           '1',
           0,
           0,
@@ -460,10 +468,10 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          await wallet2.getAddress(),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           ZERO,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '100'),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '100'),
           '1',
           0,
           0,
@@ -473,11 +481,11 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc721.balanceOf(wallet2.address)).toString()).to.equal('0');
-        expect((await erc721.balanceOf(wallet1.address)).toString()).to.equal('1');
-        expect((await erc1155.balanceOf(wallet2.address, erc1155TokenId1)).toString()).to.equal('100');
-        expect((await erc1155.balanceOf(wallet1.address, erc1155TokenId1)).toString()).to.equal('5');
-        expect((await erc1155.balanceOf(protocol.address, erc1155TokenId1)).toString()).to.equal('0');
+        expect((await erc721.balanceOf(await wallet2.getAddress())).toString()).to.equal('0');
+        expect((await erc721.balanceOf(await wallet1.getAddress())).toString()).to.equal('1');
+        expect((await erc1155.balanceOf(await wallet2.getAddress(), erc1155TokenId1)).toString()).to.equal('100');
+        expect((await erc1155.balanceOf(await wallet1.getAddress(), erc1155TokenId1)).toString()).to.equal('5');
+        expect((await erc1155.balanceOf(await protocol.getAddress(), erc1155TokenId1)).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -490,10 +498,10 @@ describe('GhostMarketTransferManager Test', async function () {
         const erc1155 = await prepareERC1155(wallet2, '10');
 
         const left = Order(
-          wallet1.address,
-          Asset(ERC20, enc(erc20.address), '100'),
+          await wallet1.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           ZERO,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '7'),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '7'),
           '1',
           0,
           0,
@@ -501,10 +509,10 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId1), '7'),
+          await wallet2.getAddress(),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId1), '7'),
           ZERO,
-          Asset(ERC20, enc(erc20.address), '100'),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           '1',
           0,
           0,
@@ -514,11 +522,11 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc20.balanceOf(wallet1.address)).toString()).to.equal('5');
-        expect((await erc20.balanceOf(wallet2.address)).toString()).to.equal('100');
-        expect((await erc1155.balanceOf(wallet1.address, erc1155TokenId1)).toString()).to.equal('7');
-        expect((await erc1155.balanceOf(wallet2.address, erc1155TokenId1)).toString()).to.equal('3');
-        expect((await erc20.balanceOf(protocol.address)).toString()).to.equal('0');
+        expect((await erc20.balanceOf(await wallet1.getAddress())).toString()).to.equal('5');
+        expect((await erc20.balanceOf(await wallet2.getAddress())).toString()).to.equal('100');
+        expect((await erc1155.balanceOf(await wallet1.getAddress(), erc1155TokenId1)).toString()).to.equal('7');
+        expect((await erc1155.balanceOf(await wallet2.getAddress(), erc1155TokenId1)).toString()).to.equal('3');
+        expect((await erc20.balanceOf(await protocol.getAddress())).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -531,10 +539,10 @@ describe('GhostMarketTransferManager Test', async function () {
         const erc1155 = await prepareERC1155(wallet3, '10', erc1155TokenId2);
 
         const left = Order(
-          wallet3.address,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId2), '7'),
+          await wallet3.getAddress(),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId2), '7'),
           ZERO,
-          Asset(ERC20, enc(erc20.address), '100'),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           '1',
           0,
           0,
@@ -542,10 +550,10 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet4.address,
-          Asset(ERC20, enc(erc20.address), '100'),
+          await wallet4.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           ZERO,
-          Asset(ERC1155, enc(erc1155.address, erc1155TokenId2), '7'),
+          Asset(ERC1155, enc(await erc1155.getAddress(), erc1155TokenId2), '7'),
           '1',
           0,
           0,
@@ -555,11 +563,11 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc20.balanceOf(wallet3.address)).toString()).to.equal('100');
-        expect((await erc20.balanceOf(wallet4.address)).toString()).to.equal('5');
-        expect((await erc1155.balanceOf(wallet3.address, erc1155TokenId2)).toString()).to.equal('3');
-        expect((await erc1155.balanceOf(wallet4.address, erc1155TokenId2)).toString()).to.equal('7');
-        expect((await erc20.balanceOf(protocol.address)).toString()).to.equal('0');
+        expect((await erc20.balanceOf(await wallet3.getAddress())).toString()).to.equal('100');
+        expect((await erc20.balanceOf(await wallet4.getAddress())).toString()).to.equal('5');
+        expect((await erc1155.balanceOf(await wallet3.getAddress(), erc1155TokenId2)).toString()).to.equal('3');
+        expect((await erc1155.balanceOf(await wallet4.getAddress(), erc1155TokenId2)).toString()).to.equal('7');
+        expect((await erc20.balanceOf(await protocol.getAddress())).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -572,10 +580,10 @@ describe('GhostMarketTransferManager Test', async function () {
         const erc721 = await prepareERC721(wallet2);
 
         const left = Order(
-          wallet1.address,
-          Asset(ERC20, enc(erc20.address), '100'),
+          await wallet1.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           ZERO,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           '1',
           0,
           0,
@@ -583,10 +591,10 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          await wallet2.getAddress(),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           ZERO,
-          Asset(ERC20, enc(erc20.address), '100'),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           '1',
           0,
           0,
@@ -596,11 +604,11 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc20.balanceOf(wallet1.address)).toString()).to.equal('5');
-        expect((await erc20.balanceOf(wallet2.address)).toString()).to.equal('100');
-        expect((await erc721.balanceOf(wallet1.address)).toString()).to.equal('1');
-        expect((await erc721.balanceOf(wallet2.address)).toString()).to.equal('0');
-        expect((await erc20.balanceOf(protocol.address)).toString()).to.equal('0');
+        expect((await erc20.balanceOf(await wallet1.getAddress())).toString()).to.equal('5');
+        expect((await erc20.balanceOf(await wallet2.getAddress())).toString()).to.equal('100');
+        expect((await erc721.balanceOf(await wallet1.getAddress())).toString()).to.equal('1');
+        expect((await erc721.balanceOf(await wallet2.getAddress())).toString()).to.equal('0');
+        expect((await erc20.balanceOf(await protocol.getAddress())).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -613,10 +621,10 @@ describe('GhostMarketTransferManager Test', async function () {
         const erc721 = await prepareERC721(wallet1);
 
         const left = Order(
-          wallet1.address,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          await wallet1.getAddress(),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           ZERO,
-          Asset(ERC20, enc(erc20.address), '100'),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           '1',
           0,
           0,
@@ -624,10 +632,10 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC20, enc(erc20.address), '100'),
+          await wallet2.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           ZERO,
-          Asset(ERC721, enc(erc721.address, erc721TokenId1), '1'),
+          Asset(ERC721, enc(await erc721.getAddress(), erc721TokenId1), '1'),
           '1',
           0,
           0,
@@ -637,11 +645,11 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc20.balanceOf(wallet1.address)).toString()).to.equal('100');
-        expect((await erc20.balanceOf(wallet2.address)).toString()).to.equal('5');
-        expect((await erc721.balanceOf(wallet1.address)).toString()).to.equal('0');
-        expect((await erc721.balanceOf(wallet2.address)).toString()).to.equal('1');
-        expect((await erc20.balanceOf(protocol.address)).toString()).to.equal('0');
+        expect((await erc20.balanceOf(await wallet1.getAddress())).toString()).to.equal('100');
+        expect((await erc20.balanceOf(await wallet2.getAddress())).toString()).to.equal('5');
+        expect((await erc721.balanceOf(await wallet1.getAddress())).toString()).to.equal('0');
+        expect((await erc721.balanceOf(await wallet2.getAddress())).toString()).to.equal('1');
+        expect((await erc20.balanceOf(await protocol.getAddress())).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -654,10 +662,10 @@ describe('GhostMarketTransferManager Test', async function () {
         const t2 = await prepareERC20(wallet2, '220');
 
         const left = Order(
-          wallet1.address,
-          Asset(ERC20, enc(erc20.address), '100'),
+          await wallet1.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           ZERO,
-          Asset(ERC20, enc(t2.address), '200'),
+          Asset(ERC20, enc(await t2.getAddress()), '200'),
           '1',
           0,
           0,
@@ -665,10 +673,10 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC20, enc(t2.address), '200'),
+          await wallet2.getAddress(),
+          Asset(ERC20, enc(await t2.getAddress()), '200'),
           ZERO,
-          Asset(ERC20, enc(erc20.address), '100'),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           '1',
           0,
           0,
@@ -678,11 +686,11 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc20.balanceOf(wallet1.address)).toString()).to.equal('5');
-        expect((await erc20.balanceOf(wallet2.address)).toString()).to.equal('100');
-        expect((await t2.balanceOf(wallet1.address)).toString()).to.equal('200');
-        expect((await t2.balanceOf(wallet2.address)).toString()).to.equal('20');
-        expect((await erc20.balanceOf(protocol.address)).toString()).to.equal('0');
+        expect((await erc20.balanceOf(await wallet1.getAddress())).toString()).to.equal('5');
+        expect((await erc20.balanceOf(await wallet2.getAddress())).toString()).to.equal('100');
+        expect((await t2.balanceOf(await wallet1.getAddress())).toString()).to.equal('200');
+        expect((await t2.balanceOf(await wallet2.getAddress())).toString()).to.equal('20');
+        expect((await erc20.balanceOf(await protocol.getAddress())).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -693,26 +701,23 @@ describe('GhostMarketTransferManager Test', async function () {
     it('should work for transfer from ERC721Lazy to ERC20 ', async () => {
       const snapshot = await ethers.provider.send('evm_snapshot', []);
       try {
-        await gtm.setTransferProxy(id('ERC721_LAZY'), erc721_lazy_proxy.address);
-
+        await gtm.setTransferProxy(id('ERC721_LAZY'), await erc721_lazy_proxy.getAddress());
         const erc20 = await prepareERC20(wallet2, '106');
-
         const encodedMintData = await erc721_lazy.encode({
           tokenId: 1,
           tokenURI: 'uri',
-          minter: wallet1.address,
+          minter: await wallet1.getAddress(),
           royalties: [
-            {account: wallet5.address, value: '2000'},
-            {account: wallet6.address, value: '1000'},
+            {account: await wallet5.getAddress(), value: '2000'},
+            {account: await wallet6.getAddress(), value: '1000'},
           ],
-          signature: [],
+          signature: '0x',
         });
-
         const left = Order(
-          wallet1.address,
+          await wallet1.getAddress(),
           Asset(id('ERC721_LAZY'), encodedMintData, '1'),
           ZERO,
-          Asset(ERC20, enc(erc20.address), '100'),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           '1',
           0,
           0,
@@ -720,8 +725,8 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC20, enc(erc20.address), '100'),
+          await wallet2.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           ZERO,
           Asset(id('ERC721_LAZY'), encodedMintData, '1'),
           '1',
@@ -733,11 +738,11 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc721_lazy.ownerOf(1)).toString()).to.equal(wallet2.address);
-        expect((await erc20.balanceOf(wallet1.address)).toString()).to.equal('70');
-        expect((await erc20.balanceOf(wallet2.address)).toString()).to.equal('6');
-        expect((await erc20.balanceOf(wallet5.address)).toString()).to.equal('20');
-        expect((await erc20.balanceOf(wallet6.address)).toString()).to.equal('10');
+        expect((await erc721_lazy.ownerOf(1)).toString()).to.equal(await wallet2.getAddress());
+        expect((await erc20.balanceOf(await wallet1.getAddress())).toString()).to.equal('70');
+        expect((await erc20.balanceOf(await wallet2.getAddress())).toString()).to.equal('6');
+        expect((await erc20.balanceOf(await wallet5.getAddress())).toString()).to.equal('20');
+        expect((await erc20.balanceOf(await wallet6.getAddress())).toString()).to.equal('10');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -746,7 +751,7 @@ describe('GhostMarketTransferManager Test', async function () {
     it('should work for transfer from ERC1155Lazy to ERC20 ', async () => {
       const snapshot = await ethers.provider.send('evm_snapshot', []);
       try {
-        await gtm.setTransferProxy(id('ERC1155_LAZY'), erc1155_lazy_proxy.address);
+        await gtm.setTransferProxy(id('ERC1155_LAZY'), await erc1155_lazy_proxy.getAddress());
 
         const erc20 = await prepareERC20(wallet2, '106');
 
@@ -754,19 +759,19 @@ describe('GhostMarketTransferManager Test', async function () {
           tokenId: 1,
           tokenURI: 'uri',
           amount: 5,
-          minter: wallet1.address,
+          minter: await wallet1.getAddress(),
           royalties: [
-            {account: wallet5.address, value: '2000'},
-            {account: wallet6.address, value: '1000'},
+            {account: await wallet5.getAddress(), value: '2000'},
+            {account: await wallet6.getAddress(), value: '1000'},
           ],
-          signature: [],
+          signature: '0x',
         });
 
         const left = Order(
-          wallet1.address,
+          await wallet1.getAddress(),
           Asset(id('ERC1155_LAZY'), encodedMintData, '5'),
           ZERO,
-          Asset(ERC20, enc(erc20.address), '100'),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           '1',
           0,
           0,
@@ -774,8 +779,8 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
-          Asset(ERC20, enc(erc20.address), '100'),
+          await wallet2.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           ZERO,
           Asset(id('ERC1155_LAZY'), encodedMintData, '5'),
           '1',
@@ -787,11 +792,11 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc1155_lazy.balanceOf(wallet2.address, 1)).toString()).to.equal('5');
-        expect((await erc20.balanceOf(wallet1.address)).toString()).to.equal('70');
-        expect((await erc20.balanceOf(wallet2.address)).toString()).to.equal('6');
-        expect((await erc20.balanceOf(wallet5.address)).toString()).to.equal('20');
-        expect((await erc20.balanceOf(wallet6.address)).toString()).to.equal('10');
+        expect((await erc1155_lazy.balanceOf(await wallet2.getAddress(), 1)).toString()).to.equal('5');
+        expect((await erc20.balanceOf(await wallet1.getAddress())).toString()).to.equal('70');
+        expect((await erc20.balanceOf(await wallet2.getAddress())).toString()).to.equal('6');
+        expect((await erc20.balanceOf(await wallet5.getAddress())).toString()).to.equal('20');
+        expect((await erc20.balanceOf(await wallet6.getAddress())).toString()).to.equal('10');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -800,20 +805,20 @@ describe('GhostMarketTransferManager Test', async function () {
     it('should work for transfer from ETH to ERC721Lazy', async () => {
       const snapshot = await ethers.provider.send('evm_snapshot', []);
       try {
-        await gtm.setTransferProxy(id('ERC721_LAZY'), erc721_lazy_proxy.address);
+        await gtm.setTransferProxy(id('ERC721_LAZY'), await erc721_lazy_proxy.getAddress());
         const encodedMintData = await erc721_lazy.encode({
           tokenId: 1,
           tokenURI: 'uri',
-          minter: wallet2.address,
+          minter: await wallet2.getAddress(),
           royalties: [
-            {account: wallet5.address, value: '2000'},
-            {account: wallet6.address, value: '1000'},
+            {account: await wallet5.getAddress(), value: '2000'},
+            {account: await wallet6.getAddress(), value: '1000'},
           ],
-          signature: [],
+          signature: '0x',
         });
 
         const left = Order(
-          wallet1.address,
+          await wallet1.getAddress(),
           Asset(ETH, '0x', '100'),
           ZERO,
           Asset(id('ERC721_LAZY'), encodedMintData, '1'),
@@ -824,7 +829,7 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
+          await wallet2.getAddress(),
           Asset(id('ERC721_LAZY'), encodedMintData, '1'),
           ZERO,
           Asset(ETH, '0x', '100'),
@@ -836,18 +841,18 @@ describe('GhostMarketTransferManager Test', async function () {
         );
 
         const asSigner = gtm.connect(wallet1);
-        await verifyBalanceChange(wallet1.address, 100, () =>
-          verifyBalanceChange(wallet2.address, -70, () =>
-            verifyBalanceChange(wallet5.address, -20, () =>
-              verifyBalanceChange(wallet6.address, -10, () =>
-                verifyBalanceChange(protocol.address, 0, () =>
-                  asSigner.doTransfersExternal(left, right, {value: 100, from: wallet1.address, gasPrice: 0})
+        await verifyBalanceChange(await wallet1.getAddress(), 100, async () =>
+          verifyBalanceChange(await wallet2.getAddress(), -70, async () =>
+            verifyBalanceChange(await wallet5.getAddress(), -20, async () =>
+              verifyBalanceChange(await wallet6.getAddress(), -10, async () =>
+                verifyBalanceChange(await protocol.getAddress(), 0, async () =>
+                  asSigner.doTransfersExternal(left, right, {value: 100, from: await wallet1.getAddress(), gasPrice: 0})
                 )
               )
             )
           )
         );
-        expect((await erc721_lazy.ownerOf(1)).toString()).to.equal(wallet1.address);
+        expect((await erc721_lazy.ownerOf(1)).toString()).to.equal(await wallet1.getAddress());
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -856,21 +861,21 @@ describe('GhostMarketTransferManager Test', async function () {
     it('should work for transfer from ETH to ERC1155Lazy', async () => {
       const snapshot = await ethers.provider.send('evm_snapshot', []);
       try {
-        await gtm.setTransferProxy(id('ERC1155_LAZY'), erc1155_lazy_proxy.address);
+        await gtm.setTransferProxy(id('ERC1155_LAZY'), await erc1155_lazy_proxy.getAddress());
         const encodedMintData = await erc1155_lazy.encode({
           tokenId: 1,
           tokenURI: 'uri',
           amount: 5,
-          minter: wallet2.address,
+          minter: await wallet2.getAddress(),
           royalties: [
-            {account: wallet5.address, value: '2000'},
-            {account: wallet6.address, value: '1000'},
+            {account: await wallet5.getAddress(), value: '2000'},
+            {account: await wallet6.getAddress(), value: '1000'},
           ],
-          signature: [],
+          signature: '0x',
         });
 
         const left = Order(
-          wallet1.address,
+          await wallet1.getAddress(),
           Asset(ETH, '0x', '100'),
           ZERO,
           Asset(id('ERC1155_LAZY'), encodedMintData, '5'),
@@ -881,7 +886,7 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet2.address,
+          await wallet2.getAddress(),
           Asset(id('ERC1155_LAZY'), encodedMintData, '5'),
           ZERO,
           Asset(ETH, '0x', '100'),
@@ -893,18 +898,18 @@ describe('GhostMarketTransferManager Test', async function () {
         );
 
         const asSigner = gtm.connect(wallet1);
-        await verifyBalanceChange(wallet1.address, 100, () =>
-          verifyBalanceChange(wallet2.address, -70, () =>
-            verifyBalanceChange(wallet5.address, -20, () =>
-              verifyBalanceChange(wallet6.address, -10, () =>
-                verifyBalanceChange(protocol.address, 0, () =>
-                  asSigner.doTransfersExternal(left, right, {value: 100, from: wallet1.address, gasPrice: 0})
+        await verifyBalanceChange(await wallet1.getAddress(), 100, async () =>
+          verifyBalanceChange(await wallet2.getAddress(), -70, async () =>
+            verifyBalanceChange(await wallet5.getAddress(), -20, async () =>
+              verifyBalanceChange(await wallet6.getAddress(), -10, async () =>
+                verifyBalanceChange(await protocol.getAddress(), 0, async () =>
+                  asSigner.doTransfersExternal(left, right, {value: 100, from: await wallet1.getAddress(), gasPrice: 0})
                 )
               )
             )
           )
         );
-        expect((await erc1155_lazy.balanceOf(wallet1.address, 1)).toString()).to.equal('5');
+        expect((await erc1155_lazy.balanceOf(await wallet1.getAddress(), 1)).toString()).to.equal('5');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -918,16 +923,16 @@ describe('GhostMarketTransferManager Test', async function () {
         const erc20 = await prepareERC20(wallet1, '105');
         const erc721V2 = await prepareERC721(wallet0, erc721TokenId1);
 
-        await royaltiesRegistryProxy.setRoyaltiesByToken(erc721V2.address, [
-          [wallet2.address, 1000],
-          [wallet3.address, 500],
+        await royaltiesRegistryProxy.setRoyaltiesByToken(await erc721V2.getAddress(), [
+          [await wallet2.getAddress(), 1000],
+          [await wallet3.getAddress(), 500],
         ] as any);
 
         const left = Order(
-          wallet1.address,
-          Asset(ERC20, enc(erc20.address), '100'),
+          await wallet1.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           ZERO,
-          Asset(ERC721, enc(erc721V2.address, erc721TokenId1), '1'),
+          Asset(ERC721, enc(await erc721V2.getAddress(), erc721TokenId1), '1'),
           '1',
           0,
           0,
@@ -935,10 +940,10 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet0.address,
-          Asset(ERC721, enc(erc721V2.address, erc721TokenId1), '1'),
+          await wallet0.getAddress(),
+          Asset(ERC721, enc(await erc721V2.getAddress(), erc721TokenId1), '1'),
           ZERO,
-          Asset(ERC20, enc(erc20.address), '100'),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           '1',
           0,
           0,
@@ -948,13 +953,13 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc20.balanceOf(wallet1.address)).toString()).to.equal('5');
-        expect((await erc20.balanceOf(wallet0.address)).toString()).to.equal('85');
-        expect((await erc20.balanceOf(wallet2.address)).toString()).to.equal('10');
-        expect((await erc20.balanceOf(wallet3.address)).toString()).to.equal('5');
-        expect((await erc721V2.balanceOf(wallet1.address)).toString()).to.equal('1');
-        expect((await erc721V2.balanceOf(wallet0.address)).toString()).to.equal('0');
-        expect((await erc20.balanceOf(protocol.address)).toString()).to.equal('0');
+        expect((await erc20.balanceOf(await wallet1.getAddress())).toString()).to.equal('5');
+        expect((await erc20.balanceOf(await wallet0.getAddress())).toString()).to.equal('85');
+        expect((await erc20.balanceOf(await wallet2.getAddress())).toString()).to.equal('10');
+        expect((await erc20.balanceOf(await wallet3.getAddress())).toString()).to.equal('5');
+        expect((await erc721V2.balanceOf(await wallet1.getAddress())).toString()).to.equal('1');
+        expect((await erc721V2.balanceOf(await wallet0.getAddress())).toString()).to.equal('0');
+        expect((await erc20.balanceOf(await protocol.getAddress())).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -966,16 +971,16 @@ describe('GhostMarketTransferManager Test', async function () {
         const erc20 = await prepareERC20(wallet1, '105');
         const erc1155V2 = await prepareERC1155(wallet0, '8');
 
-        await royaltiesRegistryProxy.setRoyaltiesByToken(erc1155V2.address, [
-          [wallet2.address, 1000],
-          [wallet3.address, 500],
+        await royaltiesRegistryProxy.setRoyaltiesByToken(await erc1155V2.getAddress(), [
+          [await wallet2.getAddress(), 1000],
+          [await wallet3.getAddress(), 500],
         ] as any);
 
         const left = Order(
-          wallet1.address,
-          Asset(ERC20, enc(erc20.address), '100'),
+          await wallet1.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           ZERO,
-          Asset(ERC1155, enc(erc1155V2.address, erc1155TokenId1), '6'),
+          Asset(ERC1155, enc(await erc1155V2.getAddress(), erc1155TokenId1), '6'),
           '1',
           0,
           0,
@@ -983,10 +988,10 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet0.address,
-          Asset(ERC1155, enc(erc1155V2.address, erc1155TokenId1), '6'),
+          await wallet0.getAddress(),
+          Asset(ERC1155, enc(await erc1155V2.getAddress(), erc1155TokenId1), '6'),
           ZERO,
-          Asset(ERC20, enc(erc20.address), '100'),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           '1',
           0,
           0,
@@ -996,13 +1001,13 @@ describe('GhostMarketTransferManager Test', async function () {
 
         await gtm.doTransfersExternal(left, right);
 
-        expect((await erc20.balanceOf(wallet1.address)).toString()).to.equal('5');
-        expect((await erc20.balanceOf(wallet0.address)).toString()).to.equal('85');
-        expect((await erc20.balanceOf(wallet2.address)).toString()).to.equal('10');
-        expect((await erc20.balanceOf(wallet3.address)).toString()).to.equal('5');
-        expect((await erc1155V2.balanceOf(wallet1.address, erc1155TokenId1)).toString()).to.equal('6');
-        expect((await erc1155V2.balanceOf(wallet0.address, erc1155TokenId1)).toString()).to.equal('2');
-        expect((await erc20.balanceOf(protocol.address)).toString()).to.equal('0');
+        expect((await erc20.balanceOf(await wallet1.getAddress())).toString()).to.equal('5');
+        expect((await erc20.balanceOf(await wallet0.getAddress())).toString()).to.equal('85');
+        expect((await erc20.balanceOf(await wallet2.getAddress())).toString()).to.equal('10');
+        expect((await erc20.balanceOf(await wallet3.getAddress())).toString()).to.equal('5');
+        expect((await erc1155V2.balanceOf(await wallet1.getAddress(), erc1155TokenId1)).toString()).to.equal('6');
+        expect((await erc1155V2.balanceOf(await wallet0.getAddress(), erc1155TokenId1)).toString()).to.equal('2');
+        expect((await erc20.balanceOf(await protocol.getAddress())).toString()).to.equal('0');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -1014,15 +1019,15 @@ describe('GhostMarketTransferManager Test', async function () {
         const erc20 = await prepareERC20(wallet1, '105');
         const erc1155V2 = await prepareERC1155(wallet0, '8');
 
-        await royaltiesRegistryProxy.setRoyaltiesByToken(erc1155V2.address, [
-          [wallet2.address, 2000],
-          [wallet3.address, 3001],
+        await royaltiesRegistryProxy.setRoyaltiesByToken(await erc1155V2.getAddress(), [
+          [await wallet2.getAddress(), 2000],
+          [await wallet3.getAddress(), 3001],
         ] as any); //set royalties by token
         const left = Order(
-          wallet1.address,
-          Asset(ERC20, enc(erc20.address), '100'),
+          await wallet1.getAddress(),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           ZERO,
-          Asset(ERC1155, enc(erc1155V2.address, erc1155TokenId1), '6'),
+          Asset(ERC1155, enc(await erc1155V2.getAddress(), erc1155TokenId1), '6'),
           '1',
           0,
           0,
@@ -1030,10 +1035,10 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet0.address,
-          Asset(ERC1155, enc(erc1155V2.address, erc1155TokenId1), '6'),
+          await wallet0.getAddress(),
+          Asset(ERC1155, enc(await erc1155V2.getAddress(), erc1155TokenId1), '6'),
           ZERO,
-          Asset(ERC20, enc(erc20.address), '100'),
+          Asset(ERC20, enc(await erc20.getAddress()), '100'),
           '1',
           0,
           0,
@@ -1052,22 +1057,22 @@ describe('GhostMarketTransferManager Test', async function () {
     it('should work for transfer from ETH to ERC1155V2, 15% royalties', async () => {
       const snapshot = await ethers.provider.send('evm_snapshot', []);
       try {
-        const erc1155V2 = await prepareERC1155(wallet1, '10', undefined, [[wallet2.address, 1000]] as any);
+        const erc1155V2 = await prepareERC1155(wallet1, '10', undefined, [[await wallet2.getAddress(), 1000]] as any);
 
         const info = await erc1155V2.royaltyInfo(erc1155TokenId1, '1000');
-        expect(info[1].toNumber()).to.be.equal(100);
-        expect(info[0]).to.be.equal(wallet2.address);
+        expect(info[1]).to.be.equal(BigInt(100));
+        expect(info[0]).to.be.equal(await wallet2.getAddress());
 
-        await royaltiesRegistryProxy.setRoyaltiesByToken(erc1155V2.address, [
-          [wallet2.address, 1000],
-          [wallet3.address, 500],
+        await royaltiesRegistryProxy.setRoyaltiesByToken(await erc1155V2.getAddress(), [
+          [await wallet2.getAddress(), 1000],
+          [await wallet3.getAddress(), 500],
         ] as any);
 
         const left = Order(
-          wallet0.address,
+          await wallet0.getAddress(),
           Asset(ETH, '0x', '100'),
           ZERO,
-          Asset(ERC1155, enc(erc1155V2.address, erc1155TokenId1), '7'),
+          Asset(ERC1155, enc(await erc1155V2.getAddress(), erc1155TokenId1), '7'),
           '1',
           0,
           0,
@@ -1075,8 +1080,8 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
         const right = Order(
-          wallet1.address,
-          Asset(ERC1155, enc(erc1155V2.address, erc1155TokenId1), '7'),
+          await wallet1.getAddress(),
+          Asset(ERC1155, enc(await erc1155V2.getAddress(), erc1155TokenId1), '7'),
           ZERO,
           Asset(ETH, '0x', '100'),
           '1',
@@ -1086,19 +1091,19 @@ describe('GhostMarketTransferManager Test', async function () {
           '0x'
         );
 
-        await verifyBalanceChange(wallet0.address, 100, () =>
-          verifyBalanceChange(wallet1.address, -85, () =>
-            verifyBalanceChange(wallet2.address, -10, () =>
-              verifyBalanceChange(wallet3.address, -5, () =>
-                verifyBalanceChange(protocol.address, 0, () =>
-                  gtm.doTransfersExternal(left, right, {value: 100, from: wallet0.address, gasPrice: 0})
+        await verifyBalanceChange(await wallet0.getAddress(), 100, async () =>
+          verifyBalanceChange(await wallet1.getAddress(), -85, async () =>
+            verifyBalanceChange(await wallet2.getAddress(), -10, async () =>
+              verifyBalanceChange(await wallet3.getAddress(), -5, async () =>
+                verifyBalanceChange(await protocol.getAddress(), 0, async () =>
+                  gtm.doTransfersExternal(left, right, {value: 100, from: await wallet0.getAddress(), gasPrice: 0})
                 )
               )
             )
           )
         );
-        expect((await erc1155V2.balanceOf(wallet0.address, erc1155TokenId1)).toString()).to.equal('7');
-        expect((await erc1155V2.balanceOf(wallet1.address, erc1155TokenId1)).toString()).to.equal('3');
+        expect((await erc1155V2.balanceOf(await wallet0.getAddress(), erc1155TokenId1)).toString()).to.equal('7');
+        expect((await erc1155V2.balanceOf(await wallet1.getAddress(), erc1155TokenId1)).toString()).to.equal('3');
       } finally {
         await ethers.provider.send('evm_revert', [snapshot]);
       }
@@ -1113,22 +1118,22 @@ describe('GhostMarketTransferManager Test', async function () {
     const TestERC20 = await ethers.getContractFactory('TestERC20');
     testERC20 = await TestERC20.deploy();
     const asSigner = testERC20.connect(user);
-    await asSigner.mint(user.address, value);
-    await asSigner.approve(erc20TransferProxy.address, value, {from: user.address});
+    await asSigner.mint(await user.getAddress(), value);
+    await asSigner.approve(await erc20TransferProxy.getAddress(), value, {from: await user.getAddress()});
     return asSigner;
   }
 
   async function prepareERC721(user: SignerWithAddress, tokenId = erc721TokenId1, royalties = []) {
     const asSigner = erc721WithRoyalties.connect(user);
-    await asSigner.mint(user.address, tokenId, royalties, {from: user.address});
-    await asSigner.setApprovalForAll(transferProxy.address, true, {from: user.address});
+    await asSigner.mint(await user.getAddress(), tokenId, royalties, {from: await user.getAddress()});
+    await asSigner.setApprovalForAll(await transferProxy.getAddress(), true, {from: await user.getAddress()});
     return asSigner;
   }
 
   async function prepareERC1155(user: SignerWithAddress, value = '100', tokenId = erc1155TokenId1, royalties = []) {
     const asSigner = erc1155WithRoyalties.connect(user);
-    await asSigner.mint(user.address, tokenId, value, royalties, {from: user.address});
-    await asSigner.setApprovalForAll(transferProxy.address, true, {from: user.address});
+    await asSigner.mint(await user.getAddress(), tokenId, value, royalties, {from: await user.getAddress()});
+    await asSigner.setApprovalForAll(await transferProxy.getAddress(), true, {from: await user.getAddress()});
     return asSigner;
   }
 });

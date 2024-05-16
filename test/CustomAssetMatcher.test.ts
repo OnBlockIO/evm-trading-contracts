@@ -1,7 +1,7 @@
 import {expect} from './utils/chai-setup';
 import {ethers} from 'hardhat';
 import {AssetMatcherCollection} from '../typechain';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {enc, ETH, ERC20, ERC721, ERC1155, ERC721_LAZY, ERC1155_LAZY, COLLECTION} from './utils/assets';
 import {AssetType} from './utils/order';
 
@@ -18,13 +18,12 @@ describe('CustomAssetMatcher Test', function () {
     wallet3 = accounts[3];
     const AssetMatcherCollection = await ethers.getContractFactory('AssetMatcherCollection');
     assetMatcherCollection = await AssetMatcherCollection.deploy();
-    await assetMatcherCollection.deployed();
   });
 
   it('should work COLLECTION <-> ERC1155 matches!', async () => {
     const tokenId = '3000';
-    const encoded = enc(wallet2.address);
-    const encodedNFT = enc(wallet2.address, tokenId);
+    const encoded = enc(await wallet2.getAddress());
+    const encodedNFT = enc(await wallet2.getAddress(), tokenId);
     const result = await assetMatcherCollection
       .connect(wallet1)
       .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC1155, encodedNFT));
@@ -34,8 +33,8 @@ describe('CustomAssetMatcher Test', function () {
 
   it('should work COLLECTION <-> ERC1155_LAZY matches!', async () => {
     const tokenId = '3000';
-    const encoded = enc(wallet2.address);
-    const encodedNFT = enc(wallet2.address, tokenId);
+    const encoded = enc(await wallet2.getAddress());
+    const encodedNFT = enc(await wallet2.getAddress(), tokenId);
     const result = await assetMatcherCollection
       .connect(wallet1)
       .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC1155_LAZY, encodedNFT));
@@ -45,8 +44,8 @@ describe('CustomAssetMatcher Test', function () {
 
   it('should work COLLECTION <-> ERC721 matches!', async () => {
     const tokenId = '3000';
-    const encoded = enc(wallet2.address);
-    const encodedNFT = enc(wallet2.address, tokenId);
+    const encoded = enc(await wallet2.getAddress());
+    const encodedNFT = enc(await wallet2.getAddress(), tokenId);
     const result = await assetMatcherCollection
       .connect(wallet1)
       .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC721, encodedNFT));
@@ -56,8 +55,8 @@ describe('CustomAssetMatcher Test', function () {
 
   it('should work COLLECTION <-> ERC721_LAZY matches!', async () => {
     const tokenId = '3000';
-    const encoded = enc(wallet2.address);
-    const encodedNFT = enc(wallet2.address, tokenId);
+    const encoded = enc(await wallet2.getAddress());
+    const encodedNFT = enc(await wallet2.getAddress(), tokenId);
     const result = await assetMatcherCollection
       .connect(wallet1)
       .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC721_LAZY, encodedNFT));
@@ -67,48 +66,48 @@ describe('CustomAssetMatcher Test', function () {
 
   it('should fail COLLECTION <-> ERC1155 (another collection) don`t match!', async () => {
     const tokenId = '3000';
-    const encoded = enc(wallet2.address);
-    const encodedNFT = enc(wallet3.address, tokenId);
+    const encoded = enc(await wallet2.getAddress());
+    const encodedNFT = enc(await wallet3.getAddress(), tokenId);
     const result = await assetMatcherCollection
       .connect(wallet1)
       .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC1155, encodedNFT));
-    expect(ethers.BigNumber.from(result[0])).to.be.equal(0);
+    expect(BigInt(result[0])).to.be.equal(BigInt(0));
   });
 
   it('should fail COLLECTION <-> ERC721 (another collection) don`t match!', async () => {
     const tokenId = '3000';
-    const encoded = enc(wallet2.address);
-    const encodedNFT = enc(wallet3.address, tokenId);
+    const encoded = enc(await wallet2.getAddress());
+    const encodedNFT = enc(await wallet3.getAddress(), tokenId);
     const result = await assetMatcherCollection
       .connect(wallet1)
       .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC721, encodedNFT));
-    expect(ethers.BigNumber.from(result[0])).to.be.equal(0);
+    expect(BigInt(result[0])).to.be.equal(BigInt(0));
   });
 
   it('should fail COLLECTION <-> ERC20 don`t match', async () => {
-    const encoded = enc(wallet2.address);
-    const encodedERC20 = enc(wallet2.address);
+    const encoded = enc(await wallet2.getAddress());
+    const encodedERC20 = enc(await wallet2.getAddress());
     const result = await assetMatcherCollection
       .connect(wallet1)
       .matchAssets(AssetType(COLLECTION, encoded), AssetType(ERC20, encodedERC20));
-    expect(ethers.BigNumber.from(result[0])).to.be.equal(0);
+    expect(BigInt(result[0])).to.be.equal(BigInt(0));
   });
 
   it('should fail COLLECTION <-> COLLECTION don`t match', async () => {
-    const encoded = enc(wallet2.address);
-    const encodedCollection = enc(wallet2.address);
+    const encoded = enc(await wallet2.getAddress());
+    const encodedCollection = enc(await wallet2.getAddress());
     const result = await assetMatcherCollection
       .connect(wallet1)
       .matchAssets(AssetType(COLLECTION, encoded), AssetType(COLLECTION, encodedCollection));
-    expect(ethers.BigNumber.from(result[0])).to.be.equal(0);
+    expect(BigInt(result[0])).to.be.equal(BigInt(0));
   });
 
   it('should fail COLLECTION <-> ETH don`t match', async () => {
-    const encoded = enc(wallet2.address);
-    const encodedETH = enc(wallet2.address);
+    const encoded = enc(await wallet2.getAddress());
+    const encodedETH = enc(await wallet2.getAddress());
     const result = await assetMatcherCollection
       .connect(wallet1)
       .matchAssets(AssetType(COLLECTION, encoded), AssetType(ETH, encodedETH));
-    expect(ethers.BigNumber.from(result[0])).to.be.equal(0);
+    expect(BigInt(result[0])).to.be.equal(BigInt(0));
   });
 });

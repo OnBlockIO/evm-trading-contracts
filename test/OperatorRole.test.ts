@@ -1,7 +1,7 @@
 import {expect} from '../test/utils/chai-setup';
 import {ethers} from 'hardhat';
 import {OperatorRoleTest} from '../typechain';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 
 describe('OperatorRole Test', function () {
   let operator: OperatorRoleTest;
@@ -19,30 +19,30 @@ describe('OperatorRole Test', function () {
   });
 
   it('should only allow owner to add/remove operators', async () => {
-    await expect(testingAsSigner1.addOperator(addrs[1].address, {from: addrs[1].address})).revertedWith(
-      'Ownable: caller is not the owner'
-    );
-    await expect(testingAsSigner1.removeOperator(addrs[1].address, {from: addrs[1].address})).revertedWith(
-      'Ownable: caller is not the owner'
-    );
+    await expect(
+      testingAsSigner1.addOperator(await addrs[1].getAddress(), {from: await addrs[1].getAddress()})
+    ).revertedWith('Ownable: caller is not the owner');
+    await expect(
+      testingAsSigner1.removeOperator(await addrs[1].getAddress(), {from: await addrs[1].getAddress()})
+    ).revertedWith('Ownable: caller is not the owner');
 
-    await operator.addOperator(addrs[1].address);
+    await operator.addOperator(await addrs[1].getAddress());
 
-    const operatorStatus = await operator.getOperator(addrs[1].address);
+    const operatorStatus = await operator.getOperator(await addrs[1].getAddress());
     expect(operatorStatus).to.equal(true);
 
-    await operator.removeOperator(addrs[1].address);
+    await operator.removeOperator(await addrs[1].getAddress());
   });
 
   it('should only allow operator when calling protected functions', async () => {
-    await expect(testingAsSigner2.getSomething({from: addrs[2].address})).revertedWith(
+    await expect(testingAsSigner2.getSomething({from: await addrs[2].getAddress()})).revertedWith(
       'OperatorRole: caller is not the operator'
     );
 
-    await operator.addOperator(addrs[2].address);
-    expect(await testingAsSigner2.getSomething({from: addrs[2].address})).to.equal(10);
+    await operator.addOperator(await addrs[2].getAddress());
+    expect(await testingAsSigner2.getSomething({from: await addrs[2].getAddress()})).to.equal(BigInt(10));
 
-    await expect(testingAsSigner1.getSomething({from: addrs[1].address})).revertedWith(
+    await expect(testingAsSigner1.getSomething({from: await addrs[1].getAddress()})).revertedWith(
       'OperatorRole: caller is not the operator'
     );
   });

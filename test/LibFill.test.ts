@@ -38,8 +38,8 @@ describe('LibFill Test', async function () {
       );
 
       const fill = await lib.fillOrder(left, right, 0, 0, false, false);
-      expect(fill[0]).to.equal(50);
-      expect(fill[1]).to.equal(100);
+      expect(fill[0]).to.equal(BigInt(50));
+      expect(fill[1]).to.equal(BigInt(100));
     });
 
     it('should throw if right order is fully matched, but price is not ok', async () => {
@@ -94,8 +94,8 @@ describe('LibFill Test', async function () {
       );
 
       const fill = await lib.fillOrder(left, right, 0, 0, false, false);
-      expect(fill[0]).to.equal(50);
-      expect(fill[1]).to.equal(100);
+      expect(fill[0]).to.equal(BigInt(50));
+      expect(fill[1]).to.equal(BigInt(100));
     });
   });
 
@@ -125,8 +125,8 @@ describe('LibFill Test', async function () {
       );
 
       const fill = await lib.fillOrder(left, right, 0, 0, false, false);
-      expect(fill[0]).to.equal(100);
-      expect(fill[1]).to.equal(200);
+      expect(fill[0]).to.equal(BigInt(100));
+      expect(fill[1]).to.equal(BigInt(200));
     });
 
     it('should fill orders when right order has better price', async () => {
@@ -154,8 +154,8 @@ describe('LibFill Test', async function () {
       );
 
       const fill = await lib.fillOrder(left, right, 0, 0, false, false);
-      expect(fill[0]).to.equal(1000);
-      expect(fill[1]).to.equal(2000);
+      expect(fill[0]).to.equal(BigInt(1000));
+      expect(fill[1]).to.equal(BigInt(2000));
     });
 
     it('should throw if price is not ok', async () => {
@@ -212,8 +212,8 @@ describe('LibFill Test', async function () {
       );
 
       const fill = await lib.fillOrder(left, right, 0, 0, false, false);
-      expect(fill[0]).to.equal(100);
-      expect(fill[1]).to.equal(200);
+      expect(fill[0]).to.equal(BigInt(100));
+      expect(fill[1]).to.equal(BigInt(200));
     });
 
     it('should fill orders when right order has better price', async () => {
@@ -241,8 +241,8 @@ describe('LibFill Test', async function () {
       );
 
       const fill = await lib.fillOrder(left, right, 0, 0, false, false);
-      expect(fill[0]).to.equal(100);
-      expect(fill[1]).to.equal(200);
+      expect(fill[0]).to.equal(BigInt(100));
+      expect(fill[1]).to.equal(BigInt(200));
     });
 
     it('should fill orders when right order has better price with less needed amount', async () => {
@@ -270,8 +270,8 @@ describe('LibFill Test', async function () {
       );
 
       const fill = await lib.fillOrder(left, right, 0, 0, false, false);
-      expect(fill[0]).to.equal(50);
-      expect(fill[1]).to.equal(100);
+      expect(fill[0]).to.equal(BigInt(50));
+      expect(fill[1]).to.equal(BigInt(100));
     });
 
     it('should throw if price is not ok', async () => {

@@ -1,7 +1,7 @@
 import {expect} from '../test/utils/chai-setup';
 import {LibOrderTest} from '../typechain';
 import {ethers} from 'hardhat';
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers';
+import {SignerWithAddress} from '@nomicfoundation/hardhat-ethers/signers';
 import {Asset, Order} from './utils/order';
 import {ZERO, ORDER_DATA_V1, ORDER_DATA_V2} from './utils/assets';
 
@@ -25,8 +25,8 @@ describe('LibOrder Test', async function () {
         0,
         false
       );
-      expect(result[0]).to.equal(100);
-      expect(result[1]).to.equal(200);
+      expect(result[0]).to.equal(BigInt(100));
+      expect(result[1]).to.equal(BigInt(200));
     });
 
     it('should calculate remaining amounts if fill is specified', async () => {
@@ -37,8 +37,8 @@ describe('LibOrder Test', async function () {
         20,
         false
       );
-      expect(result[0]).to.equal(90);
-      expect(result[1]).to.equal(180);
+      expect(result[0]).to.equal(BigInt(90));
+      expect(result[1]).to.equal(BigInt(180));
     });
 
     it('should return 0s if filled fully', async () => {
@@ -49,8 +49,8 @@ describe('LibOrder Test', async function () {
         200,
         false
       );
-      expect(result[0]).to.equal(0);
-      expect(result[1]).to.equal(0);
+      expect(result[0]).to.equal(BigInt(0));
+      expect(result[1]).to.equal(BigInt(0));
     });
 
     it('should throw if fill is more than in the order', async () => {
@@ -58,7 +58,7 @@ describe('LibOrder Test', async function () {
       const take = Asset('0x00000000', '0x', '200');
       await expect(
         lib.calculateRemaining(Order(ZERO, make, ZERO, take, '1', 0, 0, '0xffffffff', '0x'), 220, false)
-      ).to.be.revertedWith('panic code 17');
+      ).to.be.revertedWith('panic code 0x11');
     });
 
     it('should throw if fill is more than in the order', async () => {
@@ -66,7 +66,7 @@ describe('LibOrder Test', async function () {
       const take = Asset('0x00000000', '0x', '200');
       await expect(
         lib.calculateRemaining(Order(ZERO, make, ZERO, take, '1', 0, 0, '0xffffffff', '0x'), 220, false)
-      ).to.be.revertedWith('panic code 17');
+      ).to.be.revertedWith('panic code 0x11');
     });
 
     it('should return correct reaming value for makeFill = true', async () => {
@@ -77,8 +77,8 @@ describe('LibOrder Test', async function () {
         100,
         true
       );
-      expect(result.makeAmount).to.equal(100);
-      expect(result.takeAmount).to.equal(300);
+      expect(result.makeAmount).to.equal(BigInt(100));
+      expect(result.takeAmount).to.equal(BigInt(300));
     });
 
     it('should return correct reaming value for makeFill = false', async () => {
@@ -89,8 +89,8 @@ describe('LibOrder Test', async function () {
         20,
         false
       );
-      expect(result.makeAmount).to.equal(90);
-      expect(result.takeAmount).to.equal(180);
+      expect(result.makeAmount).to.equal(BigInt(90));
+      expect(result.takeAmount).to.equal(BigInt(180));
     });
   });
 
@@ -103,13 +103,13 @@ describe('LibOrder Test', async function () {
 
     it('should not throw if dates are correct', async () => {
       const block = await ethers.provider.getBlock('latest');
-      const now = block.timestamp;
+      const now = block!.timestamp;
       await lib.validate(Order(ZERO, testAsset, ZERO, testAsset, '0', now - 100, now + 100, '0xffffffff', '0x'));
     });
 
     it('should throw if start date error', async () => {
       const block = await ethers.provider.getBlock('latest');
-      const now = block.timestamp;
+      const now = block!.timestamp;
       await expect(
         lib.validate(Order(ZERO, testAsset, ZERO, testAsset, '0', now + 100, 0, '0xffffffff', '0x'))
       ).to.be.revertedWith('Order start validation failed');
@@ -117,7 +117,7 @@ describe('LibOrder Test', async function () {
 
     it('should throw if end date error', async () => {
       const block = await ethers.provider.getBlock('latest');
-      const now = block.timestamp;
+      const now = block!.timestamp;
       await expect(
         lib.validate(Order(ZERO, testAsset, ZERO, testAsset, '0', 0, now - 100, '0xffffffff', '0x'))
       ).to.be.revertedWith('Order end validation failed');
@@ -125,7 +125,7 @@ describe('LibOrder Test', async function () {
 
     it('should throw if both dates error', async () => {
       const block = await ethers.provider.getBlock('latest');
-      const now = block.timestamp;
+      const now = block!.timestamp;
       await expect(
         lib.validate(Order(ZERO, testAsset, ZERO, testAsset, '0', now + 100, now - 100, '0xffffffff', '0x'))
       ).to.be.revertedWith('Order start validation failed');
@@ -139,33 +139,33 @@ describe('LibOrder Test', async function () {
     const data = '0x12';
 
     it('should calculate correct hash key for no type order', async () => {
-      const test_order = Order(wallet1.address, makeAsset, ZERO, takeAsset, salt, 0, 0, '0xffffffff', data);
+      const test_order = Order(await wallet1.getAddress(), makeAsset, ZERO, takeAsset, salt, 0, 0, '0xffffffff', data);
 
       const hash = await lib.hashKey(test_order);
-      const test_hash = await lib.hashV1(wallet1.address, makeAsset, takeAsset, salt);
-      const test_wrong_hash = await lib.hashV2(wallet1.address, makeAsset, takeAsset, salt, data);
+      const test_hash = await lib.hashV1(await wallet1.getAddress(), makeAsset, takeAsset, salt);
+      const test_wrong_hash = await lib.hashV2(await wallet1.getAddress(), makeAsset, takeAsset, salt, data);
 
       expect(hash).to.not.equal(test_wrong_hash);
       expect(hash).to.equal(test_hash);
     });
 
     it('should calculate correct hash key for V1 order', async () => {
-      const test_order = Order(wallet1.address, makeAsset, ZERO, takeAsset, salt, 0, 0, ORDER_DATA_V1, data);
+      const test_order = Order(await wallet1.getAddress(), makeAsset, ZERO, takeAsset, salt, 0, 0, ORDER_DATA_V1, data);
 
       const hash = await lib.hashKey(test_order);
-      const test_hash = await lib.hashV1(wallet1.address, makeAsset, takeAsset, salt);
-      const test_wrong_hash = await lib.hashV2(wallet1.address, makeAsset, takeAsset, salt, data);
+      const test_hash = await lib.hashV1(await wallet1.getAddress(), makeAsset, takeAsset, salt);
+      const test_wrong_hash = await lib.hashV2(await wallet1.getAddress(), makeAsset, takeAsset, salt, data);
 
       expect(hash).to.not.equal(test_wrong_hash);
       expect(hash).to.equal(test_hash);
     });
 
     it('should calculate correct hash key for V2 order', async () => {
-      const test_order = Order(wallet1.address, makeAsset, ZERO, takeAsset, salt, 0, 0, ORDER_DATA_V2, data);
+      const test_order = Order(await wallet1.getAddress(), makeAsset, ZERO, takeAsset, salt, 0, 0, ORDER_DATA_V2, data);
 
       const hash = await lib.hashKey(test_order);
-      const test_hash = await lib.hashV2(wallet1.address, makeAsset, takeAsset, salt, data);
-      const test_wrong_hash = await lib.hashV1(wallet1.address, makeAsset, takeAsset, salt);
+      const test_hash = await lib.hashV2(await wallet1.getAddress(), makeAsset, takeAsset, salt, data);
+      const test_wrong_hash = await lib.hashV1(await wallet1.getAddress(), makeAsset, takeAsset, salt);
 
       expect(hash).to.not.equal(test_wrong_hash);
       expect(hash).to.equal(test_hash);
