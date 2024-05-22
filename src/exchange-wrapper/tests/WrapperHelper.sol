@@ -115,14 +115,6 @@ contract WrapperHelper {
         return abi.encode(data);
     }
 
-    function getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
-        LibLooksRare.TakerOrder calldata _takerBid,
-        LibLooksRare.MakerOrder calldata _makerAsk,
-        bytes4 typeNft
-    ) external pure returns (bytes memory _data) {
-        _data = abi.encode(_takerBid, _makerAsk, typeNft);
-    }
-
     function encodeFees(uint first, uint second) external pure returns (uint) {
         return (uint(uint16(first)) << 16) + uint(uint16(second));
     }
@@ -170,6 +162,23 @@ contract WrapperHelper {
             ethRecipient,
             nftRecipient,
             deadline
+        );
+    }
+
+    function encodeLooksRareV2Call(
+        LibLooksRare.Taker calldata takerBid,
+        LibLooksRare.Maker calldata makerAsk,
+        bytes calldata makerSignature,
+        LibLooksRare.MerkleTree calldata merkleTree,
+        address affiliate
+    ) external pure returns (bytes memory _data) {
+        _data = abi.encodeWithSelector(
+            ILooksRare.executeTakerBid.selector,
+            takerBid,
+            makerAsk,
+            makerSignature,
+            merkleTree,
+            affiliate
         );
     }
 

@@ -17,21 +17,20 @@ interface IExecutionStrategy {
 
     function viewProtocolFee() external view returns (uint256);
 }
-
 /**
  * @title StrategyStandardSaleForFixedPrice
  * @notice Strategy that executes an order at a fixed price that
  * can be taken either by a bid or an ask.
  */
 contract LooksRareTestHelper is IExecutionStrategy {
-    uint256 public immutable protocolFee;
+    uint256 public immutable PROTOCOL_FEE;
 
     /**
      * @notice Constructor
      * @param _protocolFee protocol fee (200 --> 2%, 400 --> 4%)
      */
     constructor(uint256 _protocolFee) {
-        protocolFee = _protocolFee;
+        PROTOCOL_FEE = _protocolFee;
     }
 
     /**
@@ -74,7 +73,7 @@ contract LooksRareTestHelper is IExecutionStrategy {
         );
     }
 
-    function viewProtocolFee() external pure override returns (uint256) {
+    function viewProtocolFee() external view override returns (uint256) {
         return 0;
     }
 }

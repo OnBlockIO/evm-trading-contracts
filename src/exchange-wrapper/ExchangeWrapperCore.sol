@@ -483,39 +483,13 @@ abstract contract ExchangeWrapperCore is
                 }
             }
         } else if (purchaseDetails.marketId == Markets.LooksRare) {
-            (LibLooksRare.TakerOrder memory takerOrder, LibLooksRare.MakerOrder memory makerOrder, bytes4 typeNft) = abi
-                .decode(marketData, (LibLooksRare.TakerOrder, LibLooksRare.MakerOrder, bytes4));
+            (bool success, ) = address(looksrare).call{value: nativeAmountToSend}(marketData);
             if (allowFail) {
-                try
-                    ILooksRare(looksrare).matchAskWithTakerBidUsingETHAndWETH{value: nativeAmountToSend}(
-                        takerOrder,
-                        makerOrder
-                    )
-                {} catch {
+                if (!success) {
                     return (false, 0, 0);
                 }
             } else {
-                ILooksRare(looksrare).matchAskWithTakerBidUsingETHAndWETH{value: nativeAmountToSend}(
-                    takerOrder,
-                    makerOrder
-                );
-            }
-            if (typeNft == LibAsset.ERC721_ASSET_CLASS) {
-                IERC721Upgradeable(makerOrder.collection).safeTransferFrom(
-                    address(this),
-                    _msgSender(),
-                    makerOrder.tokenId
-                );
-            } else if (typeNft == LibAsset.ERC1155_ASSET_CLASS) {
-                IERC1155Upgradeable(makerOrder.collection).safeTransferFrom(
-                    address(this),
-                    _msgSender(),
-                    makerOrder.tokenId,
-                    makerOrder.amount,
-                    ""
-                );
-            } else {
-                revert("Unknown token type");
+                require(success, "Purchase LooksRareV2 failed");
             }
         } else if (purchaseDetails.marketId == Markets.SudoSwap) {
             (bool success, ) = address(sudoswap).call{value: nativeAmountToSend}(marketData);

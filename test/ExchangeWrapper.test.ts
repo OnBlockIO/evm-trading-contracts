@@ -20,15 +20,10 @@ import {
 import SeaportArtifact from '../src/exchange-wrapper/artifacts/Seaport.json';
 import ConduitControllerArtifact from '../src/exchange-wrapper/artifacts/ConduitController.json';
 // looksrare
-import LooksRareExchangeArtifact from '../src/exchange-wrapper/artifacts/LooksRareExchange.json';
-import CurrencyManagerArtifact from '../src/exchange-wrapper/artifacts/CurrencyManager.json';
-import ExecutionManagerArtifact from '../src/exchange-wrapper/artifacts/ExecutionManager.json';
-import RoyaltyFeeManagerArtifact from '../src/exchange-wrapper/artifacts/RoyaltyFeeManager.json';
+import LooksRareProtocolArtifact from '../src/exchange-wrapper/artifacts/LooksRareProtocol.json';
 import WETH9Artifact from '../src/exchange-wrapper/artifacts/WETH9.json';
-import RoyaltyFeeRegistryArtifact from '../src/exchange-wrapper/artifacts/RoyaltyFeeRegistry.json';
-import TransferSelectorNFTArtifact from '../src/exchange-wrapper/artifacts/TransferSelectorNFT.json';
-import TransferManagerERC721Artifact from '../src/exchange-wrapper/artifacts/TransferManagerERC721.json';
-import TransferManagerERC1155Artifact from '../src/exchange-wrapper/artifacts/TransferManagerERC1155.json';
+import TransferManagerArtifact from '../src/exchange-wrapper/artifacts/TransferManager.json';
+import StrategyCollectionOfferArtifact from '../src/exchange-wrapper/artifacts/StrategyCollectionOffer.json';
 // x2y2
 import ERC721DelegateArtifact from '../src/exchange-wrapper/artifacts/ERC721Delegate.json';
 import ERC1155DelegateArtifact from '../src/exchange-wrapper/artifacts/ERC1155Delegate.json';
@@ -91,15 +86,10 @@ describe('ExchangeWrapper Test', async function () {
   let seaport_1_5: any;
   let seaport_1_6: any;
   let conduitController: any;
-  let currencyManager: any;
-  let executionManager: any;
-  let royaltyFeeRegistry: any;
-  let royaltyFeeManager: any;
+  let strategyCollectionOffer: any;
+  let transferManager: any;
   let looksRareExchange: any;
   let weth: any;
-  let transferManagerERC721: any;
-  let transferManagerERC1155: any;
-  let transferSelectorNFT: any;
   let strategy: any;
   let erc721Delegate: any;
   let erc1155Delegate: any;
@@ -177,38 +167,18 @@ describe('ExchangeWrapper Test', async function () {
       ConduitControllerArtifact.abi,
       ConduitControllerArtifact.bytecode
     );
-    const CurrencyManager = await ethers.getContractFactory(
-      CurrencyManagerArtifact.abi,
-      CurrencyManagerArtifact.bytecode
-    );
-    const ExecutionManager = await ethers.getContractFactory(
-      ExecutionManagerArtifact.abi,
-      ExecutionManagerArtifact.bytecode
-    );
-    const RoyaltyFeeRegistry = await ethers.getContractFactory(
-      RoyaltyFeeRegistryArtifact.abi,
-      RoyaltyFeeRegistryArtifact.bytecode
-    );
-    const RoyaltyFeeManager = await ethers.getContractFactory(
-      RoyaltyFeeManagerArtifact.abi,
-      RoyaltyFeeManagerArtifact.bytecode
-    );
     const LooksRareExchange = await ethers.getContractFactory(
-      LooksRareExchangeArtifact.abi,
-      LooksRareExchangeArtifact.bytecode
+      LooksRareProtocolArtifact.abi,
+      LooksRareProtocolArtifact.bytecode
     );
     const WETH = await ethers.getContractFactory(WETH9Artifact.abi, WETH9Artifact.bytecode);
-    const TransferManagerERC721 = await ethers.getContractFactory(
-      TransferManagerERC721Artifact.abi,
-      TransferManagerERC721Artifact.bytecode
+    const TransferManager = await ethers.getContractFactory(
+      TransferManagerArtifact.abi,
+      TransferManagerArtifact.bytecode
     );
-    const TransferManagerERC1155 = await ethers.getContractFactory(
-      TransferManagerERC1155Artifact.abi,
-      TransferManagerERC1155Artifact.bytecode
-    );
-    const TransferSelectorNFT = await ethers.getContractFactory(
-      TransferSelectorNFTArtifact.abi,
-      TransferSelectorNFTArtifact.bytecode
+    const StrategyCollectionOffer = await ethers.getContractFactory(
+      StrategyCollectionOfferArtifact.abi,
+      StrategyCollectionOfferArtifact.bytecode
     );
     const ERC721Delegate = await ethers.getContractFactory(ERC721DelegateArtifact.abi, ERC721DelegateArtifact.bytecode);
     const ERC1155Delegate = await ethers.getContractFactory(
@@ -300,28 +270,20 @@ describe('ExchangeWrapper Test', async function () {
     seaport_1_5 = await Seaport.deploy(await conduitController.getAddress());
     seaport_1_6 = await Seaport.deploy(await conduitController.getAddress());
 
-    currencyManager = await CurrencyManager.deploy();
-    executionManager = await ExecutionManager.deploy();
-    royaltyFeeRegistry = await RoyaltyFeeRegistry.deploy(9000);
-    royaltyFeeManager = await RoyaltyFeeManager.deploy(await royaltyFeeRegistry.getAddress());
     weth = await WETH.deploy();
+    transferManager = await TransferManager.deploy(await wallet0.getAddress());
+    strategyCollectionOffer = await StrategyCollectionOffer.deploy();
     looksRareExchange = await LooksRareExchange.deploy(
-      await currencyManager.getAddress(),
-      await executionManager.getAddress(),
-      await royaltyFeeManager.getAddress(),
-      await weth.getAddress(),
-      await lrProtocolFeeRecipient.getAddress()
+      await wallet0.getAddress(),
+      await lrProtocolFeeRecipient.getAddress(),
+      await transferManager.getAddress(),
+      await weth.getAddress()
     );
-    transferManagerERC721 = await TransferManagerERC721.deploy(await looksRareExchange.getAddress());
-    transferManagerERC1155 = await TransferManagerERC1155.deploy(await looksRareExchange.getAddress());
-    transferSelectorNFT = await TransferSelectorNFT.deploy(
-      await transferManagerERC721.getAddress(),
-      await transferManagerERC1155.getAddress()
-    );
-    await looksRareExchange.updateTransferSelectorNFT(await transferSelectorNFT.getAddress());
-    await currencyManager.addCurrency(await weth.getAddress());
-    strategy = await LooksRareTestHelper.deploy(0);
-    await executionManager.addStrategy(await strategy.getAddress());
+    await transferManager.allowOperator(await looksRareExchange.getAddress());
+    await looksRareExchange.updateCurrencyStatus(ZERO, true);
+    await looksRareExchange.updateCurrencyStatus(await weth.getAddress(), true);
+    await looksRareExchange.addStrategy(50, 50, 200, '0x84ad8c47', true, await strategyCollectionOffer.getAddress());
+    await looksRareExchange.addStrategy(50, 50, 200, '0x7e897147', true, await strategyCollectionOffer.getAddress());
 
     x2y2 = await X2Y2_r1.deploy();
     await x2y2.initialize(120000, await weth.getAddress());
@@ -2991,51 +2953,52 @@ describe('ExchangeWrapper Test', async function () {
   });
 
   describe('Looksrare orders', () => {
-    it('Test singlePurchase Looksrare - matchAskWithTakerBidUsingETHAndWETH, ERC721<->ETH, with royalties', async () => {
+    it('Test singlePurchase Looksrare, ERC721<->ETH, with royalties', async () => {
       const seller = wallet1;
       const buyerLocal1 = wallet2;
 
       await erc721.mint(await seller.getAddress(), tokenId);
       await erc721
         .connect(seller)
-        .setApprovalForAll(await transferManagerERC721.getAddress(), true, {from: await seller.getAddress()});
-      await transferSelectorNFT.addCollectionTransferManager(
-        await erc721.getAddress(),
-        await transferManagerERC721.getAddress()
-      );
+        .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller.getAddress()});
+      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
 
       const takerBid = {
-        isOrderAsk: false,
-        taker: await bulkExchange.getAddress(),
-        price: 10000,
-        tokenId: '0x3039',
-        minPercentageToAsk: 8000,
-        params: '0x',
+        recipient: await buyerLocal1.getAddress(),
+        additionalParameters: '0x',
       };
       const makerAsk = {
-        isOrderAsk: true,
-        signer: await seller.getAddress(),
+        quoteType: '1',
+        globalNonce: '0',
+        subsetNonce: '0',
+        orderNonce: '0',
+        strategyId: '0',
+        collectionType: '0',
         collection: await erc721.getAddress(),
-        price: 10000,
-        tokenId: '0x3039',
-        amount: 1,
-        strategy: await strategy.getAddress(),
-        currency: await weth.getAddress(),
-        nonce: 16,
-        startTime: 0,
-        endTime: '0xff00000000000000000000000000',
-        minPercentageToAsk: 8000,
-        params: '0x',
-        v: 28,
-        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+        currency: ZERO,
+        signer: await seller.getAddress(),
+        startTime: '168076455',
+        endTime: '16808792846',
+        price: '1000',
+        itemIds: [tokenId],
+        amounts: ['1'],
+        additionalParameters: '0x',
       };
+      const makerSignature =
+        '0x50d88229949c5884c15f3a71d9127aeb7c9ef9f9b301ce72c6b87076d0a38447335d8f19355f5ec1e9a6063c10ed019234cd8d522839e808d041082dd75c3ee01c';
+      const merkleTree = {
+        root: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        proof: [],
+      };
+      const affiliate = ZERO;
 
       expect(await erc721.balanceOf(await buyerLocal1.getAddress())).to.equal(BigInt(0));
-      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+      const dataForLooksRare = await wrapperHelper.encodeLooksRareV2Call(
         takerBid,
         makerAsk,
-        ERC721
+        makerSignature,
+        merkleTree,
+        affiliate
       );
 
       //adding royalties
@@ -3070,51 +3033,53 @@ describe('ExchangeWrapper Test', async function () {
       expect(await weth.balanceOf(await seller.getAddress())).to.equal(BigInt(10000));
     });
 
-    it('Test singlePurchase Looksrare - matchAskWithTakerBidUsingETHAndWETH, ERC1155<->ETH, with royalties', async () => {
+    it('Test singlePurchase Looksrare, ERC1155<->ETH, with royalties', async () => {
       const seller = wallet1;
       const buyerLocal1 = wallet2;
 
       await erc1155.mint(await seller.getAddress(), tokenId, 10);
       await erc1155
         .connect(seller)
-        .setApprovalForAll(await transferManagerERC1155.getAddress(), true, {from: await seller.getAddress()});
-      await transferSelectorNFT.addCollectionTransferManager(
-        await erc1155.getAddress(),
-        await transferManagerERC1155.getAddress()
-      );
+        .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller.getAddress()});
+
+      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
 
       const takerBid = {
-        isOrderAsk: false,
-        taker: await bulkExchange.getAddress(),
-        price: 10000,
-        tokenId: '0x3039',
-        minPercentageToAsk: 8000,
-        params: '0x',
+        recipient: await buyerLocal1.getAddress(),
+        additionalParameters: '0x',
       };
       const makerAsk = {
-        isOrderAsk: true,
-        signer: await seller.getAddress(),
+        quoteType: '1',
+        globalNonce: '0',
+        subsetNonce: '0',
+        orderNonce: '0',
+        strategyId: '0',
+        collectionType: '1',
         collection: await erc1155.getAddress(),
-        price: 10000,
-        tokenId: '0x3039',
-        amount: 10,
-        strategy: await strategy.getAddress(),
-        currency: await weth.getAddress(),
-        nonce: 16,
-        startTime: 0,
-        endTime: '0xff00000000000000000000000000',
-        minPercentageToAsk: 8000,
-        params: '0x',
-        v: 28,
-        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+        currency: ZERO,
+        signer: await seller.getAddress(),
+        startTime: '168076455',
+        endTime: '16808792846',
+        price: '1000',
+        itemIds: [tokenId],
+        amounts: ['1'],
+        additionalParameters: '0x',
       };
+      const makerSignature =
+        '0x50d88229949c5884c15f3a71d9127aeb7c9ef9f9b301ce72c6b87076d0a38447335d8f19355f5ec1e9a6063c10ed019234cd8d522839e808d041082dd75c3ee01c';
+      const merkleTree = {
+        root: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        proof: [],
+      };
+      const affiliate = ZERO;
 
       expect(await erc1155.balanceOf(await buyerLocal1.getAddress(), tokenId)).to.equal(BigInt(0));
-      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+      const dataForLooksRare = await wrapperHelper.encodeLooksRareV2Call(
         takerBid,
         makerAsk,
-        ERC1155
+        makerSignature,
+        merkleTree,
+        affiliate
       );
 
       //adding royalties
@@ -3149,7 +3114,7 @@ describe('ExchangeWrapper Test', async function () {
       expect(await weth.balanceOf(await seller.getAddress())).to.equal(BigInt(10000));
     });
 
-    it('Test bulkPurchase Looksrare (num orders = 2) - matchAskWithTakerBidUsingETHAndWETH, ERC721<->ETH, no royalties', async () => {
+    it('Test bulkPurchase Looksrare (num orders = 2), ERC721<->ETH, no royalties', async () => {
       const seller1 = wallet1;
       const seller2 = wallet3;
       const buyerLocal1 = wallet2;
@@ -3157,84 +3122,91 @@ describe('ExchangeWrapper Test', async function () {
       await erc721.mint(await seller1.getAddress(), tokenId);
       await erc721
         .connect(seller1)
-        .setApprovalForAll(await transferManagerERC721.getAddress(), true, {from: await seller1.getAddress()});
+        .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller1.getAddress()});
       await erc721.mint(await seller2.getAddress(), tokenId2);
       await erc721
         .connect(seller2)
-        .setApprovalForAll(await transferManagerERC721.getAddress(), true, {from: await seller2.getAddress()});
-      await transferSelectorNFT.addCollectionTransferManager(
-        await erc721.getAddress(),
-        await transferManagerERC721.getAddress()
-      );
+        .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller2.getAddress()});
+
+      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller1.getAddress()});
+      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller2.getAddress()});
 
       const takerBid = {
-        isOrderAsk: false,
-        taker: await bulkExchange.getAddress(),
-        price: 10000,
-        tokenId: '0x3039', // 12345
-        minPercentageToAsk: 8000,
-        params: '0x',
+        recipient: await buyerLocal1.getAddress(),
+        additionalParameters: '0x',
       };
       const makerAsk = {
-        isOrderAsk: true,
-        signer: await seller1.getAddress(),
+        quoteType: '1',
+        globalNonce: '0',
+        subsetNonce: '0',
+        orderNonce: '0',
+        strategyId: '0',
+        collectionType: '0',
         collection: await erc721.getAddress(),
-        price: 10000,
-        tokenId: '0x3039', // 12345
-        amount: 1,
-        strategy: await strategy.getAddress(),
-        currency: await weth.getAddress(),
-        nonce: 16,
-        startTime: 0,
-        endTime: '0xff00000000000000000000000000',
-        minPercentageToAsk: 8000,
-        params: '0x',
-        v: 28,
-        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+        currency: ZERO,
+        signer: await seller1.getAddress(),
+        startTime: '168076455',
+        endTime: '16808792846',
+        price: '1000',
+        itemIds: [tokenId],
+        amounts: ['1'],
+        additionalParameters: '0x',
       };
+      const makerSignature =
+        '0x50d88229949c5884c15f3a71d9127aeb7c9ef9f9b301ce72c6b87076d0a38447335d8f19355f5ec1e9a6063c10ed019234cd8d522839e808d041082dd75c3ee01c';
+      const merkleTree = {
+        root: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        proof: [],
+      };
+      const affiliate = ZERO;
 
       expect(await erc721.balanceOf(await buyerLocal1.getAddress())).to.equal(BigInt(0));
-      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+      const dataForLooksRare = await wrapperHelper.encodeLooksRareV2Call(
         takerBid,
         makerAsk,
-        ERC721
+        makerSignature,
+        merkleTree,
+        affiliate
       );
 
       const tradeData = PurchaseData(MARKET_ID_LOOKSRARE, '10000', ZERO, '0', dataForLooksRare);
 
       const takerBid2 = {
-        isOrderAsk: false,
-        taker: await bulkExchange.getAddress(),
-        price: 10000,
-        tokenId: '0x1E240', // 123456
-        minPercentageToAsk: 8000,
-        params: '0x',
+        recipient: await buyerLocal1.getAddress(),
+        additionalParameters: '0x',
       };
       const makerAsk2 = {
-        isOrderAsk: true,
-        signer: await seller2.getAddress(),
+        quoteType: '1',
+        globalNonce: '0',
+        subsetNonce: '0',
+        orderNonce: '0',
+        strategyId: '0',
+        collectionType: '0',
         collection: await erc721.getAddress(),
-        price: 10000,
-        tokenId: '0x1E240', // 123456
-        amount: 1,
-        strategy: await strategy.getAddress(),
-        currency: await weth.getAddress(),
-        nonce: 16,
-        startTime: 0,
-        endTime: '0xff00000000000000000000000000',
-        minPercentageToAsk: 8000,
-        params: '0x',
-        v: 28,
-        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+        currency: ZERO,
+        signer: await seller2.getAddress(),
+        startTime: '168076455',
+        endTime: '16808792846',
+        price: '1000',
+        itemIds: [tokenId2],
+        amounts: ['1'],
+        additionalParameters: '0x',
       };
+      const makerSignature2 =
+        '0x50d88229949c5884c15f3a71d9127aeb7c9ef9f9b301ce72c6b87076d0a38447335d8f19355f5ec1e9a6063c10ed019234cd8d522839e808d041082dd75c3ee01c';
+      const merkleTree2 = {
+        root: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        proof: [],
+      };
+      const affiliate2 = ZERO;
 
       expect(await erc721.balanceOf(await buyerLocal1.getAddress())).to.equal(BigInt(0));
-      const dataForLooksRare2 = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+      const dataForLooksRare2 = await wrapperHelper.encodeLooksRareV2Call(
         takerBid2,
         makerAsk2,
-        ERC721
+        makerSignature2,
+        merkleTree2,
+        affiliate2
       );
 
       const tradeData2 = PurchaseData(MARKET_ID_LOOKSRARE, '10000', ZERO, '0', dataForLooksRare2);
@@ -3254,7 +3226,7 @@ describe('ExchangeWrapper Test', async function () {
       expect(await weth.balanceOf(await seller2.getAddress())).to.equal(BigInt(10000));
     });
 
-    it('Test bulkPurchase Looksrare (num orders = 2) - matchAskWithTakerBidUsingETHAndWETH, ERC1155<->ETH, no royalties', async () => {
+    it('Test bulkPurchase Looksrare (num orders = 2), ERC1155<->ETH, no royalties', async () => {
       const seller1 = wallet1;
       const seller2 = wallet3;
       const buyerLocal1 = wallet2;
@@ -3262,84 +3234,91 @@ describe('ExchangeWrapper Test', async function () {
       await erc1155.mint(await seller1.getAddress(), tokenId, 10);
       await erc1155
         .connect(seller1)
-        .setApprovalForAll(await transferManagerERC1155.getAddress(), true, {from: await seller1.getAddress()});
+        .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller1.getAddress()});
       await erc1155.mint(await seller2.getAddress(), tokenId2, 10);
       await erc1155
         .connect(seller2)
-        .setApprovalForAll(await transferManagerERC1155.getAddress(), true, {from: await seller2.getAddress()});
-      await transferSelectorNFT.addCollectionTransferManager(
-        await erc1155.getAddress(),
-        await transferManagerERC1155.getAddress()
-      );
+        .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller2.getAddress()});
+
+      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller1.getAddress()});
+      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller2.getAddress()});
 
       const takerBid = {
-        isOrderAsk: false,
-        taker: await bulkExchange.getAddress(),
-        price: 10000,
-        tokenId: '0x3039', // 12345
-        minPercentageToAsk: 8000,
-        params: '0x',
+        recipient: await buyerLocal1.getAddress(),
+        additionalParameters: '0x',
       };
       const makerAsk = {
-        isOrderAsk: true,
-        signer: await seller1.getAddress(),
+        quoteType: '1',
+        globalNonce: '0',
+        subsetNonce: '0',
+        orderNonce: '0',
+        strategyId: '0',
+        collectionType: '1',
         collection: await erc1155.getAddress(),
-        price: 10000,
-        tokenId: '0x3039', // 12345
-        amount: 10,
-        strategy: await strategy.getAddress(),
-        currency: await weth.getAddress(),
-        nonce: 16,
-        startTime: 0,
-        endTime: '0xff00000000000000000000000000',
-        minPercentageToAsk: 8000,
-        params: '0x',
-        v: 28,
-        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+        currency: ZERO,
+        signer: await seller1.getAddress(),
+        startTime: '168076455',
+        endTime: '16808792846',
+        price: '1000',
+        itemIds: [tokenId],
+        amounts: ['1'],
+        additionalParameters: '0x',
       };
+      const makerSignature =
+        '0x50d88229949c5884c15f3a71d9127aeb7c9ef9f9b301ce72c6b87076d0a38447335d8f19355f5ec1e9a6063c10ed019234cd8d522839e808d041082dd75c3ee01c';
+      const merkleTree = {
+        root: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        proof: [],
+      };
+      const affiliate = ZERO;
 
       expect(await erc1155.balanceOf(await buyerLocal1.getAddress(), tokenId)).to.equal(BigInt(0));
-      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+      const dataForLooksRare = await wrapperHelper.encodeLooksRareV2Call(
         takerBid,
         makerAsk,
-        ERC1155
+        makerSignature,
+        merkleTree,
+        affiliate
       );
 
       const tradeData = PurchaseData(MARKET_ID_LOOKSRARE, '10000', ZERO, '0', dataForLooksRare);
 
       const takerBid2 = {
-        isOrderAsk: false,
-        taker: await bulkExchange.getAddress(),
-        price: 10000,
-        tokenId: '0x1E240', // 123456
-        minPercentageToAsk: 8000,
-        params: '0x',
+        recipient: await buyerLocal1.getAddress(),
+        additionalParameters: '0x',
       };
       const makerAsk2 = {
-        isOrderAsk: true,
-        signer: await seller2.getAddress(),
+        quoteType: '1',
+        globalNonce: '0',
+        subsetNonce: '0',
+        orderNonce: '0',
+        strategyId: '0',
+        collectionType: '1',
         collection: await erc1155.getAddress(),
-        price: 10000,
-        tokenId: '0x1E240', // 123456
-        amount: 10,
-        strategy: await strategy.getAddress(),
-        currency: await weth.getAddress(),
-        nonce: 16,
-        startTime: 0,
-        endTime: '0xff00000000000000000000000000',
-        minPercentageToAsk: 8000,
-        params: '0x',
-        v: 28,
-        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+        currency: ZERO,
+        signer: await seller2.getAddress(),
+        startTime: '168076455',
+        endTime: '16808792846',
+        price: '1000',
+        itemIds: [tokenId2],
+        amounts: ['1'],
+        additionalParameters: '0x',
       };
+      const makerSignature2 =
+        '0x50d88229949c5884c15f3a71d9127aeb7c9ef9f9b301ce72c6b87076d0a38447335d8f19355f5ec1e9a6063c10ed019234cd8d522839e808d041082dd75c3ee01c';
+      const merkleTree2 = {
+        root: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        proof: [],
+      };
+      const affiliate2 = ZERO;
 
       expect(await erc1155.balanceOf(await buyerLocal1.getAddress(), tokenId2)).to.equal(BigInt(0));
-      const dataForLooksRare2 = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+      const dataForLooksRare2 = await wrapperHelper.encodeLooksRareV2Call(
         takerBid2,
         makerAsk2,
-        ERC1155
+        makerSignature2,
+        merkleTree2,
+        affiliate2
       );
 
       const tradeData2 = PurchaseData(MARKET_ID_LOOKSRARE, '10000', ZERO, '0', dataForLooksRare2);
@@ -4061,7 +4040,9 @@ describe('ExchangeWrapper Test', async function () {
       await erc1155.mint(await seller1.getAddress(), tokenId, 10);
       await erc1155
         .connect(seller1)
-        .setApprovalForAll(await transferManagerERC1155.getAddress(), true, {from: await seller1.getAddress()});
+        .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller1.getAddress()});
+
+      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller1.getAddress()});
 
       const erc1155TokenIdLocal2 = '6';
       await erc1155.mint(await seller2.getAddress(), erc1155TokenIdLocal2, 10);
@@ -4070,37 +4051,41 @@ describe('ExchangeWrapper Test', async function () {
         .setApprovalForAll(await transferProxy.getAddress(), true, {from: await seller2.getAddress()});
 
       const takerBid = {
-        isOrderAsk: false,
-        taker: await bulkExchange.getAddress(),
-        price: 10000,
-        tokenId: '0x3039',
-        minPercentageToAsk: 8000,
-        params: '0x',
+        recipient: await bulkExchange.getAddress(),
+        additionalParameters: '0x',
       };
       const makerAsk = {
-        isOrderAsk: true,
-        signer: await seller1.getAddress(),
+        quoteType: '1',
+        globalNonce: '0',
+        subsetNonce: '0',
+        orderNonce: '0',
+        strategyId: '0',
+        collectionType: '1',
         collection: await erc1155.getAddress(),
-        price: 10000,
-        tokenId: '0x3039',
-        amount: 10,
-        strategy: await strategy.getAddress(),
-        currency: await weth.getAddress(),
-        nonce: 16,
-        startTime: 0,
-        endTime: '0xff00000000000000000000000000',
-        minPercentageToAsk: 8000,
-        params: '0x',
-        v: 28,
-        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+        currency: ZERO,
+        signer: await seller1.getAddress(),
+        startTime: '168076455',
+        endTime: '16808792846',
+        price: '1000',
+        itemIds: [tokenId],
+        amounts: ['1'],
+        additionalParameters: '0x',
       };
+      const makerSignature =
+        '0x50d88229949c5884c15f3a71d9127aeb7c9ef9f9b301ce72c6b87076d0a38447335d8f19355f5ec1e9a6063c10ed019234cd8d522839e808d041082dd75c3ee01c';
+      const merkleTree = {
+        root: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        proof: [],
+      };
+      const affiliate = ZERO;
 
       expect(await erc1155.balanceOf(await buyer.getAddress(), tokenId)).to.equal(BigInt(0));
-      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+      const dataForLooksRare = await wrapperHelper.encodeLooksRareV2Call(
         takerBid,
         makerAsk,
-        ERC1155
+        makerSignature,
+        merkleTree,
+        affiliate
       );
 
       const tradeDataLooksRare = PurchaseData(MARKET_ID_LOOKSRARE, '10000', ZERO, '0', dataForLooksRare);
@@ -5022,43 +5007,45 @@ describe('ExchangeWrapper Test', async function () {
       await erc721.mint(await seller.getAddress(), erc721TokenId3);
       await erc721
         .connect(seller)
-        .setApprovalForAll(await transferManagerERC721.getAddress(), true, {from: await seller.getAddress()});
-      await transferSelectorNFT.addCollectionTransferManager(
-        await erc721.getAddress(),
-        await transferManagerERC721.getAddress()
-      );
+        .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller.getAddress()});
+
+      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
 
       const takerBid = {
-        isOrderAsk: false,
-        taker: await bulkExchange.getAddress(),
-        price: 100,
-        tokenId: erc721TokenId3,
-        minPercentageToAsk: 8000,
-        params: '0x',
+        recipient: await bulkExchange.getAddress(),
+        additionalParameters: '0x',
       };
       const makerAsk = {
-        isOrderAsk: true,
+        quoteType: '1',
+        globalNonce: '0',
+        subsetNonce: '0',
+        orderNonce: '0',
+        strategyId: '0',
+        collectionType: '1',
+        collection: await erc1155.getAddress(),
+        currency: ZERO,
         signer: await seller.getAddress(),
-        collection: await erc721.getAddress(),
-        price: 100,
-        tokenId: erc721TokenId3,
-        amount: 1,
-        strategy: await strategy.getAddress(),
-        currency: await weth.getAddress(),
-        nonce: 16,
-        startTime: 0,
-        endTime: '0xff00000000000000000000000000',
-        minPercentageToAsk: 8000,
-        params: '0x',
-        v: 28,
-        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+        startTime: '168076455',
+        endTime: '16808792846',
+        price: '1000',
+        itemIds: [tokenId],
+        amounts: ['1'],
+        additionalParameters: '0x',
       };
+      const makerSignature =
+        '0x50d88229949c5884c15f3a71d9127aeb7c9ef9f9b301ce72c6b87076d0a38447335d8f19355f5ec1e9a6063c10ed019234cd8d522839e808d041082dd75c3ee01c';
+      const merkleTree = {
+        root: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        proof: [],
+      };
+      const affiliate = ZERO;
 
-      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+      const dataForLooksRare = await wrapperHelper.encodeLooksRareV2Call(
         takerBid,
         makerAsk,
-        ERC721
+        makerSignature,
+        merkleTree,
+        affiliate
       );
       const tradeDataLooksRare = PurchaseData(
         MARKET_ID_LOOKSRARE,
@@ -5374,43 +5361,45 @@ describe('ExchangeWrapper Test', async function () {
       await erc721.mint(await seller.getAddress(), erc721TokenId3);
       await erc721
         .connect(seller)
-        .setApprovalForAll(await transferManagerERC721.getAddress(), true, {from: await seller.getAddress()});
-      await transferSelectorNFT.addCollectionTransferManager(
-        await erc721.getAddress(),
-        await transferManagerERC721.getAddress()
-      );
+        .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller.getAddress()});
+
+      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
 
       const takerBid = {
-        isOrderAsk: false,
-        taker: await bulkExchange.getAddress(),
-        price: 100,
-        tokenId: erc721TokenId3,
-        minPercentageToAsk: 8000,
-        params: '0x',
+        recipient: await bulkExchange.getAddress(),
+        additionalParameters: '0x',
       };
       const makerAsk = {
-        isOrderAsk: true,
+        quoteType: '1',
+        globalNonce: '0',
+        subsetNonce: '0',
+        orderNonce: '0',
+        strategyId: '0',
+        collectionType: '1',
+        collection: await erc1155.getAddress(),
+        currency: ZERO,
         signer: await seller.getAddress(),
-        collection: await erc721.getAddress(),
-        price: 10000, // should be 100 - forced to make trade fail
-        tokenId: erc721TokenId3,
-        amount: 1,
-        strategy: await strategy.getAddress(),
-        currency: await weth.getAddress(),
-        nonce: 16,
-        startTime: 0,
-        endTime: '0xff00000000000000000000000000',
-        minPercentageToAsk: 8000,
-        params: '0x',
-        v: 28,
-        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+        startTime: '168076455',
+        endTime: '16808792846',
+        price: '1000',
+        itemIds: [tokenId],
+        amounts: ['1'],
+        additionalParameters: '0x',
       };
+      const makerSignature =
+        '0x50d88229949c5884c15f3a71d9127aeb7c9ef9f9b301ce72c6b87076d0a38447335d8f19355f5ec1e9a6063c10ed019234cd8d522839e808d041082dd75c3ee01c';
+      const merkleTree = {
+        root: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        proof: [],
+      };
+      const affiliate = ZERO;
 
-      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+      const dataForLooksRare = await wrapperHelper.encodeLooksRareV2Call(
         takerBid,
         makerAsk,
-        ERC721
+        makerSignature,
+        merkleTree,
+        affiliate
       );
       const tradeDataLooksRare = PurchaseData(
         MARKET_ID_LOOKSRARE,
@@ -5744,43 +5733,45 @@ describe('ExchangeWrapper Test', async function () {
       await erc721.mint(await seller.getAddress(), erc721TokenId3);
       await erc721
         .connect(seller)
-        .setApprovalForAll(await transferManagerERC721.getAddress(), true, {from: await seller.getAddress()});
-      await transferSelectorNFT.addCollectionTransferManager(
-        await erc721.getAddress(),
-        await transferManagerERC721.getAddress()
-      );
+        .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller.getAddress()});
+
+      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
 
       const takerBid = {
-        isOrderAsk: false,
-        taker: await bulkExchange.getAddress(),
-        price: 100,
-        tokenId: erc721TokenId3,
-        minPercentageToAsk: 8000,
-        params: '0x',
+        recipient: await bulkExchange.getAddress(),
+        additionalParameters: '0x',
       };
       const makerAsk = {
-        isOrderAsk: true,
+        quoteType: '1',
+        globalNonce: '0',
+        subsetNonce: '0',
+        orderNonce: '0',
+        strategyId: '0',
+        collectionType: '1',
+        collection: await erc1155.getAddress(),
+        currency: ZERO,
         signer: await seller.getAddress(),
-        collection: await erc721.getAddress(),
-        price: 10000, // should be 100 - forced to make trade fail
-        tokenId: erc721TokenId3,
-        amount: 1,
-        strategy: await strategy.getAddress(),
-        currency: await weth.getAddress(),
-        nonce: 16,
-        startTime: 0,
-        endTime: '0xff00000000000000000000000000',
-        minPercentageToAsk: 8000,
-        params: '0x',
-        v: 28,
-        r: '0x66719130e732d87a2fd63e4b5360f627d013b93a9c6768ab3fa305c178c84388',
-        s: '0x6f56a6089adf5af7cc45885d4294ebfd7ea9326a42aa977fc0732677e007cdd3',
+        startTime: '168076455',
+        endTime: '16808792846',
+        price: '1000',
+        itemIds: [tokenId],
+        amounts: ['1'],
+        additionalParameters: '0x',
       };
+      const makerSignature =
+        '0x50d88229949c5884c15f3a71d9127aeb7c9ef9f9b301ce72c6b87076d0a38447335d8f19355f5ec1e9a6063c10ed019234cd8d522839e808d041082dd75c3ee01c';
+      const merkleTree = {
+        root: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        proof: [],
+      };
+      const affiliate = ZERO;
 
-      const dataForLooksRare = await wrapperHelper.getDataWrapperMatchAskWithTakerBidUsingETHAndWETH(
+      const dataForLooksRare = await wrapperHelper.encodeLooksRareV2Call(
         takerBid,
         makerAsk,
-        ERC721
+        makerSignature,
+        merkleTree,
+        affiliate
       );
       const tradeDataLooksRare = PurchaseData(
         MARKET_ID_LOOKSRARE,
