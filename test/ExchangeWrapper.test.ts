@@ -2961,7 +2961,9 @@ describe('ExchangeWrapper Test', async function () {
       await erc721
         .connect(seller)
         .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller.getAddress()});
-      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
+      await transferManager
+        .connect(seller)
+        .grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
 
       const takerBid = {
         recipient: await buyerLocal1.getAddress(),
@@ -2979,7 +2981,7 @@ describe('ExchangeWrapper Test', async function () {
         signer: await seller.getAddress(),
         startTime: '168076455',
         endTime: '16808792846',
-        price: '1000',
+        price: '10000',
         itemIds: [tokenId],
         amounts: ['1'],
         additionalParameters: '0x',
@@ -3019,18 +3021,22 @@ describe('ExchangeWrapper Test', async function () {
 
       const tradeData = PurchaseData(MARKET_ID_LOOKSRARE, '10000', ZERO, dataTypePlusFees, dataPlusAdditionalRoyalties);
 
-      await verifyBalanceChange(await buyerLocal1.getAddress(), 13000, async () =>
-        verifyBalanceChange(await royaltyAccount1.getAddress(), -1000, async () =>
-          verifyBalanceChange(await royaltyAccount2.getAddress(), -2000, async () =>
-            bulkExchange
-              .connect(buyerLocal1)
-              .singlePurchase(tradeData, ZERO, ZERO, {from: await buyerLocal1.getAddress(), value: 13000, gasPrice: 0})
+      await verifyBalanceChange(await seller.getAddress(), -9950, async () =>
+        // 0.5% fees
+        verifyBalanceChange(await buyerLocal1.getAddress(), 13000, async () =>
+          verifyBalanceChange(await royaltyAccount1.getAddress(), -1000, async () =>
+            verifyBalanceChange(await royaltyAccount2.getAddress(), -2000, async () =>
+              bulkExchange.connect(buyerLocal1).singlePurchase(tradeData, ZERO, ZERO, {
+                from: await buyerLocal1.getAddress(),
+                value: 13000,
+                gasPrice: 0,
+              })
+            )
           )
         )
       );
 
       expect(await erc721.balanceOf(await buyerLocal1.getAddress())).to.equal(BigInt(1));
-      expect(await weth.balanceOf(await seller.getAddress())).to.equal(BigInt(10000));
     });
 
     it('Test singlePurchase Looksrare, ERC1155<->ETH, with royalties', async () => {
@@ -3042,7 +3048,9 @@ describe('ExchangeWrapper Test', async function () {
         .connect(seller)
         .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller.getAddress()});
 
-      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
+      await transferManager
+        .connect(seller)
+        .grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
 
       const takerBid = {
         recipient: await buyerLocal1.getAddress(),
@@ -3060,9 +3068,9 @@ describe('ExchangeWrapper Test', async function () {
         signer: await seller.getAddress(),
         startTime: '168076455',
         endTime: '16808792846',
-        price: '1000',
+        price: '10000',
         itemIds: [tokenId],
-        amounts: ['1'],
+        amounts: ['10'],
         additionalParameters: '0x',
       };
       const makerSignature =
@@ -3100,18 +3108,22 @@ describe('ExchangeWrapper Test', async function () {
 
       const tradeData = PurchaseData(MARKET_ID_LOOKSRARE, '10000', ZERO, dataTypePlusFees, dataPlusAdditionalRoyalties);
 
-      await verifyBalanceChange(await buyerLocal1.getAddress(), 13000, async () =>
-        verifyBalanceChange(await royaltyAccount1.getAddress(), -1000, async () =>
-          verifyBalanceChange(await royaltyAccount2.getAddress(), -2000, async () =>
-            bulkExchange
-              .connect(buyerLocal1)
-              .singlePurchase(tradeData, ZERO, ZERO, {from: await buyerLocal1.getAddress(), value: 13000, gasPrice: 0})
+      await verifyBalanceChange(await seller.getAddress(), -9950, async () =>
+        // 0.5% fees
+        verifyBalanceChange(await buyerLocal1.getAddress(), 13000, async () =>
+          verifyBalanceChange(await royaltyAccount1.getAddress(), -1000, async () =>
+            verifyBalanceChange(await royaltyAccount2.getAddress(), -2000, async () =>
+              bulkExchange.connect(buyerLocal1).singlePurchase(tradeData, ZERO, ZERO, {
+                from: await buyerLocal1.getAddress(),
+                value: 13000,
+                gasPrice: 0,
+              })
+            )
           )
         )
       );
 
       expect(await erc1155.balanceOf(await buyerLocal1.getAddress(), tokenId)).to.equal(BigInt(10));
-      expect(await weth.balanceOf(await seller.getAddress())).to.equal(BigInt(10000));
     });
 
     it('Test bulkPurchase Looksrare (num orders = 2), ERC721<->ETH, no royalties', async () => {
@@ -3128,8 +3140,12 @@ describe('ExchangeWrapper Test', async function () {
         .connect(seller2)
         .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller2.getAddress()});
 
-      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller1.getAddress()});
-      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller2.getAddress()});
+      await transferManager
+        .connect(seller1)
+        .grantApprovals([await looksRareExchange.getAddress()], {from: await seller1.getAddress()});
+      await transferManager
+        .connect(seller2)
+        .grantApprovals([await looksRareExchange.getAddress()], {from: await seller2.getAddress()});
 
       const takerBid = {
         recipient: await buyerLocal1.getAddress(),
@@ -3147,7 +3163,7 @@ describe('ExchangeWrapper Test', async function () {
         signer: await seller1.getAddress(),
         startTime: '168076455',
         endTime: '16808792846',
-        price: '1000',
+        price: '10000',
         itemIds: [tokenId],
         amounts: ['1'],
         additionalParameters: '0x',
@@ -3187,7 +3203,7 @@ describe('ExchangeWrapper Test', async function () {
         signer: await seller2.getAddress(),
         startTime: '168076455',
         endTime: '16808792846',
-        price: '1000',
+        price: '10000',
         itemIds: [tokenId2],
         amounts: ['1'],
         additionalParameters: '0x',
@@ -3211,19 +3227,21 @@ describe('ExchangeWrapper Test', async function () {
 
       const tradeData2 = PurchaseData(MARKET_ID_LOOKSRARE, '10000', ZERO, '0', dataForLooksRare2);
 
-      await verifyBalanceChange(await buyerLocal1.getAddress(), 20000, async () =>
-        bulkExchange.connect(buyerLocal1).bulkPurchase([tradeData, tradeData2], ZERO, ZERO, false, {
-          from: await buyerLocal1.getAddress(),
-          value: 20000,
-          gasPrice: 0,
-        })
+      await verifyBalanceChange(await seller1.getAddress(), -9950, async () =>
+        verifyBalanceChange(await seller2.getAddress(), -10050, async () =>
+          verifyBalanceChange(await buyerLocal1.getAddress(), 20000, async () =>
+            bulkExchange.connect(buyerLocal1).bulkPurchase([tradeData, tradeData2], ZERO, ZERO, false, {
+              from: await buyerLocal1.getAddress(),
+              value: 20000,
+              gasPrice: 0,
+            })
+          )
+        )
       );
 
       expect(await erc721.balanceOf(await buyerLocal1.getAddress())).to.equal(BigInt(2));
       expect(await erc721.balanceOf(await seller1.getAddress())).to.equal(BigInt(0));
       expect(await erc721.balanceOf(await seller2.getAddress())).to.equal(BigInt(0));
-      expect(await weth.balanceOf(await seller1.getAddress())).to.equal(BigInt(10000));
-      expect(await weth.balanceOf(await seller2.getAddress())).to.equal(BigInt(10000));
     });
 
     it('Test bulkPurchase Looksrare (num orders = 2), ERC1155<->ETH, no royalties', async () => {
@@ -3240,8 +3258,12 @@ describe('ExchangeWrapper Test', async function () {
         .connect(seller2)
         .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller2.getAddress()});
 
-      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller1.getAddress()});
-      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller2.getAddress()});
+      await transferManager
+        .connect(seller1)
+        .grantApprovals([await looksRareExchange.getAddress()], {from: await seller1.getAddress()});
+      await transferManager
+        .connect(seller2)
+        .grantApprovals([await looksRareExchange.getAddress()], {from: await seller2.getAddress()});
 
       const takerBid = {
         recipient: await buyerLocal1.getAddress(),
@@ -3259,9 +3281,9 @@ describe('ExchangeWrapper Test', async function () {
         signer: await seller1.getAddress(),
         startTime: '168076455',
         endTime: '16808792846',
-        price: '1000',
+        price: '10000',
         itemIds: [tokenId],
-        amounts: ['1'],
+        amounts: ['10'],
         additionalParameters: '0x',
       };
       const makerSignature =
@@ -3299,9 +3321,9 @@ describe('ExchangeWrapper Test', async function () {
         signer: await seller2.getAddress(),
         startTime: '168076455',
         endTime: '16808792846',
-        price: '1000',
+        price: '10000',
         itemIds: [tokenId2],
-        amounts: ['1'],
+        amounts: ['10'],
         additionalParameters: '0x',
       };
       const makerSignature2 =
@@ -3323,20 +3345,23 @@ describe('ExchangeWrapper Test', async function () {
 
       const tradeData2 = PurchaseData(MARKET_ID_LOOKSRARE, '10000', ZERO, '0', dataForLooksRare2);
 
-      await verifyBalanceChange(await buyerLocal1.getAddress(), 20000, async () =>
-        bulkExchange.connect(buyerLocal1).bulkPurchase([tradeData, tradeData2], ZERO, ZERO, false, {
-          from: await buyerLocal1.getAddress(),
-          value: 20000,
-          gasPrice: 0,
-        })
+      await verifyBalanceChange(await seller1.getAddress(), -9950, async () =>
+        // 0.5% fees
+        verifyBalanceChange(await seller2.getAddress(), -10050, async () =>
+          verifyBalanceChange(await buyerLocal1.getAddress(), 20000, async () =>
+            bulkExchange.connect(buyerLocal1).bulkPurchase([tradeData, tradeData2], ZERO, ZERO, false, {
+              from: await buyerLocal1.getAddress(),
+              value: 20000,
+              gasPrice: 0,
+            })
+          )
+        )
       );
 
       expect(await erc1155.balanceOf(await buyerLocal1.getAddress(), tokenId)).to.equal(BigInt(10));
       expect(await erc1155.balanceOf(await buyerLocal1.getAddress(), tokenId2)).to.equal(BigInt(10));
       expect(await erc1155.balanceOf(await seller1.getAddress(), tokenId)).to.equal(BigInt(0));
       expect(await erc1155.balanceOf(await seller2.getAddress(), tokenId2)).to.equal(BigInt(0));
-      expect(await weth.balanceOf(await seller1.getAddress())).to.equal(BigInt(10000));
-      expect(await weth.balanceOf(await seller2.getAddress())).to.equal(BigInt(10000));
     });
   });
 
@@ -4042,7 +4067,9 @@ describe('ExchangeWrapper Test', async function () {
         .connect(seller1)
         .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller1.getAddress()});
 
-      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller1.getAddress()});
+      await transferManager
+        .connect(seller1)
+        .grantApprovals([await looksRareExchange.getAddress()], {from: await seller1.getAddress()});
 
       const erc1155TokenIdLocal2 = '6';
       await erc1155.mint(await seller2.getAddress(), erc1155TokenIdLocal2, 10);
@@ -4051,7 +4078,7 @@ describe('ExchangeWrapper Test', async function () {
         .setApprovalForAll(await transferProxy.getAddress(), true, {from: await seller2.getAddress()});
 
       const takerBid = {
-        recipient: await bulkExchange.getAddress(),
+        recipient: await buyer.getAddress(),
         additionalParameters: '0x',
       };
       const makerAsk = {
@@ -4066,9 +4093,9 @@ describe('ExchangeWrapper Test', async function () {
         signer: await seller1.getAddress(),
         startTime: '168076455',
         endTime: '16808792846',
-        price: '1000',
+        price: '10000',
         itemIds: [tokenId],
-        amounts: ['1'],
+        amounts: ['10'],
         additionalParameters: '0x',
       };
       const makerSignature =
@@ -4133,19 +4160,20 @@ describe('ExchangeWrapper Test', async function () {
         dataForExchCall2
       );
 
-      await bulkExchange
+      await verifyBalanceChange(await seller1.getAddress(), -9950, async () =>
+        await bulkExchange
         .connect(buyer)
         .bulkPurchase([tradeDataLooksRare, tradeDataGhostMarket], await feeRecipienterUP.getAddress(), ZERO, false, {
           from: await buyer.getAddress(),
           value: 10100,
           gasPrice: 0,
-        });
+        })
+      )
 
       expect(await erc1155.balanceOf(await seller1.getAddress(), erc1155TokenIdLocal2)).to.equal(BigInt(0));
       expect(await erc1155.balanceOf(await seller2.getAddress(), tokenId)).to.equal(BigInt(0));
       expect(await erc1155.balanceOf(await buyer.getAddress(), erc1155TokenIdLocal2)).to.equal(BigInt(5));
       expect(await erc1155.balanceOf(await buyer.getAddress(), tokenId)).to.equal(BigInt(10));
-      expect(await weth.balanceOf(await seller1.getAddress())).to.equal(BigInt(10000));
     });
 
     it('Test bulkPurchase GhostMarket & SudoSwap (num orders = 2), ERC721<->ETH', async () => {
@@ -5009,10 +5037,12 @@ describe('ExchangeWrapper Test', async function () {
         .connect(seller)
         .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller.getAddress()});
 
-      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
+      await transferManager
+        .connect(seller)
+        .grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
 
       const takerBid = {
-        recipient: await bulkExchange.getAddress(),
+        recipient: await buyer.getAddress(),
         additionalParameters: '0x',
       };
       const makerAsk = {
@@ -5021,14 +5051,14 @@ describe('ExchangeWrapper Test', async function () {
         subsetNonce: '0',
         orderNonce: '0',
         strategyId: '0',
-        collectionType: '1',
-        collection: await erc1155.getAddress(),
+        collectionType: '0',
+        collection: await erc721.getAddress(),
         currency: ZERO,
         signer: await seller.getAddress(),
         startTime: '168076455',
         endTime: '16808792846',
-        price: '1000',
-        itemIds: [tokenId],
+        price: '100',
+        itemIds: [erc721TokenId3],
         amounts: ['1'],
         additionalParameters: '0x',
       };
@@ -5100,7 +5130,7 @@ describe('ExchangeWrapper Test', async function () {
 
       await (
         await verifyBalanceChangeReturnTx(await buyer.getAddress(), 2715, async () =>
-          verifyBalanceChangeReturnTx(await seller.getAddress(), -2395, async () =>
+          verifyBalanceChangeReturnTx(await seller.getAddress(), -2495, async () =>
             verifyBalanceChangeReturnTx(await feeRecipienterUP.getAddress(), -70, async () =>
               verifyBalanceChangeReturnTx(await feeRecipientSecond.getAddress(), -140, async () =>
                 bulkExchange
@@ -5124,7 +5154,6 @@ describe('ExchangeWrapper Test', async function () {
       const args = event.args;
       expect(Array(args)).to.deep.equal(Array([true, await buyer.getAddress()]));
 
-      expect(await weth.balanceOf(await seller.getAddress())).to.equal(BigInt(100));
       expect(await erc721.ownerOf(erc721TokenId1)).to.equal(await buyer.getAddress());
       expect(await erc721.ownerOf(erc721TokenId2)).to.equal(await buyer.getAddress());
       expect(await erc721.ownerOf(erc721TokenId3)).to.equal(await buyer.getAddress());
@@ -5363,10 +5392,12 @@ describe('ExchangeWrapper Test', async function () {
         .connect(seller)
         .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller.getAddress()});
 
-      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
+      await transferManager
+        .connect(seller)
+        .grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
 
       const takerBid = {
-        recipient: await bulkExchange.getAddress(),
+        recipient: await buyer.getAddress(),
         additionalParameters: '0x',
       };
       const makerAsk = {
@@ -5375,14 +5406,14 @@ describe('ExchangeWrapper Test', async function () {
         subsetNonce: '0',
         orderNonce: '0',
         strategyId: '0',
-        collectionType: '1',
-        collection: await erc1155.getAddress(),
+        collectionType: '0',
+        collection: await erc721.getAddress(),
         currency: ZERO,
         signer: await seller.getAddress(),
         startTime: '168076455',
         endTime: '16808792846',
-        price: '1000',
-        itemIds: [tokenId],
+        price: '10000', // should be 100 - forced to make trade fail
+        itemIds: [erc721TokenId3],
         amounts: ['1'],
         additionalParameters: '0x',
       };
@@ -5463,7 +5494,7 @@ describe('ExchangeWrapper Test', async function () {
             false,
             {from: await buyer.getAddress(), value: 2580, gasPrice: 0}
           )
-      ).to.be.revertedWith('Strategy: Execution invalid');
+      ).to.be.revertedWith('Purchase LooksRareV2 failed');
 
       await (
         await verifyBalanceChangeReturnTx(await buyer.getAddress(), 2450, async () =>
@@ -5735,7 +5766,9 @@ describe('ExchangeWrapper Test', async function () {
         .connect(seller)
         .setApprovalForAll(await transferManager.getAddress(), true, {from: await seller.getAddress()});
 
-      await transferManager.grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
+      await transferManager
+        .connect(seller)
+        .grantApprovals([await looksRareExchange.getAddress()], {from: await seller.getAddress()});
 
       const takerBid = {
         recipient: await bulkExchange.getAddress(),
@@ -5753,7 +5786,7 @@ describe('ExchangeWrapper Test', async function () {
         signer: await seller.getAddress(),
         startTime: '168076455',
         endTime: '16808792846',
-        price: '1000',
+        price: '100',
         itemIds: [tokenId],
         amounts: ['1'],
         additionalParameters: '0x',
