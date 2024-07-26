@@ -162,6 +162,21 @@ const neoevm_testnet = {
   uniswapV3: '',
 };
 
+const neoevm_mainnet = {
+  fees: 0,
+  transferProxy: '0x204965aa9fd13D455DB38331788fd1DD509a969d',
+  erc20TransferProxy: '0xFC2eb99ABAe550903a41DafCb6D797BcD0D88758',
+  erc721LazyMintTransferProxy: '0x68F50816df86F7a2f720deFfFF2395a9F1675585',
+  erc1155LazyMintTransferProxy: '0x1bb6C21e6adB8757F46e77A7F4c5Ad9118f4A04d',
+  royalties_proxy: '0x596a6fFC1525193E49C71476BAa8a9D071A8a2a3',
+  exchange_proxy: '0x49CaC1f0564Ed70a30C2454F653a3A1058D6A9bA',
+  exchange_wrapper_proxy: '0x0852db0336b998dF6d1C36351D6E0b073afA0902',
+  customMatcher: '0x88F166Ac7462D1745A690f51cBe04AB5f73D406D',
+  wrapped: '0xdE41591ED1f8ED1484aC2CD8ca0876428de60EfF',
+  uniswapV2: '',
+  uniswapV3: '',
+};
+
 const base_testnet = {
   fees: 0,
   transferProxy: '0xca1284B5EEb97c31cc693c4b182C8E1075Dc57f9',
@@ -206,6 +221,7 @@ let settings = {
   bsc_mainnet: bsc_mainnet,
   bsc_testnet: bsc_testnet,
   shardeum_testnet: shardeum_testnet,
+  neoevm_mainnet: neoevm_mainnet,
   neoevm_testnet: neoevm_testnet,
   base_testnet: base_testnet,
   base_mainnet: base_mainnet,

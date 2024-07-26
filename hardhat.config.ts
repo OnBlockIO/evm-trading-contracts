@@ -84,6 +84,14 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       tags: ['testnet'],
     },
+    neoevm_mainnet: {
+      chainId: 47763,
+      url: ETH_NODE_URI,
+      accounts: MAINNET_PRIVATE_KEY,
+      saveDeployments: true,
+      tags: ['mainnet'],
+      gasPrice: 40000000000,
+    },
     neoevm_testnet: {
       chainId: 12227331,
       url: ETH_NODE_URI,
