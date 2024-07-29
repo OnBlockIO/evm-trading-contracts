@@ -110,6 +110,33 @@ https://etherscan.io/address/0xfB2F452639cBB0850B46b20D24DE7b0a9cCb665f#code
 https://etherscan.io/address/0x2dEbB6CEd142197BEc08d76d3ECCE828b3B261ee#code
 
 
+## Deployed Contracts on Neo X:
+
+#### ERC20TransferProxy
+
+https://xexplorer.neo.org/address/0xFC2eb99ABAe550903a41DafCb6D797BcD0D88758
+
+#### TransferProxy
+
+https://xexplorer.neo.org/address/0x204965aa9fd13D455DB38331788fd1DD509a969d
+
+#### RoyaltiesRegistry Proxy
+
+https://xexplorer.neo.org/address/0x596a6fFC1525193E49C71476BAa8a9D071A8a2a3
+
+#### AssetMatcherCollection
+
+https://xexplorer.neo.org/address/0x88F166Ac7462D1745A690f51cBe04AB5f73D406D
+
+#### ExchangeV2 Proxy
+
+https://xexplorer.neo.org/address/0x49CaC1f0564Ed70a30C2454F653a3A1058D6A9bA
+
+#### ExchangeWrapper Proxy
+
+https://xexplorer.neo.org/address/0x0852db0336b998dF6d1C36351D6E0b073afA0902
+
+
 ## Audit
 N/A
 
