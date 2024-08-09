@@ -157,7 +157,7 @@ const neoevm_testnet = {
   exchange_proxy: '0xC881B96b13da75ccBd35Dad5443238ae982e479b',
   exchange_wrapper_proxy: '0xC61F536aa86b84c042349BB88bE3c87E5daC9f75',
   customMatcher: '0x2617Ad006cC4D4ed52D3Ed688316feF5b4658845',
-  wrapped: '0x8e392DB6179B0998d5ED432607a8c7Fe7350DDB2',
+  wrapped: '0x1CE16390FD09040486221e912B87551E4e44Ab17',
   uniswapV2: '',
   uniswapV3: '',
 };

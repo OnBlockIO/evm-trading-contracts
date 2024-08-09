@@ -93,12 +93,12 @@ const config: HardhatUserConfig = {
       gasPrice: 40000000000,
     },
     neoevm_testnet: {
-      chainId: 12227331,
+      chainId: 12227332,
       url: ETH_NODE_URI,
       accounts: TESTNET_PRIVATE_KEY,
       saveDeployments: true,
       tags: ['testnet'],
-      gasPrice: 8000000000,
+      gasPrice: 40000000000,
     },
     base_testnet: {
       url: ETH_NODE_URI,
