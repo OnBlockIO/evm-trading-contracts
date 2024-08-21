@@ -173,7 +173,7 @@ const neoevm_mainnet = {
   exchange_wrapper_proxy: '0x0852db0336b998dF6d1C36351D6E0b073afA0902',
   customMatcher: '0x88F166Ac7462D1745A690f51cBe04AB5f73D406D',
   wrapped: '0xdE41591ED1f8ED1484aC2CD8ca0876428de60EfF',
-  uniswapV2: '',
+  uniswapV2: '0x82b56Dd9c7FD5A977255BA51B96c3D97fa1Af9A9',
   uniswapV3: '',
 };
 
